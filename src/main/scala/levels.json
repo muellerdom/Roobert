@@ -1,0 +1,20 @@
+{
+  "levels": [
+    {
+      "id": 1,
+      "obstaclesPos": [],
+      "robertPos": [0,0],
+      "jermPos": [0, 2],
+      "description": "In diesem Level lernen wir Methoden kennen.",
+      "Instruction" : "Rooobert will den Gem. Nutze die Methoden moveForward() und collectJerm() so, dass Rooobert den Jerm einsammeln kann."
+    },
+    {
+      "id": 2,
+      "obstaclesPos": [],
+      "robertPos": [0,0],
+      "jermPos": [2, 2],
+      "description": "Nun lernen wir auch die Methoden moveRight() und moveLeft() kennen.",
+      "Instruction" : "Rooobert will den Gem. Nutze die Methoden so, dass Rooobert den Jerm einsammeln kann."
+    }
+  ]
+}

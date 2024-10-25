@@ -1,0 +1,51 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+
+# MacOS
+.DS_Store
+
+
+# IDEs and editors
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+
+# SBT project
+target/
+lib_managed/
+src_managed/
+project/target/
+project/project/
+
+# Scala-IDE specific
+.scala_dependencies
+.worksheet
+
+# SBT & ScalaTest cache files
+.cache/
+lib_managed/
+src_managed/
+
+# Logs and temporary files
+logs/
+*.log
+tmp/
+
+# Compiled class files
+*.class
+*.o
+*.out
+
+# Dependency directories
+/node_modules
+/.pnp
+.pnp.js
+
+# intellij idea
+*.log
+*.iml
+*.ipr
+*.iws
+.idea
