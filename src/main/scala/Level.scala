@@ -1,5 +1,5 @@
 
-import main.scala.HelloWorld.{IDEA, Movement}
+
 
 import scala.io.StdIn.readLine
 /*

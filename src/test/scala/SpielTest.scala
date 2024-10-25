@@ -1,9 +1,12 @@
-import main.scala.{Spieler, Welt, Gegenstand, Level}
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.BeforeEach // Füge die BeforeEach-Annotation hinzu
+package test.scala
 
-class SpielTest {
+// src/test/scala/test/scala/SpielTest.scala
+
+import main.scala.{Spieler, Welt, Gegenstand, Level}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+
+class SpielTest extends AnyFunSuite with Matchers {
 
   var welt: Welt = _
   var spieler: Spieler = _
@@ -11,8 +14,7 @@ class SpielTest {
   var level: Level = _
 
   // Vor jedem Test: Initialisiere das Spielfeld, den Spieler und den Diamanten
-  @BeforeEach
-  def before(): Unit = {
+  def beforeEach(): Unit = {
     welt = new Welt(10, 10)
     welt.setHindernis(3, 3) // Setze ein Hindernis
     diamant = new Gegenstand(7, 7) // Diamant auf Position (7, 7)
@@ -21,37 +23,47 @@ class SpielTest {
   }
 
   // Testet, ob der Spieler in leere Felder ziehen kann
-  @Test
-  def erlaubenDassSpielerInLeereFelderZieht(): Unit = {
+  test("Spieler sollte sich in leere Felder bewegen können") {
+    beforeEach() // Initialisiert den Testkontext
+
     level.bewegeSpieler("rechts") // Bewege nach (1,0)
-    assertEquals(1, spieler.posX) // Überprüft die X-Position
-    assertEquals(0, spieler.posY) // Überprüft die Y-Position
+    spieler.posX shouldBe 1
+    spieler.posY shouldBe 0
 
     level.bewegeSpieler("unten") // Bewege nach (1,1)
-    assertEquals(1, spieler.posX) // Überprüft die X-Position
-    assertEquals(1, spieler.posY) // Überprüft die Y-Position
+    spieler.posX shouldBe 1
+    spieler.posY shouldBe 1
   }
 
   // Testet, ob der Spieler nicht in eine Wand ziehen kann
-  @Test
-  def nichtErlaubenDassSpielerInEineWandZieht(): Unit = {
+  test("Spieler sollte nicht in eine Wand ziehen können") {
+    beforeEach() // Initialisiert den Testkontext
+
     spieler.posX = 2
     spieler.posY = 3 // Spieler startet direkt vor einem Hindernis
     level.bewegeSpieler("rechts") // Versuch, nach (3,3) zu ziehen
-    assertEquals(2, spieler.posX) // Position sollte gleich bleiben
-    assertEquals(3, spieler.posY) // Position sollte gleich bleiben
+    spieler.posX shouldBe 2
+    spieler.posY shouldBe 3
   }
 
   // Testet, ob der Gewinnzustand korrekt erkannt wird
-  @Test
-  def erkennenWennDerSpielerGewonnenHat(): Unit = {
+  test("Spieler sollte gewinnen, wenn er den Diamanten erreicht") {
+    beforeEach() // Initialisiert den Testkontext
+
     spieler.posX = 7
     spieler.posY = 7 // Spieler beginnt direkt auf dem Diamanten
-    assertEquals(true, level.hatGewonnen) // Spieler sollte gewonnen haben
+    level.hatGewonnen shouldBe true
 
     spieler.posX = 0 // Spieler bewegt sich weg
     spieler.posY = 0
-    assertEquals(false, level.hatGewonnen) // Spieler sollte nicht mehr gewonnen haben
+    level.hatGewonnen shouldBe false
+  }
+
+  // Testet, ob das Spielfeld leer ist (Beispiel für Emptiness-Tests)
+  test("Spielfeld sollte Hindernisse enthalten und nicht leer sein") {
+    beforeEach() // Initialisiert den Testkontext
+
+    welt.getHindernisse should not be empty
+    welt.getHindernisse should contain ((3, 3)) // enthält das Hindernis auf (3, 3)
   }
 }
-

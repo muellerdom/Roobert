@@ -1,3 +1,4 @@
+
 /*
 Stellt einen Gegenstand dar, den der Spieler sammeln kann.
 name ist der Name des Gegenstands.

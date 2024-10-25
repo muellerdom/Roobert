@@ -4,13 +4,15 @@ levels ist eine Liste aller Level.
 currentLevel zeigt an, in welchem Level sich der Spieler gerade befindet.
  */
 
-case class Welt(val width: Int, val height: Int) {
+class Welt(var width: Int, var height: Int) {
   // Initialisiere das Spielfeld mit leeren Feldern
 
 
 
-    val grid: Array[Array[Char]] = Array.fill(height, width)(' ')
-
+    var grid: Array[Array[Char]] = Array.ofDim(width, height)
+    
+    
+  
     // Setzt ein Hindernis auf die angegebene Position
     def setHindernis(x: Int, y: Int): Unit = {
       grid(y)(x) = '#'

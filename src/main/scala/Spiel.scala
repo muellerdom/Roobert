@@ -1,3 +1,5 @@
+
+
 // Objekt, das das Spiel startet
 object Spiel {
   def main(args: Array[String]): Unit = {
@@ -17,7 +19,7 @@ object Spiel {
 
     // Spielschleife, solange der Spieler nicht gewonnen hat
     while (!gewonnen) {
-      Welt.printField(spieler) // Drucke das aktuelle Spielfeld
+      spielfeld.printField(spieler) // Drucke das aktuelle Spielfeld
 
       // Fordere den Spieler zur Eingabe auf
       println("Wohin möchtest du dich bewegen? (oben, unten, links, rechts)")

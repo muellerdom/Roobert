@@ -1,57 +1,55 @@
-import main.scala.{Spieler, Welt, Gegenstand, Level}
-import org.junit.jupiter.api.Assertions._
-import org.junit.jupiter.api.Test
 
-// Diese Testklasse überprüft die Funktionalität der Spieler-Klasse und das Spielverhalten
-class SpielerTest {
+
+import main.scala.{Spieler, Welt, Gegenstand, Level}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers._
+
+class SpielerTest extends AnyFunSuite {
 
   // Testet, ob der Spieler bei den Startkoordinaten (0, 0) korrekt initialisiert wird.
-  @Test
-  def testSpielerStartPosition(): Unit = {
+  test("Spieler sollte bei den Startkoordinaten (0, 0) korrekt initialisiert werden") {
     val spielfeld = new Welt(5, 5)
     val spieler = new Spieler(0, 0)
 
-    assertEquals(0, spieler.posX, "Spieler sollte bei (0, 0) starten")
-    assertEquals(0, spieler.posY, "Spieler sollte bei (0, 0) starten")
+    spieler.posX shouldBe 0
+    spieler.posY shouldBe 0
   }
 
   // Testet, ob der Spieler sich korrekt in verschiedene Richtungen bewegen kann.
-  @Test
-  def testSpielerBewegung(): Unit = {
+  test("Spieler sollte sich korrekt in verschiedene Richtungen bewegen können") {
     val spielfeld = new Welt(10, 10)
     val spieler = new Spieler(0, 0)
+
     spieler.bewege("rechts") // Bewegt den Spieler nach rechts
-    assertEquals(1, spieler.posX, "Spieler sollte sich nach rechts bewegt haben")
-    assertEquals(0, spieler.posY, "Spieler sollte sich nach rechts bewegt haben")
+    spieler.posX shouldBe 1
+    spieler.posY shouldBe 0
 
     spieler.bewege("unten") // Bewegt den Spieler nach unten
-    assertEquals(1, spieler.posX, "Spieler sollte sich nach unten bewegt haben")
-    assertEquals(1, spieler.posY, "Spieler sollte sich nach unten bewegt haben")
+    spieler.posX shouldBe 1
+    spieler.posY shouldBe 1
 
     spieler.bewege("links") // Bewegt den Spieler nach links
-    assertEquals(0, spieler.posX, "Spieler sollte sich nach links bewegt haben")
-    assertEquals(1, spieler.posY, "Spieler sollte sich nach links bewegt haben")
+    spieler.posX shouldBe 0
+    spieler.posY shouldBe 1
 
     spieler.bewege("oben") // Bewegt den Spieler nach oben
-    assertEquals(0, spieler.posX, "Spieler sollte sich nach oben bewegt haben")
-    assertEquals(0, spieler.posY, "Spieler sollte sich nach oben bewegt haben")
+    spieler.posX shouldBe 0
+    spieler.posY shouldBe 0
   }
 
   // Testet, ob der Spieler nicht in ein Hindernis hinein bewegen kann.
-  @Test
-  def testSpielerHindernisse(): Unit = {
+  test("Spieler sollte sich nicht in ein Hindernis hinein bewegen können") {
     val spielfeld = new Welt(10, 10)
     spielfeld.setHindernis(1, 0)
     val spieler = new Spieler(0, 0)
 
     spieler.bewege("rechts") // Versucht, sich nach rechts zu bewegen
-    assertEquals(0, spieler.posX, "Spieler sollte sich nicht in ein Hindernis bewegen können")
-    assertEquals(0, spieler.posY, "Spieler sollte sich nicht in ein Hindernis bewegen können")
+    spieler.posX shouldBe 0
+    spieler.posY shouldBe 0
   }
 
   // Testet, ob der Spieler das Spiel gewinnt, wenn er den Diamanten erreicht.
-  @Test
-  def testSpielGewinnen(): Unit = {
+  test("Spieler sollte das Spiel gewinnen, wenn er den Diamanten erreicht") {
     val spielfeld = new Welt(10, 10)
     spielfeld.setDiamant(1, 0)
     val spieler = new Spieler(0, 0)
@@ -59,7 +57,6 @@ class SpielerTest {
     val level = new Level(spielfeld, spieler, diamant) // Erstellt das Level
 
     spieler.bewege("rechts") // Bewegt den Spieler nach rechts
-    assertTrue(level.hatGewonnen, "Spieler sollte das Spiel gewonnen haben, wenn er den Diamanten erreicht")
+    level.hatGewonnen shouldBe true
   }
 }
-
