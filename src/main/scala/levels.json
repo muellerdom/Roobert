@@ -1,20 +1,98 @@
 {
   "levels": [
     {
-      "id": 1,
-      "obstaclesPos": [],
-      "robertPos": [0,0],
-      "jermPos": [0, 2],
-      "description": "In diesem Level lernen wir Methoden kennen.",
-      "Instruction" : "Rooobert will den Gem. Nutze die Methoden moveForward() und collectJerm() so, dass Rooobert den Jerm einsammeln kann."
+      "level": 1,
+      "title": "Die Grundlagen",
+      "sections": [
+        {
+          "section": "Level 1.1",
+          "title": "Erste Schritte",
+          "topics": [
+            "Einfache Ausdrücke und Operationen",
+            "Ausgabe von Texten (print, println)"
+          ]
+        },
+        {
+          "section": "Level 1.2",
+          "title": "Variablen und Datentypen",
+          "topics": [
+            "Deklaration von Variablen (val, var)",
+            "Zahlentypen (Int, Double, Long)",
+            "Texttypen (String)",
+            "Wahrheitswerte (Boolean)"
+          ]
+        },
+        {
+          "section": "Level 1.3",
+          "title": "Kontrollstrukturen",
+          "topics": [
+            "Bedingungen (if, else, else if)",
+            "Schleifen (for, while)"
+          ]
+        },
+        {
+          "section": "Level 1.4",
+          "title": "Funktionen",
+          "topics": [
+            "Funktionsdefinition (def)",
+            "Parameter und Rückgabewerte"
+          ]
+        },
+        {
+          "section": "Level 1.5",
+          "title": "Klassen und Objekte",
+          "topics": [
+            "Klassen erstellen",
+            "Objekte instanziieren",
+            "Eigenschaften und Methoden"
+          ]
+        },
+        {
+          "section": "Level 1.6",
+          "title": "Collections",
+          "topics": [
+            "Listen (List)",
+            "Mengen (Set)",
+            "Maps (Map)"
+          ]
+        }
+      ]
     },
     {
-      "id": 2,
-      "obstaclesPos": [],
-      "robertPos": [0,0],
-      "jermPos": [2, 2],
-      "description": "Nun lernen wir auch die Methoden moveRight() und moveLeft() kennen.",
-      "Instruction" : "Rooobert will den Gem. Nutze die Methoden so, dass Rooobert den Jerm einsammeln kann."
+      "level": 2,
+      "title": "Funktionale Programmierung",
+      "sections": [
+        {
+          "section": "Level 2.1",
+          "title": "Höhere-Ordnung Funktionen",
+          "topics": [
+            "Funktionen als Argumente übergeben",
+            "Funktionen als Rückgabewerte"
+          ]
+        },
+        {
+          "section": "Level 2.2",
+          "title": "Rekursion",
+          "topics": [
+            "Rekursive Funktionsaufrufe"
+          ]
+        },
+        {
+          "section": "Level 2.3",
+          "title": "Unveränderlichkeit",
+          "topics": [
+            "Unveränderliche Datenstrukturen"
+          ]
+        },
+        {
+          "section": "Level 2.4",
+          "title": "Pattern Matching",
+          "topics": [
+            "Mustererkennung in Datenstrukturen"
+          ]
+        }
+      ]
     }
   ]
 }
+
