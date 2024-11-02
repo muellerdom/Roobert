@@ -1,53 +1,74 @@
 package GUI;
 
-
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 class GeneralGUI {
-    public static void main(String args[]) {
-        JFrame frame = new JFrame("Chat Frame");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(400, 400);
-        JMenuBar mb = new JMenuBar();
-        JMenu m1 = new JMenu("FILE");
-        JMenu m2 = new JMenu("Help");
-        mb.add(m1);
-        mb.add(m2);
-        JMenuItem m11 = new JMenuItem("Level 1");
-        JMenuItem m12 = new JMenuItem("Level 2");
-        JMenuItem m13 = new JMenuItem("Level 2");
-        JMenuItem m14 = new JMenuItem("Level 2");
-        JMenuItem m15 = new JMenuItem("Level 2");
-        JMenuItem m16 = new JMenuItem("Level 2");
-        JMenuItem m17 = new JMenuItem("Level 2");
-        JMenuItem m18 = new JMenuItem("Level 2");
-        JMenuItem m19 = new JMenuItem("Level 2");
-        JMenuItem m20 = new JMenuItem("Level 2");
 
-        m1.add(m11);
-        m1.add(m11);
-        m1.add(m11);
-        m1.add(m11);
-        m1.add(m11);
-        m1.add(m11);
-        m1.add(m11);
+    public static void main(String args[]) { // Die Hauptmethode, der Einstiegspunkt des Programms.
 
-        m1.add(m20);
-        JPanel panel = new JPanel();
-        JLabel label = new JLabel("Enter Text");
-        JTextField tf = new JTextField(10);
-        JButton send = new JButton("Send");
-        JButton reset = new JButton("Reset");
-        panel.add(label);
-        panel.add(label);
-        panel.add(tf);
-        panel.add(send);
-        panel.add(reset);
+        // Erstellen des Hauptfensters (JFrame)
+        JFrame frame = new JFrame("Chat Frame"); // Erstellt ein neues Fenster (Frame) mit dem Titel "Chat Frame".
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Legt fest, dass das Programm beendet wird, wenn das Fenster geschlossen wird.
+        frame.setSize(400, 400); // Setzt die Größe des Fensters auf 400x400 Pixel.
+        frame.setBackground(new Color(0x6CB2F3));
+
+        // Erstelle das Panel für das Sidemenü
+        JPanel sideMenu = new JPanel();
+        sideMenu.setLayout(new BoxLayout(sideMenu, BoxLayout.Y_AXIS)); // Vertikale Anordnung für das Sidemenü
+        sideMenu.setBackground(new Color(108, 178, 243)); // Sanftes Blau
+        sideMenu.setPreferredSize(new Dimension((int) (frame.getWidth() * 0.2), frame.getHeight())); // Breite des Sidemenüs
+
+        // Füge einige Menüeinträge hinzu
+        sideMenu.add(new JButton("Level 1"));
+        sideMenu.add(new JButton("Level 2"));
+        sideMenu.add(new JButton("Level 3"));
+        sideMenu.add(new JButton("Level 4"));
+        sideMenu.add(new JButton("Level 5"));
+        sideMenu.add(new JButton("Level 6"));
+        sideMenu.add(new JButton("Level 7"));
+        sideMenu.add(new JButton("Level 8"));
+        sideMenu.add(new JButton("Level 9"));
+
+        sideMenu.setLayout(new GridLayout(0, 1));
+        // Das Sidemenü ist anfangs nicht sichtbar
+        sideMenu.setVisible(false);
+
+
+
+        // Erstelle das Hauptpanel und die Komponenten
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout());
+        mainPanel.setBackground(new Color(0xFFFFFF));
+
+        // Füge einen Textbereich hinzu
         JTextArea ta = new JTextArea();
-        frame.getContentPane().add(BorderLayout.SOUTH, panel);
-        frame.getContentPane().add(BorderLayout.NORTH, mb);
-        frame.getContentPane().add(BorderLayout.CENTER, ta);
-        frame.setVisible(true);
+        ta.setLineWrap(true);
+        ta.setWrapStyleWord(true);
+        mainPanel.add(ta, BorderLayout.CENTER);
+
+        // Füge einen Button hinzu, um das Sidemenü ein- und auszublenden
+        JButton toggleButton = new JButton("Auf zum nächsten Level !");
+        toggleButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                sideMenu.setVisible(!sideMenu.isVisible()); // Sichtbarkeit umkehren
+                frame.revalidate(); // Layout neu validieren
+                frame.repaint(); // Fenster neu zeichnen
+            }
+        });
+        mainPanel.add(toggleButton, BorderLayout.SOUTH);
+
+        //Button einen Button für Code ausführen Button
+        //Button für einen Los gehts-Button
+        
+
+        // Füge die Panels zum Hauptfenster hinzu
+        frame.getContentPane().add(sideMenu, BorderLayout.WEST); // Sidemenü an die linke Seite
+        frame.getContentPane().add(mainPanel, BorderLayout.CENTER); // Hauptpanel in der Mitte
+
+        frame.setVisible(true); // Macht das Fenster sichtbar.
     }
 }
