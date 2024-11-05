@@ -25,7 +25,7 @@ class Level(val spielfeld: Welt, val spieler: Spieler, val diamant: Gegenstand) 
     val neuePosY = spieler.posY + dy
 
     if (istGueltigeBewegung(neuePosX, neuePosY)) {
-      spieler.bewege(dx, dy)
+     // spieler.move(dx, dy)
     }
   }
 

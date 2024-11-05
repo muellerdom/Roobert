@@ -10,10 +10,53 @@ knowledge ist ein Maß dafür, wie gut der Spieler die Scala-Konzepte verstanden
 // Definition der Spielerklasse
 // Die Klasse Spieler repräsentiert den Spieler im Spiel
 class Spieler(var posX: Int, var posY: Int) {
+
+  var direction: String = "oben"
+
   // Methode, um den Spieler zu bewegen
-  def bewege(dx: Int, dy: Int): Unit = {
-    posX += dx  // X-Position aktualisieren
-    posY += dy  // Y-Position aktualisieren
+  def move(movement: String): Unit = {
+    //posX += dx  // X-Position aktualisieren
+    //posY += dy  // Y-Position aktualisieren
+    movement match {
+      case "moveForward()" => moveForward()
+      case "turnRight()" => turnRight()
+      case "turnLeft()" => turnLeft()
+      case _ => "other"
+    }
+
+    //Methode zur Bewegung der Figur auf dem Spielfeld
+    def turnRight(): Unit = {
+      direction match {
+        case "oben" => direction = "rechts"
+        case "rechts" => direction = "unten"
+        case "unten" => direction = "links"
+        case "links" => direction = "oben"
+      }
+    }
+
+    //Methode zur Bewegung der Figur auf dem Spielfeld
+    def turnLeft(): Unit = {
+      direction match {
+        case "oben" => direction = "links"
+        case "rechts" => direction = "oben"
+        case "unten" => direction = "rechts"
+        case "links" => direction = "unten"
+      }
+    }
+
+    //Methode zur Bewegung der Figur auf dem Spielfeld
+    def moveForward(): Unit = {
+      
+      //Irgendwie muss man hier das SPielfeld übergeben, 
+      // denn man möchte ja überprüfen ob der Spieler sich überhaupt in besagte Richtung bewegen darf
+      
+      direction match {
+        case "oben" => posY += 1
+        case "rechts" => posX += 1
+        case "unten" => posY -= 1
+        case "links" => posX -= 1
+      }
+    }
   }
 
   // String-Darstellung des Spielers
@@ -22,16 +65,15 @@ class Spieler(var posX: Int, var posY: Int) {
 
 //Enum Spieler:
 
-
+//Warum Object Movement und dann Funktionen ?
 object Movement {
 
   //Methode zur Bewegung der Figur auf dem Spielfeld
-  def moveRight(): Unit = {
-    println("Right")
+  def turnRight(): Unit = {
   }
 
   //Methode zur Bewegung der Figur auf dem Spielfeld
-  def moveLeft(): Unit = {
+  def turnLeft(): Unit = {
     println("Left ... Left")
   }
 
@@ -41,7 +83,7 @@ object Movement {
   }
 
   //Methode zur Drehung der Figur auf dem Spielfeld
-  def turn(): Unit = {}
+  //def turn(): Unit = {}
 
 
 }
@@ -49,6 +91,7 @@ object Movement {
 //Figur-implementierung
 object figure {
 
+  //SEIZE HIM!!! :D
   val seize = 1.0 // LückenfüllerGröße
 
   printf("x")

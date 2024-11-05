@@ -1,10 +1,10 @@
-package test.scala
 
 // src/test/scala/test/scala/SpielTest.scala
 
-import main.scala.{Spieler, Welt, Gegenstand, Level}
+//import main.scala.{Spieler, Welt, Gegenstand, Level}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.matchers.should.Matchers._
 
 class SpielTest extends AnyFunSuite with Matchers {
 
@@ -63,7 +63,10 @@ class SpielTest extends AnyFunSuite with Matchers {
   test("Spielfeld sollte Hindernisse enthalten und nicht leer sein") {
     beforeEach() // Initialisiert den Testkontext
 
-    welt.getHindernisse should not be empty
-    welt.getHindernisse should contain ((3, 3)) // enthält das Hindernis auf (3, 3)
+    //Hier vielleicht mit Schleife? -> Also man könnte überprüfen ob im Spielfeld '#' eingetragen ist
+    welt.grid.exists(row => row.contains('#')) should be
+    //welt.getHindernisse should not be empty
+    //welt.getHindernisse should contain ((3, 3)) // enthält das Hindernis auf (3, 3)
+    // das zweite wird bereits in WeltTest überprüft
   }
 }

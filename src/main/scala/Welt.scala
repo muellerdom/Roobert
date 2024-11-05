@@ -15,11 +15,19 @@ class Welt(var width: Int, var height: Int) {
   
     // Setzt ein Hindernis auf die angegebene Position
     def setHindernis(x: Int, y: Int): Unit = {
+      if (grid(y)(x).equals('D')) {
+        throw new IllegalArgumentException(s"Fehler: Das Element an Position ($x, $y) ist 'D'.")
+      }
+
       grid(y)(x) = '#'
     }
 
     // Setzt den Diamanten auf die angegebene Position
     def setDiamant(x: Int, y: Int): Unit = {
+      if (grid(y)(x).equals('#')) {
+        throw new IllegalArgumentException(s"Fehler: Das Element an Position ($x, $y) ist '#'.")
+      }
+      
       grid(y)(x) = 'D'
     }
 

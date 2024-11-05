@@ -5,6 +5,8 @@ name ist der Name des Gegenstands.
 effect beschreibt, was der Gegenstand bewirkt, z.B. gibt er dem Spieler zusätzliche Leben oder macht ihn schneller.
  */
 
+//// Nun, was willst du nutzen Gegenstand oder Welt.setHindernes || setDiamant
+
 
 // Die Klasse Diamant repräsentiert den Jerm im Spiel
 class Gegenstand(val posX: Int, val posY: Int) {

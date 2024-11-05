@@ -1,6 +1,6 @@
 
 
-import main.scala.{Spieler, Welt, Gegenstand, Level}
+//import main.scala.{Spieler, Welt, Gegenstand, Level}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers._
 
@@ -20,21 +20,28 @@ class SpielerTest extends AnyFunSuite {
     val spielfeld = new Welt(10, 10)
     val spieler = new Spieler(0, 0)
 
-    spieler.bewege("rechts") // Bewegt den Spieler nach rechts
-    spieler.posX shouldBe 1
-    spieler.posY shouldBe 0
+    //Grundsätzlich stellt sich mir die Frage in welche Position der Spieler guckt.
+    // Ich gehe jetzt davon aus dass er bei 0, 0 in richtung y schaut
 
-    spieler.bewege("unten") // Bewegt den Spieler nach unten
-    spieler.posX shouldBe 1
-    spieler.posY shouldBe 1
-
-    spieler.bewege("links") // Bewegt den Spieler nach links
+    spieler.move("moveForward()") // Bewegt den Spieler nach oben
     spieler.posX shouldBe 0
     spieler.posY shouldBe 1
 
-    spieler.bewege("oben") // Bewegt den Spieler nach oben
+    spieler.move("turnRight()") // Dreht den Spieler nach rechts
     spieler.posX shouldBe 0
-    spieler.posY shouldBe 0
+    spieler.posY shouldBe 1
+
+    spieler.move("moveForward()") // Bewegt den Spieler nach rechts
+    spieler.posX shouldBe 1
+    spieler.posY shouldBe 1
+
+    spieler.move("turnLeft()") // Dreht den Spieler nach links
+    spieler.posX shouldBe 1
+    spieler.posY shouldBe 1
+
+    spieler.move("moveForward()") // Bewegt den Spieler nach links
+    spieler.posX shouldBe 0
+    spieler.posY shouldBe 1
   }
 
   // Testet, ob der Spieler nicht in ein Hindernis hinein bewegen kann.
@@ -43,7 +50,11 @@ class SpielerTest extends AnyFunSuite {
     spielfeld.setHindernis(1, 0)
     val spieler = new Spieler(0, 0)
 
-    spieler.bewege("rechts") // Versucht, sich nach rechts zu bewegen
+    spieler.move("turnRight()") // Dreht sich nach rechts
+    spieler.posX shouldBe 0
+    spieler.posY shouldBe 0
+
+    spieler.move("moveForward()") // Versucht, sich nach rechts zu bewegen
     spieler.posX shouldBe 0
     spieler.posY shouldBe 0
   }
@@ -56,7 +67,9 @@ class SpielerTest extends AnyFunSuite {
     val diamant = new Gegenstand(1, 0)
     val level = new Level(spielfeld, spieler, diamant) // Erstellt das Level
 
-    spieler.bewege("rechts") // Bewegt den Spieler nach rechts
+    spieler.move("turnRight()") // Bewegt den Spieler nach rechts
+    spieler.move("moveForward()") // Versucht, sich nach rechts zu bewegen
+
     level.hatGewonnen shouldBe true
   }
 }
