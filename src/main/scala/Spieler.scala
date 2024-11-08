@@ -1,109 +1,54 @@
-/*
-Repräsentiert den Spieler, der durch das Spiel navigiert.
-Der name dient zur Identifizierung.
-level zeigt an, wie weit der Spieler im Spiel fortgeschritten ist.
-score zählt die Punkte, die der Spieler durch das Lösen von Aufgaben sammelt.
-inventory speichert alle Gegenstände, die der Spieler gesammelt hat.
-knowledge ist ein Maß dafür, wie gut der Spieler die Scala-Konzepte verstanden hat.
- */
-
-// Definition der Spielerklasse
-// Die Klasse Spieler repräsentiert den Spieler im Spiel
 class Spieler(var posX: Int, var posY: Int) {
 
-  var direction: String = "oben"
+  // Enum-like sealed trait for directions
+  sealed trait Direction
+  case object Oben extends Direction
+  case object Rechts extends Direction
+  case object Unten extends Direction
+  case object Links extends Direction
 
-  // Methode, um den Spieler zu bewegen
-  def move(movement: String): Unit = {
-    //posX += dx  // X-Position aktualisieren
-    //posY += dy  // Y-Position aktualisieren
-    movement match {
+  var direction: Direction = Oben
+
+  // Move method to handle different actions
+  def move(action: String): Unit = {
+    action match {
       case "moveForward()" => moveForward()
       case "turnRight()" => turnRight()
       case "turnLeft()" => turnLeft()
-      case _ => "other"
-    }
-
-    //Methode zur Bewegung der Figur auf dem Spielfeld
-    def turnRight(): Unit = {
-      direction match {
-        case "oben" => direction = "rechts"
-        case "rechts" => direction = "unten"
-        case "unten" => direction = "links"
-        case "links" => direction = "oben"
-      }
-    }
-
-    //Methode zur Bewegung der Figur auf dem Spielfeld
-    def turnLeft(): Unit = {
-      direction match {
-        case "oben" => direction = "links"
-        case "rechts" => direction = "oben"
-        case "unten" => direction = "rechts"
-        case "links" => direction = "unten"
-      }
-    }
-
-    //Methode zur Bewegung der Figur auf dem Spielfeld
-    def moveForward(): Unit = {
-      
-      //Irgendwie muss man hier das SPielfeld übergeben, 
-      // denn man möchte ja überprüfen ob der Spieler sich überhaupt in besagte Richtung bewegen darf
-      
-      direction match {
-        case "oben" => posY += 1
-        case "rechts" => posX += 1
-        case "unten" => posY -= 1
-        case "links" => posX -= 1
-      }
+      case _ => // No action for unknown commands
     }
   }
 
-  // String-Darstellung des Spielers
+  // Turn right method
+  def turnRight(): Unit = {
+    direction = direction match {
+      case Oben   => Rechts
+      case Rechts => Unten
+      case Unten  => Links
+      case Links  => Oben
+    }
+  }
+
+  // Turn left method
+  def turnLeft(): Unit = {
+    direction = direction match {
+      case Oben   => Links
+      case Links  => Unten
+      case Unten  => Rechts
+      case Rechts => Oben
+    }
+  }
+
+  // Move forward method based on direction
+  def moveForward(): Unit = {
+    direction match {
+      case Oben    => posY -= 1 // Moving up decreases Y
+      case Rechts  => posX += 1 // Moving right increases X
+      case Unten   => posY += 1 // Moving down increases Y
+      case Links   => posX -= 1 // Moving left decreases X
+    }
+  }
+
+  // String representation for testing
   override def toString: String = s"Spieler($posX, $posY)"
 }
-
-//Enum Spieler:
-
-//Warum Object Movement und dann Funktionen ?
-object Movement {
-
-  //Methode zur Bewegung der Figur auf dem Spielfeld
-  def turnRight(): Unit = {
-  }
-
-  //Methode zur Bewegung der Figur auf dem Spielfeld
-  def turnLeft(): Unit = {
-    println("Left ... Left")
-  }
-
-  //Methode zur Bewegung der Figur auf dem Spielfeld
-  def moveForward(): Unit = {
-    println("straight")
-  }
-
-  //Methode zur Drehung der Figur auf dem Spielfeld
-  //def turn(): Unit = {}
-
-
-}
-
-//Figur-implementierung
-object figure {
-
-  //SEIZE HIM!!! :D
-  val seize = 1.0 // LückenfüllerGröße
-
-  printf("x")
-
-}
-
-
-
-//zu implementierende methoden
-//addItem: Fügt einen Gegenstand zum Inventar hinzu.
-//removeItem: Entfernt einen Gegenstand aus dem Inventar.
-//addScore: Erhöht die Punktzahl.
-//levelUp: Erhöht das Level des Spielers.
-
-

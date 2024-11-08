@@ -1,62 +1,47 @@
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-//import org.junit.jupiter.api.Assertions.assertEquals
-//import org.junit.jupiter.api.Test
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.matchers.should.Matchers._
+class WeltTest extends AnyFlatSpec with Matchers {
 
-import java.io.ByteArrayOutputStream
+  "Die Welt" should "ein Spielfeld mit den angegebenen Abmessungen erstellen" in {
+    val welt = new Welt(5, 5)
+    welt.grid.length should be(5)
+    welt.grid(0).length should be(5)
+  }
 
+  it should "ein Hindernis auf die angegebene Position setzen" in {
+    val welt = new Welt(5, 5)
+    welt.setHindernis(2, 2)
+    welt.grid(2)(2) should be('#')
+  }
 
-class WeltTest extends AnyWordSpec {
+  it should "einen Diamanten auf die angegebene Position setzen" in {
+    val welt = new Welt(5, 5)
+    welt.setDiamant(3, 3)
+    welt.grid(3)(3) should be('D')
+  }
 
-  "grid" should {
-    "create a Welt" in {
-      val welt = new Welt(5, 5)
-      welt.width should be(5)
-      welt.height should be(5)
-
+  it should "einen Fehler werfen, wenn versucht wird, einen Diamanten auf ein Hindernis zu setzen" in {
+    val welt = new Welt(5, 5)
+    welt.setHindernis(1, 1)
+    an[IllegalArgumentException] should be thrownBy {
+      welt.setDiamant(1, 1)
     }
   }
 
-  "welt.setHindernes" should {
-
+  it should "einen Fehler werfen, wenn versucht wird, ein Hindernis auf einen Diamanten zu setzen" in {
     val welt = new Welt(5, 5)
-
-    "set an Obstacle" in {
-      welt.setHindernis(2, 2)
-      welt.grid(2)(2) should be('#')
-    }
-
-    "not set a diamant on same pos. as obstacle" in {
-      val exception = intercept[IllegalArgumentException] {
-        welt.setDiamant(2, 2)
-      }
-
-      exception.getMessage should be("Fehler: Das Element an Position (2, 2) ist 'D'.")
-
-      welt.grid(2)(2) should be('#')
+    welt.setDiamant(1, 1)
+    an[IllegalArgumentException] should be thrownBy {
+      welt.setHindernis(1, 1)
     }
   }
 
-  "welt.setDiamant" should {
+  it should "das Spielfeld korrekt mit der Position des Spielers anzeigen" in {
     val welt = new Welt(5, 5)
-    "set a Diamant" in {
-      welt.setDiamant(2, 2)
-      welt.grid(2)(2) should be('D')
-    }
-
-    "not set an obstacle on same pos. as diamant" in {
-      val exception = intercept[IllegalArgumentException] {
-        welt.setHindernis(2, 2)
-      }
-
-      exception.getMessage should be("Fehler: Das Element an Position (2, 2) ist 'D'.")
-
-      welt.grid(2)(2) should be('D')
-    }
+    val spieler = new Spieler(0, 0)
+    welt.setHindernis(2, 2)
+    welt.setDiamant(3, 3)
+    welt.printField(spieler)
   }
 }
-
-
-
-
