@@ -7,7 +7,7 @@ import java.awt.event.ActionListener;
 
 class GeneralGUI {
 
-    public static void main(String args[]) { // Die Hauptmethode, der Einstiegspunkt des Programms.
+    public static <PanelLevel> void main(String args[]) { // Die Hauptmethode, der Einstiegspunkt des Programms.
 
         // Erstellen des Hauptfensters (JFrame)
         JFrame frame = new JFrame("Chat Frame"); // Erstellt ein neues Fenster (Frame) mit dem Titel "Chat Frame".
@@ -38,10 +38,20 @@ class GeneralGUI {
 
 
 
+
         // Erstelle das Hauptpanel und die Komponenten
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
         mainPanel.setBackground(new Color(0xFFFFFF));
+
+        //des ist das Panel, dass immer vom Conetnt vom Level her unterschiedlich entwicklet wird
+
+        final JPanel PanelLevel = new JPanel();
+        PanelLevel.setPreferredSize(new Dimension((int) (frame.getWidth() * 0.2), frame.getHeight())); 
+        PanelLevel.setBackground(Color.blue);
+        mainPanel.add(PanelLevel);
+        PanelLevel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+
 
         // Füge einen Textbereich hinzu
         JTextArea ta = new JTextArea();
@@ -60,6 +70,7 @@ class GeneralGUI {
             }
         });
         mainPanel.add(toggleButton, BorderLayout.SOUTH);
+
 
         //Button einen Button für Code ausführen Button
         //Button für einen Los gehts-Button
