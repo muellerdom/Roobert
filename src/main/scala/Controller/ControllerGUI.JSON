@@ -1,0 +1,11 @@
+{
+  "currentLevel": "Level1",
+  "levels": {
+    "Level1": {
+      "title": "Galgenmännchen - Level 1",
+      "secretWord": "hangman",
+      "maxGuesses": 6
+    }
+    
+  }
+}
