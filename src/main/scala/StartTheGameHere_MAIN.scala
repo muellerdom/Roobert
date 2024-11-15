@@ -1,3 +1,0 @@
-class StartTheGameHere_MAIN {
-
-}

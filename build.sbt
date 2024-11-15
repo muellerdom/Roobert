@@ -11,3 +11,8 @@ lazy val root = (project in file("."))
       "org.scalatest" %% "scalatest" % "3.2.19" % "test"
     )
   )
+libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.13.0" // Ersetzen Sie mit der neuesten Version, falls erforderlich
+libraryDependencies += "com.fasterxml.jackson.core" % "jackson-core" % "2.13.0"
+libraryDependencies += "com.fasterxml.jackson.core" % "jackson-annotations" % "2.13.0"
+
+
