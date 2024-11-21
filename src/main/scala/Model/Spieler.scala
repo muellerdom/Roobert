@@ -1,3 +1,5 @@
+package Model
+
 class Spieler(var posX: Int, var posY: Int) {
 
   // Enum-like sealed trait for directions
@@ -50,5 +52,5 @@ class Spieler(var posX: Int, var posY: Int) {
   }
 
   // String representation for testing
-  override def toString: String = s"Spieler($posX, $posY)"
+  override def toString: String = s"Model.Spieler($posX, $posY)"
 }

@@ -1,7 +1,9 @@
+package Model
+
 /*
 Verwaltet alle Level des Spiels.
 levels ist eine Liste aller Level.
-currentLevel zeigt an, in welchem Level sich der Spieler gerade befindet.
+currentLevel zeigt an, in welchem Level sich der Model.Spieler gerade befindet.
  */
 
 class Welt(var width: Int, var height: Int) {
@@ -11,7 +13,7 @@ class Welt(var width: Int, var height: Int) {
   var grid: Array[Array[Char]] = Array.ofDim(width, height)
 
 
-  // Setzt ein Hindernis auf die angegebene Position
+  // Setzt ein Model.Hindernis auf die angegebene Position
   def setHindernis(x: Int, y: Int): Unit = {
     if (grid(y)(x).equals('D')) {
       throw new IllegalArgumentException(s"Fehler: Das Element an Position ($x, $y) ist 'D'.")
