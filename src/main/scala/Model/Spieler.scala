@@ -1,6 +1,8 @@
 package Model
 
-class Spieler(var posX: Int, var posY: Int) {
+import Controller.{Coordinate, LevelConfig}
+
+class Spieler(var posX: Int, var posY: Int, val maxX: Int, val maxY: Int) {
 
   // Enum-like sealed trait for directions
   sealed trait Direction
@@ -9,12 +11,13 @@ class Spieler(var posX: Int, var posY: Int) {
   case object Unten extends Direction
   case object Links extends Direction
 
-  var direction: Direction = Oben
+  var direction: Direction = Rechts
+  var eingesammelteJerms: Set[Coordinate] = Set()
 
   // Move method to handle different actions
-  def move(action: String): Unit = {
+  def move(action: String, level: LevelConfig): Unit = {
     action match {
-      case "moveForward()" => moveForward()
+      case "moveForward()" => moveForward(level)
       case "turnRight()" => turnRight()
       case "turnLeft()" => turnLeft()
       case _ => // No action for unknown commands
@@ -41,15 +44,40 @@ class Spieler(var posX: Int, var posY: Int) {
     }
   }
 
-  // Move forward method based on direction
-  def moveForward(): Unit = {
-    direction match {
-      case Oben    => posY -= 1 // Moving up decreases Y
-      case Rechts  => posX += 1 // Moving right increases X
-      case Unten   => posY += 1 // Moving down increases Y
-      case Links   => posX -= 1 // Moving left decreases X
+  // Move forward method based on direction with boundary and obstacle checks
+  def moveForward(level: LevelConfig): Unit = {
+    val newPos = direction match {
+      case Oben    => (posX, posY - 1)
+      case Rechts  => (posX + 1, posY)
+      case Unten   => (posX, posY + 1)
+      case Links   => (posX - 1, posY)
+    }
+
+    if (isValidMove(newPos._1, newPos._2, level)) {
+      posX = newPos._1
+      posY = newPos._2
+      einsammeln(newPos, level)
     }
   }
+
+  // Check if the new move is within bounds and not an obstacle
+  private def isValidMove(x: Int, y: Int, level: LevelConfig): Boolean = {
+    val withinBounds = x >= 0 && x < maxX && y >= 0 && y < maxY
+    val isObstacle = level.objects.obstacles.exists(obs => obs.coordinates.x == x && obs.coordinates.y == y)
+    withinBounds && !isObstacle
+  }
+
+  // Collect jerms
+  private def einsammeln(pos: (Int, Int), level: LevelConfig): Unit = {
+    level.objects.jerm.find(jerm => jerm.x == pos._1 && jerm.y == pos._2) match {
+      case Some(jerm) =>
+        eingesammelteJerms += jerm
+        println(s"Jerm an Position (${jerm.x}, ${jerm.y}) eingesammelt.")
+
+      case None => // No jerm at this position
+    }
+  }
+
 
   // String representation for testing
   override def toString: String = s"Model.Spieler($posX, $posY)"
