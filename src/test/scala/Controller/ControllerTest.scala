@@ -9,19 +9,21 @@ class ControllerTest extends AnyFlatSpec with Matchers {
   "A Controller" should "load levels correctly" in {
     val controller = new Controller()
 
-    // Angenommen, dass wir ein Level 'test-level' in der Controller-Klasse definieren oder es irgendwo mocken müssen
+    // Sicherstellen, dass das Level "test-level" verfügbar ist
+    // Hier ein Beispiel, wie man ein Test-Level hinzufügen könnte
     val result = controller.startLevel("test-level")
 
     // Füge eine println-Anweisung hinzu, um den Fehler zu debuggen
     println(s"Result of startLevel: $result")
 
+    // Überprüfe, ob das Ergebnis ein Erfolg (Right) ist
     result should be ('right) // Erwartet ein erfolgreiches Laden des Levels (Right)
   }
 
   it should "validate levels correctly" in {
     val controller = new Controller()
 
-    // Definiere ein fehlerhaftes und ein gültiges Level
+    // Erstelle ein fehlerhaftes und ein gültiges Level
     val faultyLevel = LevelConfig("faulty", "", "", 3, 3, Coordinate(0, 0), Goal(4, 4), Objects(List(), List()))
     val validLevel = LevelConfig("valid", "", "", 3, 3, Coordinate(0, 0), Goal(2, 2), Objects(List(), List()))
 
@@ -33,7 +35,7 @@ class ControllerTest extends AnyFlatSpec with Matchers {
     println(s"Faulty level validation result: $faultyValidation")
     println(s"Valid level validation result: $validValidation")
 
-    // Überprüfe die erwarteten Ergebnisse
+    // Überprüfe, ob die Fehlerbehandlung für fehlerhafte Levels korrekt ist
     faultyValidation should be ('left) // Erwartet einen Fehler bei der Validierung des fehlerhaften Levels (Left)
     validValidation should be ('right)  // Erwartet eine erfolgreiche Validierung des gültigen Levels (Right)
   }
