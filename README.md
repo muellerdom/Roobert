@@ -1,4 +1,5 @@
-
+# Coverage
+[![Coverage Status](https://coveralls.io/repos/github/muellerdom/Roobert/badge.svg?branch=main)](https://coveralls.io/github/muellerdom/Roobert?branch=main)
 
 # Hilf Robert
 
@@ -22,7 +23,3 @@ zum pushen immer folgende Schritte:
 2. adden -> git add .
 3. commiten -> git commit -m "_beschreibung des uploads_"
 4. pushen -> git push 
-
-
-#coverall markdown
-[![Coverage Status](https://coveralls.io/repos/github/muellerdom/Roobert/badge.svg?branch=main)](https://coveralls.io/github/muellerdom/Roobert?branch=main)
