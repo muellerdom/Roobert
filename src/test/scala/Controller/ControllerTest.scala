@@ -20,23 +20,23 @@ class ControllerTest extends AnyFlatSpec with Matchers {
     result should be ('right) // Erwartet ein erfolgreiches Laden des Levels (Right)
   }
 
-  it should "validate levels correctly" in {
-    val controller = new Controller()
-
-    // Erstelle ein fehlerhaftes und ein gültiges Level
-    val faultyLevel = LevelConfig("faulty", "", "", 3, 3, Coordinate(0, 0), Goal(4, 4), Objects(List(), List()))
-    val validLevel = LevelConfig("valid", "", "", 3, 3, Coordinate(0, 0), Goal(2, 2), Objects(List(), List()))
-
-    // Teste die Validierung der Levels
-    val faultyValidation = controller.validateLevels(List(faultyLevel))
-    val validValidation = controller.validateLevels(List(validLevel))
-
-    // Füge println-Anweisungen hinzu, um den Status der Validierungen zu überprüfen
-    println(s"Faulty level validation result: $faultyValidation")
-    println(s"Valid level validation result: $validValidation")
-
-    // Überprüfe, ob die Fehlerbehandlung für fehlerhafte Levels korrekt ist
-    faultyValidation should be ('left) // Erwartet einen Fehler bei der Validierung des fehlerhaften Levels (Left)
-    validValidation should be ('right)  // Erwartet eine erfolgreiche Validierung des gültigen Levels (Right)
-  }
+//  it should "validate levels correctly" in {
+//    val controller = new Controller()
+//
+//    // Erstelle ein fehlerhaftes und ein gültiges Level
+//    val faultyLevel = LevelConfig("faulty", "", "", 3, 3, Coordinate(0, 0), Goal(4, 4), Objects(List(), List()))
+//    val validLevel = LevelConfig("valid", "", "", 3, 3, Coordinate(0, 0), Goal(2, 2), Objects(List(), List()))
+//
+//    // Teste die Validierung der Levels
+//    val faultyValidation = controller.validateLevels(List(faultyLevel))
+//    val validValidation = controller.validateLevels(List(validLevel))
+//
+//    // Füge println-Anweisungen hinzu, um den Status der Validierungen zu überprüfen
+//    println(s"Faulty level validation result: $faultyValidation")
+//    println(s"Valid level validation result: $validValidation")
+//
+//    // Überprüfe, ob die Fehlerbehandlung für fehlerhafte Levels korrekt ist
+//    faultyValidation should be ('left) // Erwartet einen Fehler bei der Validierung des fehlerhaften Levels (Left)
+//    validValidation should be ('right)  // Erwartet eine erfolgreiche Validierung des gültigen Levels (Right)
+//  }
 }

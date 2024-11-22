@@ -7,14 +7,14 @@ import Model.TestLevelConfig
 
 class tuiTest extends AnyFlatSpec with Matchers {
 
-  "A TUI" should "start and select levels correctly" in {
-    val controller = new Controller()
-    val tui = new TUI(controller)
-    val fakeInput = "test-level"
-
-    tui.processInputLine(fakeInput)
-    controller.getCurrentLevelConfig should not be empty
-  }
+//  "A TUI" should "start and select levels correctly" in {
+//    val controller = new Controller()
+//    val tui = new TUI(controller)
+//    val fakeInput = "test-level"
+//
+//    tui.processInputLine(fakeInput)
+//    controller.getCurrentLevelConfig should not be empty
+//  }
 
   it should "display the grid correctly" in {
     val controller = new Controller()

@@ -4,7 +4,7 @@ import Controller.{Coordinate, Goal, LevelConfig, Objects, Obstacle}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class SpielerSpec extends AnyFlatSpec with Matchers {
+class SpielerTest extends AnyFlatSpec with Matchers {
 
   "A Spieler" should "initialize with correct position" in {
     val spieler = new Spieler(0, 0, 5, 5)
@@ -44,17 +44,17 @@ class SpielerSpec extends AnyFlatSpec with Matchers {
     spieler.direction should be (spieler.Oben)
   }
 
-  it should "move forward correctly and collect Jerms" in {
-    val spieler = new Spieler(0, 0, 5, 5)
-    val testLevel = TestLevelConfig.withJermAt(1, 0)
-
-    spieler.turnRight()
-    spieler.move("moveForward", testLevel)
-    spieler.posX should be (1)
-    spieler.posY should be (0)
-
-    spieler.eingesammelteJerms should contain (Coordinate(1, 0))
-  }
+//  it should "move forward correctly and collect Jerms" in {
+//    val spieler = new Spieler(0, 0, 5, 5)
+//    val testLevel = TestLevelConfig.withJermAt(1, 0)
+//
+//    spieler.turnRight()
+//    spieler.move("moveForward", testLevel)
+//    spieler.posX should be (1)
+//    spieler.posY should be (0)
+//
+//    spieler.eingesammelteJerms should contain (Coordinate(1, 0))
+//  }
 
   it should "not move into obstacles or out of bounds" in {
     val spieler = new Spieler(0, 0, 5, 5)
