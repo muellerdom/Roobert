@@ -28,5 +28,6 @@ class tuiTest extends AnyFlatSpec with Matchers {
     // This part might require some additional logic to capture and test console output
   }
 
-  // Add more tests for different user interactions and edge cases
+    // Add more tests for different user interactions and edge cases
+  }
 }

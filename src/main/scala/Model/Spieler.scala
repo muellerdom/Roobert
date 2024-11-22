@@ -11,7 +11,7 @@ class Spieler(var posX: Int, var posY: Int, val maxX: Int, val maxY: Int) {
   case object Unten extends Direction
   case object Links extends Direction
 
-  var direction: Direction = Rechts
+  var direction: Direction = Oben
   var eingesammelteJerms: Set[Coordinate] = Set()
 
   // Move method to handle different actions

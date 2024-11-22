@@ -1,19 +1,66 @@
 {
   "levels": [
     {
+      "level": "test-level",
+      "description": "A test level",
+      "instruction": "Collect all jerms",
+      "width": 5,
+      "height": 5,
+      "start": {
+        "x": 0,
+        "y": 0
+      },
+      "goal": {
+        "x": 4,
+        "y": 4
+      },
+      "objects": {
+        "obstacles": [],
+        "jerm": [
+          {
+            "x": 1,
+            "y": 0
+          }
+        ]
+      }
+    },
+    {
       "level": "1",
       "description": "Methoden in scala",
       "instruction": "Robert braucht Hilfe. Hilf ihm mit moveForward(), turnLeft(), turnRight() zum Ziel zu kommen",
       "width": 6,
       "height": 6,
-      "start" : {"x": 0, "y": 0},
-      "goal": {"x": 5, "y": 5},
+      "start": {
+        "x": 0,
+        "y": 0
+      },
+      "goal": {
+        "x": 5,
+        "y": 5
+      },
       "objects": {
         "obstacles": [
-          {"type": "stein", "coordinates": {"x": 2, "y": 3}},
-          {"type": "holz", "coordinates": {"x": 4, "y": 4}}
+          {
+            "type": "stein",
+            "coordinates": {
+              "x": 2,
+              "y": 3
+            }
+          },
+          {
+            "type": "holz",
+            "coordinates": {
+              "x": 4,
+              "y": 4
+            }
+          }
         ],
-        "jerm": [{"x": 5, "y": 3}]
+        "jerm": [
+          {
+            "x": 5,
+            "y": 3
+          }
+        ]
       }
     }
   ]
