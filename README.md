@@ -1,7 +1,6 @@
-# Hilf Robert
 
-# Coverage
-[![Coverage Status](https://coveralls.io/repos/github/muellerdom/Roobert/badge.svg?branch=main)](https://coveralls.io/github/muellerdom/Roobert?branch=main)
+
+# Hilf Robert
 
 ## Description
 Scala Projekt für Software Engineering Kurs.
@@ -24,3 +23,6 @@ zum pushen immer folgende Schritte:
 3. commiten -> git commit -m "_beschreibung des uploads_"
 4. pushen -> git push 
 
+
+#coverall markdown
+[![Coverage Status](https://coveralls.io/repos/github/muellerdom/Roobert/badge.svg?branch=main)](https://coveralls.io/github/muellerdom/Roobert?branch=main)
