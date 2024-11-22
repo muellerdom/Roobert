@@ -11,8 +11,10 @@ lazy val root = (project in file("."))
       "org.scalatest" %% "scalatest" % "3.2.19" % Test,
       "com.fasterxml.jackson.core" % "jackson-databind" % "2.13.0", // Ersetzen Sie mit der neuesten Version, falls erforderlich
       "com.fasterxml.jackson.core" % "jackson-core" % "2.13.0",
-      "com.fasterxml.jackson.core" % "jackson-annotations" % "2.13.0"
-      //"com.lihaoyi" %% "ammonite" % "3.0.0" % Test
+      "com.fasterxml.jackson.core" % "jackson-annotations" % "2.13.0",
+      "io.circe" %% "circe-core" % "0.14.10",
+      "io.circe" %% "circe-generic" % "0.14.10",
+      "io.circe" %% "circe-parser" % "0.14.10"
     )
   )
 
