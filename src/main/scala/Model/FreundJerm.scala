@@ -1,32 +1,28 @@
 package Model
 
-abstract class FreundJerm extends Objekt {
+import Util.Observable
 
+abstract class FreundJerm(val name: String) extends Observable {
 
+  // Liste der eingesammelten Objekte
+  var eingesammelteObjekte: List[FreundJerm] = List()
 
-  //falls es der richtige Gegenstand ist, kann man es einsammeln
-
-  /*
-  *
-  * */
-  var eingesammelteObjekte: List[FreundJerm] = List() // Eine Liste von eingesammelten Objekten
-
-
-  //falls es der richtige Gegenstand ist, kann man es einsammeln
-  def einsammeln(objekt: FreundJerm): Unit =
+  // Wenn es der richtige Gegenstand ist, kann man ihn einsammeln
+  def einsammeln(objekt: FreundJerm): Unit = {
     if (!eingesammelteObjekte.contains(objekt)) {
       eingesammelteObjekte = eingesammelteObjekte :+ objekt
-      println(s"$name hat das Objekt '${objekt.name}' eingesammelt.") //sollte in view
+      println(s"$name hat das Objekt '${objekt.name}' eingesammelt.") // Diese Nachricht sollte eigentlich in der View erscheinen
+
+      // Benachrichtige alle Observer, dass das Objekt eingesammelt wurde
+      notifyObservers()  // Diese Zeile sorgt dafür, dass alle registrierten Observer benachrichtigt werden
     } else {
       println(s"$name hat das Objekt '${objekt.name}' schon eingesammelt.")
     }
+  }
 
-
-  //wir erstellen ein Objekt, sei es eine Brücke, eine Süßigkeit oder ähnliches.
+  // Methode, um ein Objekt zu erstellen (z. B. eine Brücke oder Süßigkeit)
   def ObjektErstellen(): Unit
 
-  //aufs ffeld setzen
+  // Methode, um das Objekt auf das Spielfeld zu setzen
   def aufsFeldSetzen(): Unit
-
-
 }

@@ -1,8 +1,9 @@
 package Model
 
 import Controller.{Coordinate, LevelConfig}
+import Util.Observable
 
-class Spieler(var posX: Int, var posY: Int, val maxX: Int, val maxY: Int) {
+class Spieler(var posX: Int, var posY: Int, val maxX: Int, val maxY: Int) extends Observable {
 
   // Enum-like sealed trait for directions
   sealed trait Direction
@@ -32,6 +33,7 @@ class Spieler(var posX: Int, var posY: Int, val maxX: Int, val maxY: Int) {
       case Unten  => Links
       case Links  => Oben
     }
+    notifyObservers()  // Benachrichtige Observer nach Drehung
   }
 
   // Turn left method
@@ -42,6 +44,7 @@ class Spieler(var posX: Int, var posY: Int, val maxX: Int, val maxY: Int) {
       case Unten  => Rechts
       case Rechts => Oben
     }
+    notifyObservers()  // Benachrichtige Observer nach Drehung
   }
 
   // Move forward method based on direction with boundary and obstacle checks
@@ -57,6 +60,7 @@ class Spieler(var posX: Int, var posY: Int, val maxX: Int, val maxY: Int) {
       posX = newPos._1
       posY = newPos._2
       einsammeln(newPos, level)
+      notifyObservers()  // Benachrichtige Observer nach Bewegung
     }
   }
 
@@ -73,11 +77,10 @@ class Spieler(var posX: Int, var posY: Int, val maxX: Int, val maxY: Int) {
       case Some(jerm) =>
         eingesammelteJerms += jerm
         println(s"Jerm an Position (${jerm.x}, ${jerm.y}) eingesammelt.")
-
+        notifyObservers()  // Benachrichtige Observer nach dem Einsammeln
       case None => // No jerm at this position
     }
   }
-
 
   // String representation for testing
   override def toString: String = s"Model.Spieler($posX, $posY)"

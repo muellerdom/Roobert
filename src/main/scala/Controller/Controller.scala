@@ -4,7 +4,6 @@ import Util.Observable
 import io.circe._
 import io.circe.parser._
 import io.circe.generic.auto._
-
 import java.io._
 
 case class Coordinate(x: Int, y: Int)
@@ -20,6 +19,7 @@ class Controller extends Observable {
   private val levelFilePath = "src/main/resources/levels.json"
   private var currentLevel: Option[LevelConfig] = None
 
+  // Lädst die Levels aus einer JSON-Datei
   loadJsonFromFile(levelFilePath) match {
     case Right(parsedLevels) => levels = Some(parsedLevels)
     case Left(error) => println(s"Fehler beim Laden der Levels: $error")
@@ -34,48 +34,14 @@ class Controller extends Observable {
     }
   }
 
-  def validateLevels(levels: List[LevelConfig]): Either[String, List[LevelConfig]] = {
-    val invalidCoordinates = levels.flatMap { level =>
-      val goalErrors = if (level.goal.x < 0 || level.goal.x >= level.width || level.goal.y < 0 || level.goal.y >= level.height) {
-        Some(s"Goal coordinates (${level.goal.x}, ${level.goal.y}) in level ${level.level} are out of bounds")
-      } else {
-        None
-      }
-
-      val obstacleErrors = level.objects.obstacles.collect {
-        case obstacle if obstacle.coordinates.x < 0 || obstacle.coordinates.x >= level.width ||
-          obstacle.coordinates.y < 0 || obstacle.coordinates.y >= level.height =>
-          s"Obstacle '${obstacle.`type`}' at coordinates (${obstacle.coordinates.x}, ${obstacle.coordinates.y}) in level ${level.level} is out of bounds"
-      }
-
-      val jermErrors = level.objects.jerm.collect {
-        case jerm if jerm.x < 0 || jerm.x >= level.width || jerm.y < 0 || jerm.y >= level.height =>
-          s"Jerm at coordinates (${jerm.x}, ${jerm.y}) in level ${level.level} is out of bounds"
-      }
-
-      goalErrors.toList ++ obstacleErrors ++ jermErrors
-    }
-
-    if (invalidCoordinates.isEmpty) {
-      Right(levels)
-    } else {
-      Left(invalidCoordinates.mkString(", "))
-    }
-  }
-
-  def processLevels: Either[String, List[LevelConfig]] = {
-    levels match {
-      case Some(lvl) => validateLevels(lvl.levels)
-      case None => Left("Keine Leveldaten geladen.")
-    }
-  }
-
+  // Startet das Level und informiert die View
   def startLevel(level: String): Either[String, LevelConfig] = {
     levels match {
       case Some(lvl) =>
         lvl.levels.find(_.level == level) match {
           case Some(foundLevel) =>
             currentLevel = Some(foundLevel)
+            notifyObservers()  // Benachrichtige die View, dass ein neues Level gestartet wurde
             Right(foundLevel)
           case None => Left(s"Level '$level' nicht gefunden.")
         }
@@ -83,6 +49,7 @@ class Controller extends Observable {
     }
   }
 
+  // Holt alle verfügbaren Levels
   def getAvailableLevels: List[String] = {
     levels.map(_.levels.map(_.level)).getOrElse(List())
   }

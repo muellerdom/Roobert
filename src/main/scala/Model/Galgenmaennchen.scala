@@ -1,6 +1,8 @@
 package GalgenmaennchenLevel1
 
-class Galgenmaennchen(secretWord: String, maxGuesses: Int = 6) {
+import Util.Observable
+
+class Galgenmaennchen(secretWord: String, maxGuesses: Int = 6) extends Observable {
 
   // Die Buchstaben im geheimen Wort, die bereits korrekt geraten wurden
   private val guessedLetters = scala.collection.mutable.Set[Char]()
@@ -15,13 +17,18 @@ class Galgenmaennchen(secretWord: String, maxGuesses: Int = 6) {
    */
   def pruefeBuchstabeOeffentlich(buchstabe: Char): Boolean = {
     val lowerBuchstabe = buchstabe.toLower
-    if (secretWord.contains(lowerBuchstabe)) {
+    val isCorrect = if (secretWord.contains(lowerBuchstabe)) {
       guessedLetters += lowerBuchstabe
       true
     } else {
       incorrectGuesses += 1
       false
     }
+
+    // Benachrichtige alle Observer nach der Überprüfung
+    notifyObservers()
+
+    isCorrect
   }
 
   /**
@@ -29,14 +36,22 @@ class Galgenmaennchen(secretWord: String, maxGuesses: Int = 6) {
    * @return true, wenn alle Buchstaben des geheimen Wortes korrekt geraten wurden.
    */
   def isGameWon: Boolean = {
-    secretWord.toLowerCase.toSet.subsetOf(guessedLetters)
+    val won = secretWord.toLowerCase.toSet.subsetOf(guessedLetters)
+    // Benachrichtige alle Observer, wenn das Spiel gewonnen wurde
+    if (won) notifyObservers()
+    won
   }
 
   /**
    * Überprüft, ob das Spiel verloren wurde.
    * @return true, wenn die Anzahl der Fehlversuche das erlaubte Maximum erreicht oder überschritten hat.
    */
-  def isGameLost: Boolean = incorrectGuesses >= maxGuesses
+  def isGameLost: Boolean = {
+    val lost = incorrectGuesses >= maxGuesses
+    // Benachrichtige alle Observer, wenn das Spiel verloren wurde
+    if (lost) notifyObservers()
+    lost
+  }
 
   /**
    * Gibt das aktuelle Wort mit Platzhaltern für ungeratene Buchstaben zurück.

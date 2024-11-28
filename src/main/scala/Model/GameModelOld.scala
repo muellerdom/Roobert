@@ -1,6 +1,5 @@
 package Model
 
-
 import Util.Observable
 
 class GameModel(size: Int) extends Observable {
@@ -14,14 +13,17 @@ class GameModel(size: Int) extends Observable {
   def initializeGame(): Unit = {
     placeFigure(figureX, figureY, 'F')
     placeFigure(targetX, targetY, 'Z')
-    notifyObservers
+    notifyObservers()  // Benachrichtige Observer nach der Initialisierung des Spiels
   }
 
   def placeFigure(x: Int, y: Int, symbol: Char): Boolean = {
     if (isValidPosition(x, y)) {
       board(x)(y) = symbol
+      notifyObservers()  // Benachrichtige Observer, wenn eine Figur gesetzt wird
       true
-    } else false
+    } else {
+      false
+    }
   }
 
   def move(direction: String): Boolean = {
@@ -38,9 +40,11 @@ class GameModel(size: Int) extends Observable {
       figureX = newX
       figureY = newY
       board(figureX)(figureY) = 'F'
-      notifyObservers
+      notifyObservers()  // Benachrichtige Observer nach jeder gültigen Bewegung
       true
-    } else false
+    } else {
+      false
+    }
   }
 
   def getBoard: Array[Array[Char]] = board

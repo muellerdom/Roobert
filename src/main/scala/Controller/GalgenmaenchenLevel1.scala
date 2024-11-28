@@ -1,5 +1,6 @@
 package Controller
 
+import Util.{Observable, Observer}  // Sicherstellen, dass Observer und Observable importiert sind
 import javax.swing._
 import java.awt._
 import java.io.File
@@ -7,22 +8,27 @@ import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import scala.util.{Failure, Success, Try}
 import View.GUILevel1
 
-class GalgenmaennchenLevel1 {
+class GalgenmaennchenLevel1 extends Observable {
 
+  // Setzt Layout für das Hauptpanel
   GalgenmaennchenLevel1.mainPanel.setLayout(GalgenmaennchenLevel1.cardLayout)
 
   // Konstruktor: Lädt die Konfiguration aus der JSON-Datei
   loadConfiguration("Config.JSON")
 
-  /**
-   * Gibt das Hauptpanel (`mainPanel`) zurück.
-   */
   def getMainPanel: JPanel = GalgenmaennchenLevel1.mainPanel
 
-  /**
-   * Lädt die Konfigurationsdaten für das Spiel aus einer JSON-Datei.
-   * Falls das aktuelle Level "Level1" ist, wird dieses geladen.
-   */
+  // Methode, um Observer hinzuzufügen
+  override def addObserver(observer: Observer): Unit = {
+    super.addObserver(observer) // Observer über Observable hinzufügen
+  }
+
+  // Methode, um alle Observer zu benachrichtigen
+  private def notifyObservers(): Unit = {
+    super.notifyObservers() // Notify Observer im Observable
+  }
+
+  // Lädt die Konfiguration und setzt das Level
   private def loadConfiguration(configFilePath: String): Unit = {
     val mapper = new ObjectMapper()
     val configFile = new File(configFilePath)
@@ -36,30 +42,33 @@ class GalgenmaennchenLevel1 {
       case Success(config) =>
         val currentLevel = config.get("currentLevel").asText()
 
+        // Überprüfe, ob Level1 geladen werden muss
         if (currentLevel == "Level1") {
           val level1Config = config.get("levels").get("Level1")
           val secretWord = level1Config.get("secretWord").asText()
           val maxGuesses = level1Config.get("maxGuesses").asInt()
 
-          // Das Panel für Level 1 wird erstellt und dem `mainPanel` hinzugefügt
+          // Level1-Panel hinzufügen
           val level1Panel = new GUILevel1(secretWord, maxGuesses)
           GalgenmaennchenLevel1.mainPanel.add(level1Panel.getPanel, "Level1")
+
+          // Benachrichtige alle Observer (z. B. View)
+          notifyObservers()
           println("Level1-Panel hinzugefügt")
         }
 
       case Failure(e) =>
-        e.printStackTrace()
+        e.printStackTrace()  // Fehlerbehandlung bei JSON-Leseproblemen
     }
   }
 }
 
 object GalgenmaennchenLevel1 {
+  // Das Hauptpanel und Layout für die verschiedenen Levels
   val mainPanel: JPanel = new JPanel()
   val cardLayout: CardLayout = new CardLayout()
 
-  /**
-   * Wechselt das aktuelle Panel im `CardLayout` zu Level 1 und aktualisiert das Fenster.
-   */
+  // Wechsel zu Level1 im Frame
   def startLevel1(frame: JFrame): Unit = {
     println("Wechsel zu Level 1")
     cardLayout.show(mainPanel, "Level1")

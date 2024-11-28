@@ -5,44 +5,53 @@ import java.awt._
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import Controller.GalgenmaennchenLevel1
+import Util.Observer
 
-class MainFrame {
+class MainFrame extends Observer {
 
-  // Attribute
   private val frame = new JFrame("Galgenmännchen - Hauptmenü")
   private val sideMenu = new JPanel()
   private val mainPanel = new JPanel(new BorderLayout())
   private val level1Button = new JButton("Level 1")
-  private val gameController = new GalgenmaennchenLevel1() // GameController-Referenz
+  private val level2Button = new JButton("Level 2") // Hier könnte man für weitere Level Buttons hinzufügen
+  private val gameController = new GalgenmaennchenLevel1()
 
-  /**
-   * Konstruktor: Initialisiert das Hauptfenster und alle GUI-Komponenten.
-   */
   init()
 
+  // Diese Methode wird aufgerufen, wenn der Controller oder das Modell eine Änderung vornimmt
+  override def update(): Unit = {
+    // Hier aktualisieren wir die GUI-Komponenten, wenn der Controller eine Änderung vornimmt
+    println("Das Spiel hat sich geändert. Das Hauptfenster wird aktualisiert.")
+
+    // Beispiel für das Aktivieren/Deaktivieren von Buttons basierend auf Spielstatus
+    if (gameController.isLevelCompleted) {
+      level1Button.setEnabled(true)
+      level2Button.setEnabled(true)
+      println("Level abgeschlossen! Weiter zu Level 2.")
+    } else {
+      level1Button.setEnabled(false)
+      println("Level 1 läuft noch.")
+    }
+
+    // Eventuelle Updates für andere GUI-Elemente
+    // Wenn das Modell eine neue Nachricht schickt, könnte hier auch ein Label oder Textfeld aktualisiert werden.
+  }
+
   private def init(): Unit = {
-    // Hauptfenster konfigurieren
-    frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE) // Verwende WindowConstants.EXIT_ON_CLOSE
+    frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
     frame.setSize(600, 400)
     frame.getContentPane.setBackground(new Color(0x6CB2F3))
 
-    // Sidemenü konfigurieren
     sideMenu.setLayout(new BoxLayout(sideMenu, BoxLayout.Y_AXIS))
     sideMenu.setBackground(new Color(108, 178, 243))
     sideMenu.setPreferredSize(new Dimension((frame.getWidth * 0.2).toInt, frame.getHeight))
-    sideMenu.setLayout(new GridLayout(0, 1))
-    sideMenu.setVisible(false)
 
-    // Menüeinträge hinzufügen
-    val level2Button = new JButton("Level 2") // Platzhalter für Level 2
     sideMenu.add(level1Button)
     sideMenu.add(level2Button)
 
-    // Hauptpanel konfigurieren
     mainPanel.setBackground(new Color(0xFFFFFF))
     mainPanel.add(gameController.getMainPanel, BorderLayout.CENTER)
 
-    // Button zum Ein-/Ausblenden des Sidemenüs
     val toggleButton = new JButton("Auf zum nächsten Level!")
     toggleButton.addActionListener(_ => {
       sideMenu.setVisible(!sideMenu.isVisible)
@@ -51,25 +60,23 @@ class MainFrame {
     })
     mainPanel.add(toggleButton, BorderLayout.SOUTH)
 
-    // ActionListener für den Level 1 Button
     level1Button.addActionListener(_ => {
       GalgenmaennchenLevel1.startLevel1(frame)
+      // Nach Level 1 könnte der Button für Level 2 aktiviert werden
+      level2Button.setEnabled(true)
     })
 
-    // Panels zum Hauptfenster hinzufügen
-    frame.getContentPane.add(sideMenu, BorderLayout.WEST) // Sidemenü links
-    frame.getContentPane.add(mainPanel, BorderLayout.CENTER) // Hauptpanel in der Mitte
+    // Initiale Deaktivierung von Level 2 Button bis Level 1 abgeschlossen ist
+    level2Button.setEnabled(false)
 
-    // Fenster sichtbar machen
+    frame.getContentPane.add(sideMenu, BorderLayout.WEST)
+    frame.getContentPane.add(mainPanel, BorderLayout.CENTER)
     frame.setVisible(true)
   }
 }
 
 object MainFrame {
-  /**
-   * Main-Methode zum Starten der Anwendung.
-   */
   def main(args: Array[String]): Unit = {
-    new MainFrame() // Erstelle eine Instanz des Hauptfensters
+    new MainFrame()
   }
 }

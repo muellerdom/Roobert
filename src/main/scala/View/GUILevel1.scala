@@ -5,44 +5,42 @@ import javax.swing._
 import java.awt._
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
+import Util.Observer
 
-class GUILevel1(secretWord: String, maxGuesses: Int) {
+class GUILevel1(secretWord: String, maxGuesses: Int) extends Observer {
 
-  // Attribute
-  private val galgenmaennchen = new Galgenmaennchen(secretWord, maxGuesses) // Instanziiere Galgenmaennchen
-  private val panel = new JPanel(new BorderLayout()) // Hauptpanel
-  private val inputField = new JTextField(5) // Eingabefeld für Buchstaben
-  private val checkButton = new JButton("Raten") // Button zum Überprüfen
-  private val resultLabel = new JLabel("Bitte raten Sie den Buchstaben.") // Label für Ergebnisse
+  private val galgenmaennchen = new Galgenmaennchen(secretWord, maxGuesses)
+  private val panel = new JPanel(new BorderLayout())
+  private val inputField = new JTextField(5)
+  private val checkButton = new JButton("Raten")
+  private val resultLabel = new JLabel("Bitte raten Sie den Buchstaben.")
 
-  // Konstruktorlogik
   init()
 
+  // Diese Methode wird aufgerufen, wenn das Modell oder der Controller aktualisiert wird
+  override def update(): Unit = {
+    // Beispielweise den Ergebnis-Label aktualisieren
+    resultLabel.setText("Spielstatus wurde aktualisiert.")
+  }
+
   private def init(): Unit = {
-    // Hauptpanel konfigurieren
     panel.setPreferredSize(new Dimension(400, 300))
 
-    // Panel für die Eingabe
     val inputPanel = new JPanel()
     inputPanel.add(new JLabel("Geben Sie einen Buchstaben ein:"))
     inputPanel.add(inputField)
     inputPanel.add(checkButton)
 
-    // Panel für das Ergebnis
     val resultPanel = new JPanel()
     resultPanel.add(resultLabel)
 
-    // ActionListener für den Button
     checkButton.addActionListener(_ => {
       val inputBuchstabe = inputField.getText
 
       if (inputBuchstabe.length == 1) {
         val buchstabe = inputBuchstabe.charAt(0)
-
-        // Buchstaben prüfen
         val ergebnis = galgenmaennchen.pruefeBuchstabeOeffentlich(buchstabe)
 
-        // Ergebnis anzeigen
         if (ergebnis) {
           resultLabel.setText(s"Der Buchstabe '$buchstabe' ist korrekt!")
         } else {
@@ -52,19 +50,12 @@ class GUILevel1(secretWord: String, maxGuesses: Int) {
         resultLabel.setText("Bitte geben Sie genau einen Buchstaben ein!")
       }
 
-      // Eingabefeld leeren
       inputField.setText("")
     })
 
-    // Panels zum Hauptpanel hinzufügen
     panel.add(inputPanel, BorderLayout.NORTH)
     panel.add(resultPanel, BorderLayout.CENTER)
   }
 
-  /**
-   * Gibt das Hauptpanel zurück.
-   *
-   * @return JPanel zur Einbindung in andere GUI-Komponenten.
-   */
   def getPanel: JPanel = panel
 }

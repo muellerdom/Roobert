@@ -16,7 +16,7 @@ class Spielfeld(val width: Int, val height: Int) extends Observable {
   def hinsetze(x: Int, y: Int, value: Int): Unit = {
     if (isValid(x, y)) {
       grid(x)(y) = value
-      notifyObservers
+      notifyObservers()  // Benachrichtige Observer, dass das Grid geändert wurde
     } else {
       throw new IndexOutOfBoundsException("Ungültige Position im Grid.")
     }
@@ -31,7 +31,7 @@ class Spielfeld(val width: Int, val height: Int) extends Observable {
     }
   }
 
-  // Methode, um das Grid auszugeben
+  // Methode, um das Grid auszugeben (für Debugging)
   def printGrid(): Unit = {
     for (row <- grid) {
       println(row.mkString(" "))
@@ -46,6 +46,6 @@ class Spielfeld(val width: Int, val height: Int) extends Observable {
   // Beispielhafter Aufruf von notifyObservers(), um Beobachter zu benachrichtigen
   def updateGrid(): Unit = {
     // Änderungen am Grid vornehmen...
-    notifyObservers
+    notifyObservers()  // Benachrichtige Observer über das Update
   }
 }
