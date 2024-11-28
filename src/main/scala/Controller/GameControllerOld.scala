@@ -5,7 +5,7 @@ import View.GameView
 import scala.io.StdIn
 import Util.Observable
 
-class GameController(model: GameModel, view: GameView) extends Observable {
+class GameController private(model: GameModel, view: GameView) extends Observable {
 
   // Startet das Spiel
   def startGame(): Unit = {
@@ -37,5 +37,18 @@ class GameController(model: GameModel, view: GameView) extends Observable {
   // Methode, um die Ansicht (View) zu aktualisieren
   private def updateView(): Unit = {
     view.displayBoard(model.getBoard)  // Zeige das aktualisierte Spielfeld
+  }
+}
+
+object GameController {
+  // Singleton-Instanz
+  private var instance: Option[GameController] = None
+
+  // Die Methode, um die Instanz zu holen (wird nur eine Instanz zugelassen)
+  def getInstance(model: GameModel, view: GameView): GameController = {
+    if (instance.isEmpty) {
+      instance = Some(new GameController(model, view))
+    }
+    instance.get
   }
 }

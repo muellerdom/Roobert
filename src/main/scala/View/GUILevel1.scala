@@ -7,15 +7,18 @@ import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import Util.Observer
 
-class GUILevel1(secretWord: String, maxGuesses: Int) extends Observer {
+object GUILevel1 extends Observer {
 
-  private val galgenmaennchen = new Galgenmaennchen(secretWord, maxGuesses)
+  private var galgenmaennchen: Galgenmaennchen = _
   private val panel = new JPanel(new BorderLayout())
   private val inputField = new JTextField(5)
   private val checkButton = new JButton("Raten")
   private val resultLabel = new JLabel("Bitte raten Sie den Buchstaben.")
 
-  init()
+  def initialize(secretWord: String, maxGuesses: Int): Unit = {
+    galgenmaennchen = new Galgenmaennchen(secretWord, maxGuesses)
+    init()
+  }
 
   // Diese Methode wird aufgerufen, wenn das Modell oder der Controller aktualisiert wird
   override def update(): Unit = {

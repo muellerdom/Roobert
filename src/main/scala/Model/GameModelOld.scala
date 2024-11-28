@@ -2,7 +2,7 @@ package Model
 
 import Util.Observable
 
-class GameModel(size: Int) extends Observable {
+class GameModel private(val size: Int) extends Observable {
 
   private val board: Array[Array[Char]] = Array.fill(size, size)('-')
   private var figureX: Int = 0
@@ -52,4 +52,17 @@ class GameModel(size: Int) extends Observable {
   def isOnTarget: Boolean = figureX == targetX && figureY == targetY
 
   private def isValidPosition(x: Int, y: Int): Boolean = x >= 0 && x < size && y >= 0 && y < size
+
+  // Die Singleton-Instanz
+  private object Singleton {
+    var instance: Option[GameModel] = None
+  }
+
+  // Die Singleton-Instanz erhalten
+  def getInstance(size: Int): GameModel = {
+    if (Singleton.instance.isEmpty) {
+      Singleton.instance = Some(new GameModel(size))
+    }
+    Singleton.instance.get
+  }
 }

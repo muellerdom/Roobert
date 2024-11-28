@@ -1,6 +1,6 @@
 package Controller
 
-import Util.{Observable, Observer}  // Sicherstellen, dass Observer und Observable importiert sind
+import Util.{Observable, Observer}
 import javax.swing._
 import java.awt._
 import java.io.File
@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import scala.util.{Failure, Success, Try}
 import View.GUILevel1
 
-class GalgenmaennchenLevel1 extends Observable {
+class GalgenmaennchenLevel1 private() extends Observable {
 
   // Setzt Layout für das Hauptpanel
   GalgenmaennchenLevel1.mainPanel.setLayout(GalgenmaennchenLevel1.cardLayout)
@@ -67,6 +67,17 @@ object GalgenmaennchenLevel1 {
   // Das Hauptpanel und Layout für die verschiedenen Levels
   val mainPanel: JPanel = new JPanel()
   val cardLayout: CardLayout = new CardLayout()
+
+  // Singleton-Instanz
+  private var instance: Option[GalgenmaennchenLevel1] = None
+
+  // Die Methode, um die Instanz zu holen (wird nur eine Instanz zugelassen)
+  def getInstance: GalgenmaennchenLevel1 = {
+    if (instance.isEmpty) {
+      instance = Some(new GalgenmaennchenLevel1())
+    }
+    instance.get
+  }
 
   // Wechsel zu Level1 im Frame
   def startLevel1(frame: JFrame): Unit = {

@@ -26,3 +26,26 @@ abstract class FreundJerm(val name: String) extends Observable {
   // Methode, um das Objekt auf das Spielfeld zu setzen
   def aufsFeldSetzen(): Unit
 }
+
+object FreundJerm {
+  // Singleton-Instanz für die FreundJerm-Klasse (es wird keine Instanz der abstrakten Klasse selbst erstellt, sondern von den abgeleiteten Klassen)
+  private var instance: Option[FreundJerm] = None
+
+  // Die Methode, um die Instanz zu holen (wird nur eine Instanz zugelassen)
+  def getInstance: FreundJerm = {
+    if (instance.isEmpty) {
+      // Hier kann man eine Instanz der abgeleiteten Klasse erstellen,
+      // z.B. new FreundJermImpl("Name") wenn eine konkrete Implementierung existiert
+      // instance = Some(new FreundJermImpl("Name"))
+      throw new UnsupportedOperationException("Abstract class cannot be instantiated directly. Please use a subclass.")
+    }
+    instance.get
+  }
+
+  // Möglichkeit, die Instanz zu setzen (nützlich für die konkrete Implementierung)
+  def setInstance(freund: FreundJerm): Unit = {
+    if (instance.isEmpty) {
+      instance = Some(freund)
+    }
+  }
+}

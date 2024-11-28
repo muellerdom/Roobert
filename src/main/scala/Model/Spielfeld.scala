@@ -1,15 +1,18 @@
 package Model
+
 import Util.Observable
 
-class Spielfeld(val width: Int, val height: Int) extends Observable {
-  private val grid: Array[Array[Int]] = Array.ofDim[Int](width, height)
+object Spielfeld extends Observable {
+
+  private var grid: Array[Array[Int]] = Array.ofDim[Int](10, 10)  // Standardgröße, z.B. 10x10
 
   // Alternativkonstruktor
-  def this(array: Array[Array[Int]]) = {
-    this(array.length, if (array.isEmpty) 0 else array(0).length)
+  def initialize(array: Array[Array[Int]]): Unit = {
+    grid = Array.ofDim[Int](array.length, if (array.isEmpty) 0 else array(0).length)
     for (i <- array.indices; j <- array(i).indices) {
       grid(i)(j) = array(i)(j)
     }
+    notifyObservers()  // Benachrichtige Observer nach der Initialisierung
   }
 
   // Methode, um einen Wert zu setzen
@@ -40,12 +43,18 @@ class Spielfeld(val width: Int, val height: Int) extends Observable {
 
   // Methode, um die Gültigkeit der Position zu überprüfen
   private def isValid(x: Int, y: Int): Boolean = {
-    x >= 0 && x < width && y >= 0 && y < height
+    x >= 0 && x < grid.length && y >= 0 && y < grid(0).length
   }
 
   // Beispielhafter Aufruf von notifyObservers(), um Beobachter zu benachrichtigen
   def updateGrid(): Unit = {
     // Änderungen am Grid vornehmen...
     notifyObservers()  // Benachrichtige Observer über das Update
+  }
+
+  // Methode, um das Spielfeld zurückzusetzen (optional)
+  def reset(): Unit = {
+    grid = Array.ofDim[Int](10, 10)  // Reset auf Standardgröße
+    notifyObservers()  // Benachrichtige Observer nach Reset
   }
 }

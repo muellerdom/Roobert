@@ -3,7 +3,13 @@ package Model
 import Controller.{Coordinate, LevelConfig}
 import Util.Observable
 
-class Spieler(var posX: Int, var posY: Int, val maxX: Int, val maxY: Int) extends Observable {
+object Spieler extends Observable {
+
+  // Die Position des Spielers
+  var posX: Int = 0
+  var posY: Int = 0
+  val maxX: Int = 10  // Beispiel-Maximalwerte, kannst du anpassen
+  val maxY: Int = 10
 
   // Enum-like sealed trait for directions
   sealed trait Direction

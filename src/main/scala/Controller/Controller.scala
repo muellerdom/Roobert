@@ -13,7 +13,7 @@ case class Objects(obstacles: List[Obstacle], jerm: List[Coordinate])
 case class LevelConfig(level: String, description: String, instruction: String, width: Int, height: Int, start: Coordinate, goal: Goal, objects: Objects)
 case class Levels(levels: List[LevelConfig])
 
-class Controller extends Observable {
+class Controller private() extends Observable {
 
   private var levels: Option[Levels] = None
   private val levelFilePath = "src/main/resources/levels.json"
@@ -55,4 +55,17 @@ class Controller extends Observable {
   }
 
   def getCurrentLevelConfig: Option[LevelConfig] = currentLevel
+}
+
+object Controller {
+  // Die Singleton-Instanz
+  private var instance: Option[Controller] = None
+
+  // Die Methode, um die Instanz zu holen (wird nur eine Instanz zugelassen)
+  def getInstance: Controller = {
+    if (instance.isEmpty) {
+      instance = Some(new Controller())
+    }
+    instance.get
+  }
 }

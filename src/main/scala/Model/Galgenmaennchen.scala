@@ -2,13 +2,18 @@ package GalgenmaennchenLevel1
 
 import Util.Observable
 
-class Galgenmaennchen(secretWord: String, maxGuesses: Int = 6) extends Observable {
+class Galgenmaennchen private(secretWord: String, maxGuesses: Int = 6) extends Observable {
 
   // Die Buchstaben im geheimen Wort, die bereits korrekt geraten wurden
   private val guessedLetters = scala.collection.mutable.Set[Char]()
 
   // Zählt die Anzahl der falschen Versuche
   private var incorrectGuesses = 0
+
+  // Die Singleton-Instanz
+  private object Singleton {
+    var instance: Option[Galgenmaennchen] = None
+  }
 
   /**
    * Überprüft, ob ein Buchstabe im geheimen Wort enthalten ist, und aktualisiert den Spielstatus.
@@ -68,4 +73,12 @@ class Galgenmaennchen(secretWord: String, maxGuesses: Int = 6) extends Observabl
    * @return Die Anzahl der verbleibenden Fehlversuche.
    */
   def guessesLeft: Int = maxGuesses - incorrectGuesses
+
+  // Die Singleton-Instanz erhalten
+  def getInstance(secretWord: String, maxGuesses: Int = 6): Galgenmaennchen = {
+    if (Singleton.instance.isEmpty) {
+      Singleton.instance = Some(new Galgenmaennchen(secretWord, maxGuesses))
+    }
+    Singleton.instance.get
+  }
 }

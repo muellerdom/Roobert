@@ -8,9 +8,7 @@ abstract class TaschenInhalt(val name: String, val groesse: Double, val beschrei
  var eingesammelteObjekte: List[TaschenInhalt] = List()
 
  // Falls es der richtige Gegenstand ist, kann man es einsammeln
- // Implementierung der Methode aus dem Interface
  def einsammeln(objekt: Objekt): Unit = {
-
   objekt match {
    case obj: TaschenInhalt =>
     if (!eingesammelteObjekte.contains(obj)) {

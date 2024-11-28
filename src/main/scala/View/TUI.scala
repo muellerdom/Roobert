@@ -4,11 +4,16 @@ import Controller.{Controller, Coordinate, LevelConfig}
 import Model.Spieler
 import Util.Observer
 
-class TUI(controller: Controller) extends Observer {
+object TUI extends Observer {
 
-  controller.addObserver(this)
   var player: Option[Spieler] = None
   var remainingJerms: List[Coordinate] = List()
+  private var controller: Controller = _
+
+  def initialize(controller: Controller): Unit = {
+    this.controller = controller
+    controller.addObserver(this)
+  }
 
   def start(): Unit = {
     val availableLevels = controller.getAvailableLevels
@@ -17,6 +22,7 @@ class TUI(controller: Controller) extends Observer {
     if (availableLevels.nonEmpty) {
       println("Verfügbare Levels:")
       availableLevels.foreach(level => println(s"- $level"))
+
       println("Bitte gib ein Level an, mit dem du starten möchtest:")
       waitForLevelInput()
     } else {
@@ -59,20 +65,26 @@ class TUI(controller: Controller) extends Observer {
   def displayGrid(level: LevelConfig): Unit = {
     val grid = Array.fill(level.height, level.width)(' ')
 
+    // Set the goal
     grid(level.goal.y)(level.goal.x) = 'G'
 
+    // Set the obstacles
     level.objects.obstacles.foreach { obstacle =>
       grid(obstacle.coordinates.y)(obstacle.coordinates.x) = 'X'
     }
 
+    // Set the jerms
     remainingJerms.foreach { jerm =>
       grid(jerm.y)(jerm.x) = 'J'
     }
 
-    player.foreach { p =>
-      grid(p.posY)(p.posX) = 'P'
+    // Set the player
+    player match {
+      case Some(p) => grid(p.posY)(p.posX) = 'P'
+      case None => // No player initialized
     }
 
+    // Print the grid
     println("Spielfeld:")
     println("+" + ("---+" * level.width))
     for (row <- grid) {
@@ -85,7 +97,8 @@ class TUI(controller: Controller) extends Observer {
     val scanner = new java.util.Scanner(System.in)
     var action: String = ""
 
-    println("Gib die Methoden ein um Robert zu bewegen (moveForward(), turnRight(), turnLeft(), q zum Beenden):")
+    println("Gib die Methoden ein um Robert zu bewegen " +
+      "(moveForward(), turnRight(), turnLeft(), q zum Beenden):")
 
     do {
       action = scanner.nextLine().trim
@@ -94,7 +107,7 @@ class TUI(controller: Controller) extends Observer {
         if (isLevelComplete(level)) {
           println("Herzlichen Glückwunsch! Robert ist angekommen!")
           displayGrid(level)
-          start()  // Nach Levelabschluss starte erneut das Spiel
+          start()
         } else {
           displayGrid(level)
         }
@@ -121,13 +134,8 @@ class TUI(controller: Controller) extends Observer {
     }
   }
 
-  // Implementierung der update() Methode, die von Observer aufgerufen wird
+  // Observer update implementation
   override def update(): Unit = {
-    println("Aktualisierung erhalten!")
-    player.foreach { p =>
-      println(s"Spieler Position: (${p.posX}, ${p.posY})")
-      println(s"Verbleibende Jerms: ${remainingJerms.size}")
-    }
-    // Hier könnte auch das Spielfeld oder andere Informationen aktualisiert werden.
+    println("Aktualisierung vom Controller erhalten.")
   }
 }
