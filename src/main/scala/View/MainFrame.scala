@@ -2,10 +2,35 @@ package View
 
 import javax.swing._
 import java.awt._
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import Controller.GalgenmaennchenLevel1
 import Util.Observer
+
+// Abstrakte Factory zur Erstellung der Haupt-GUI für Level
+trait GUIFactory {
+  def createMainPanel(frame: JFrame): JPanel
+}
+
+// Konkrete Factory für Level 1
+class Level1GUIFactory extends GUIFactory {
+  override def createMainPanel(frame: JFrame): JPanel = {
+    val gameController = new GalgenmaennchenLevel1()
+    val mainPanel = new JPanel(new BorderLayout())
+    mainPanel.setBackground(new Color(0xFFFFFF))
+    mainPanel.add(gameController.getMainPanel, BorderLayout.CENTER)
+    mainPanel
+  }
+}
+
+// Konkrete Factory für Level 2 (Wenn gewünscht, für Level 2 spezifische GUI hinzufügen)
+class Level2GUIFactory extends GUIFactory {
+  override def createMainPanel(frame: JFrame): JPanel = {
+    // Dies ist nur ein Beispiel, wie du Level 2 weiter implementieren könntest.
+    val mainPanel = new JPanel(new BorderLayout())
+    mainPanel.setBackground(new Color(0xFFFFFF))
+    // Füge hier das Level 2 spezifische Panel hinzu.
+    mainPanel
+  }
+}
 
 class MainFrame extends Observer {
 
@@ -13,17 +38,16 @@ class MainFrame extends Observer {
   private val sideMenu = new JPanel()
   private val mainPanel = new JPanel(new BorderLayout())
   private val level1Button = new JButton("Level 1")
-  private val level2Button = new JButton("Level 2") // Hier könnte man für weitere Level Buttons hinzufügen
+  private val level2Button = new JButton("Level 2")
   private val gameController = new GalgenmaennchenLevel1()
+
+  private var currentFactory: GUIFactory = new Level1GUIFactory()
 
   init()
 
   // Diese Methode wird aufgerufen, wenn der Controller oder das Modell eine Änderung vornimmt
   override def update(): Unit = {
-    // Hier aktualisieren wir die GUI-Komponenten, wenn der Controller eine Änderung vornimmt
     println("Das Spiel hat sich geändert. Das Hauptfenster wird aktualisiert.")
-
-    // Beispiel für das Aktivieren/Deaktivieren von Buttons basierend auf Spielstatus
     if (gameController.isLevelCompleted) {
       level1Button.setEnabled(true)
       level2Button.setEnabled(true)
@@ -32,9 +56,6 @@ class MainFrame extends Observer {
       level1Button.setEnabled(false)
       println("Level 1 läuft noch.")
     }
-
-    // Eventuelle Updates für andere GUI-Elemente
-    // Wenn das Modell eine neue Nachricht schickt, könnte hier auch ein Label oder Textfeld aktualisiert werden.
   }
 
   private def init(): Unit = {
@@ -50,7 +71,7 @@ class MainFrame extends Observer {
     sideMenu.add(level2Button)
 
     mainPanel.setBackground(new Color(0xFFFFFF))
-    mainPanel.add(gameController.getMainPanel, BorderLayout.CENTER)
+    updateMainPanel()
 
     val toggleButton = new JButton("Auf zum nächsten Level!")
     toggleButton.addActionListener(_ => {
@@ -62,7 +83,6 @@ class MainFrame extends Observer {
 
     level1Button.addActionListener(_ => {
       GalgenmaennchenLevel1.startLevel1(frame)
-      // Nach Level 1 könnte der Button für Level 2 aktiviert werden
       level2Button.setEnabled(true)
     })
 
@@ -72,6 +92,21 @@ class MainFrame extends Observer {
     frame.getContentPane.add(sideMenu, BorderLayout.WEST)
     frame.getContentPane.add(mainPanel, BorderLayout.CENTER)
     frame.setVisible(true)
+  }
+
+  // Methode zum Aktualisieren des MainPanels mit der richtigen Factory
+  private def updateMainPanel(): Unit = {
+    val newMainPanel = currentFactory.createMainPanel(frame)
+    mainPanel.removeAll()
+    mainPanel.add(newMainPanel, BorderLayout.CENTER)
+    frame.revalidate()
+    frame.repaint()
+  }
+
+  // Eventuell möchtest du später mit einem Level-Wechsel auch die Factory wechseln
+  private def changeToLevel2(): Unit = {
+    currentFactory = new Level2GUIFactory()
+    updateMainPanel()
   }
 }
 

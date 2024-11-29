@@ -7,7 +7,14 @@ import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import Util.Observer
 
-object GUILevel1 extends Observer {
+// Abstrakte GUI-Komponente, die durch eine Factory erstellt werden kann
+abstract class GameGUI extends Observer {
+  def update(): Unit
+  def getPanel: JPanel
+}
+
+// Konkrete Implementation der GUI für Level 1
+class GUILevel1 extends GameGUI {
 
   private var galgenmaennchen: Galgenmaennchen = _
   private val panel = new JPanel(new BorderLayout())
@@ -60,5 +67,21 @@ object GUILevel1 extends Observer {
     panel.add(resultPanel, BorderLayout.CENTER)
   }
 
-  def getPanel: JPanel = panel
+  override def getPanel: JPanel = panel
+}
+
+// Factory für die Erstellung der GUI
+object GameGUIFactory {
+
+  // Methode, um eine passende GUI zu erstellen
+  def createGUI(levelType: String, secretWord: String, maxGuesses: Int): GameGUI = {
+    levelType match {
+      case "level1" =>
+        val guiLevel1 = new GUILevel1()
+        guiLevel1.initialize(secretWord, maxGuesses)
+        guiLevel1
+      // Hier könnten noch weitere Level-GUIs hinzugefügt werden (z.B. Level2)
+      case _ => throw new IllegalArgumentException(s"Unbekannter Level-Typ: $levelType")
+    }
+  }
 }

@@ -8,13 +8,17 @@ import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import scala.util.{Failure, Success, Try}
 import View.GUILevel1
 
-class GalgenmaennchenLevel1 private() extends Observable {
+/**
+ * GalgenmaennchenLevel1 Controller
+ * Verwaltet Level 1 des Spiels.
+ */
+class GalgenmaennchenLevel1 private(configFilePath: String) extends Observable {
 
   // Setzt Layout für das Hauptpanel
   GalgenmaennchenLevel1.mainPanel.setLayout(GalgenmaennchenLevel1.cardLayout)
 
   // Konstruktor: Lädt die Konfiguration aus der JSON-Datei
-  loadConfiguration("Config.JSON")
+  loadConfiguration(configFilePath)
 
   def getMainPanel: JPanel = GalgenmaennchenLevel1.mainPanel
 
@@ -63,6 +67,24 @@ class GalgenmaennchenLevel1 private() extends Observable {
   }
 }
 
+/**
+ * Factory für die Erstellung von GalgenmaennchenLevel1-Objekten.
+ */
+object GalgenmaennchenLevel1Factory {
+
+  /**
+   * Factory-Methode zur Erstellung eines GalgenmaennchenLevel1 Controllers.
+   * @param configFilePath Der Pfad zur Konfigurationsdatei.
+   * @return Eine Instanz von GalgenmaennchenLevel1.
+   */
+  def createController(configFilePath: String): GalgenmaennchenLevel1 = {
+    new GalgenmaennchenLevel1(configFilePath)
+  }
+}
+
+/**
+ * Singleton-Objekt, um eine einzige Instanz von GalgenmaennchenLevel1 zu verwalten.
+ */
 object GalgenmaennchenLevel1 {
   // Das Hauptpanel und Layout für die verschiedenen Levels
   val mainPanel: JPanel = new JPanel()
@@ -71,10 +93,15 @@ object GalgenmaennchenLevel1 {
   // Singleton-Instanz
   private var instance: Option[GalgenmaennchenLevel1] = None
 
-  // Die Methode, um die Instanz zu holen (wird nur eine Instanz zugelassen)
-  def getInstance: GalgenmaennchenLevel1 = {
+  /**
+   * Liefert die Singleton-Instanz von GalgenmaennchenLevel1.
+   * Wenn sie noch nicht existiert, wird sie mit einer Standard-Konfigurationsdatei erzeugt.
+   * @param configFilePath Der Pfad zur Konfigurationsdatei.
+   * @return Die Singleton-Instanz.
+   */
+  def getInstance(configFilePath: String): GalgenmaennchenLevel1 = {
     if (instance.isEmpty) {
-      instance = Some(new GalgenmaennchenLevel1())
+      instance = Some(GalgenmaennchenLevel1Factory.createController(configFilePath))
     }
     instance.get
   }

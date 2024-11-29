@@ -1,7 +1,11 @@
-package GalgenmaennchenLevel1
+package Galgenmaennchen
 
 import Util.Observable
 
+/**
+ * Galgenmaennchen Game Model
+ * Repräsentiert das Spiel Galgenmännchen mit geheimem Wort, Fehlerzählung und Fortschritt.
+ */
 class Galgenmaennchen private(secretWord: String, maxGuesses: Int = 6) extends Observable {
 
   // Die Buchstaben im geheimen Wort, die bereits korrekt geraten wurden
@@ -9,11 +13,6 @@ class Galgenmaennchen private(secretWord: String, maxGuesses: Int = 6) extends O
 
   // Zählt die Anzahl der falschen Versuche
   private var incorrectGuesses = 0
-
-  // Die Singleton-Instanz
-  private object Singleton {
-    var instance: Option[Galgenmaennchen] = None
-  }
 
   /**
    * Überprüft, ob ein Buchstabe im geheimen Wort enthalten ist, und aktualisiert den Spielstatus.
@@ -42,7 +41,6 @@ class Galgenmaennchen private(secretWord: String, maxGuesses: Int = 6) extends O
    */
   def isGameWon: Boolean = {
     val won = secretWord.toLowerCase.toSet.subsetOf(guessedLetters)
-    // Benachrichtige alle Observer, wenn das Spiel gewonnen wurde
     if (won) notifyObservers()
     won
   }
@@ -53,7 +51,6 @@ class Galgenmaennchen private(secretWord: String, maxGuesses: Int = 6) extends O
    */
   def isGameLost: Boolean = {
     val lost = incorrectGuesses >= maxGuesses
-    // Benachrichtige alle Observer, wenn das Spiel verloren wurde
     if (lost) notifyObservers()
     lost
   }
@@ -73,12 +70,20 @@ class Galgenmaennchen private(secretWord: String, maxGuesses: Int = 6) extends O
    * @return Die Anzahl der verbleibenden Fehlversuche.
    */
   def guessesLeft: Int = maxGuesses - incorrectGuesses
+}
 
-  // Die Singleton-Instanz erhalten
-  def getInstance(secretWord: String, maxGuesses: Int = 6): Galgenmaennchen = {
-    if (Singleton.instance.isEmpty) {
-      Singleton.instance = Some(new Galgenmaennchen(secretWord, maxGuesses))
-    }
-    Singleton.instance.get
+/**
+ * Factory zur Erstellung von Galgenmaennchen-Instanzen.
+ */
+object GalgenmaennchenFactory {
+
+  /**
+   * Factory-Methode zur Erstellung eines Galgenmaennchen-Objekts.
+   * @param secretWord Das geheime Wort des Spiels.
+   * @param maxGuesses Die maximal erlaubte Anzahl von Fehlversuchen.
+   * @return Eine Instanz von Galgenmaennchen.
+   */
+  def createGalgenmaennchen(secretWord: String, maxGuesses: Int = 6): Galgenmaennchen = {
+    new Galgenmaennchen(secretWord, maxGuesses)
   }
 }

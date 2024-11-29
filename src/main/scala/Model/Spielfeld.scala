@@ -57,4 +57,22 @@ object Spielfeld extends Observable {
     grid = Array.ofDim[Int](10, 10)  // Reset auf Standardgröße
     notifyObservers()  // Benachrichtige Observer nach Reset
   }
+
+  // Factory-Pattern für Spielfeld
+  object SpielfeldFactory {
+
+    // Factory-Methode für ein Spielfeld mit benutzerdefinierter Größe
+    def createSpielfeld(rows: Int, cols: Int): Spielfeld.type = {
+      val newGrid = Array.ofDim[Int](rows, cols)
+      Spielfeld.grid = newGrid
+      notifyObservers()  // Benachrichtige Observer nach der Erstellung eines neuen Spielfeldes
+      Spielfeld
+    }
+
+    // Factory-Methode für ein Spielfeld mit einer benutzerdefinierten Initialisierung
+    def createSpielfeldWithInitialization(array: Array[Array[Int]]): Spielfeld.type = {
+      Spielfeld.initialize(array)
+      Spielfeld
+    }
+  }
 }

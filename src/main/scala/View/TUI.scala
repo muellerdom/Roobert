@@ -10,9 +10,13 @@ object TUI extends Observer {
   var remainingJerms: List[Coordinate] = List()
   private var controller: Controller = _
 
+  private var levelFactory: LevelFactory = _
+
   def initialize(controller: Controller): Unit = {
     this.controller = controller
     controller.addObserver(this)
+    // Setze die Factory hier ein
+    levelFactory = new Level1Factory() // Zu Beginn Level1Factory setzen
   }
 
   def start(): Unit = {
@@ -44,7 +48,8 @@ object TUI extends Observer {
     if (input == "q") {
       println("Beende die Anwendung...")
     } else {
-      controller.startLevel(input) match {
+      // Verwenden der Factory zur Erstellung des Levels
+      levelFactory.createLevel(input) match {
         case Right(foundLevel) =>
           println(s"Starte Level ${foundLevel.level}: ${foundLevel.description}")
           initializePlayer(foundLevel)

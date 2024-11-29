@@ -2,6 +2,7 @@ package Model
 
 import Util.Observable
 
+// Abstrakte Klasse für TaschenInhalt
 abstract class TaschenInhalt(val name: String, val groesse: Double, val beschreibung: String, val farbe: String) extends Objekt with Observable {
 
  // Eine Liste von eingesammelten Objekten
@@ -25,14 +26,32 @@ abstract class TaschenInhalt(val name: String, val groesse: Double, val beschrei
   }
  }
 
- // Wir erstellen ein Objekt, sei es eine Brücke, eine Süßigkeit oder ähnliches.
- // Diese Methode ist momentan auskommentiert, aber sie könnte zur weiteren Funktionalität dienen
- // def ObjektErstellen(): Unit = {
- //   // Logik zum Erstellen eines Objekts
- // }
-
  // Methode zum Setzen des Objekts auf das Spielfeld
  override def aufsFeldSetzen(): Unit = {
   // Implementierung oder leer lassen, falls noch nicht definiert
  }
 }
+
+// Factory-Objekt zum Erstellen von TaschenInhalt-Objekten
+object TaschenInhaltFactory {
+
+ // Erstellen eines neuen TaschenInhalts: Süßigkeit, Brücke, Schlüssel oder andere Typen
+ def createTaschenInhalt(name: String, groesse: Double, beschreibung: String, farbe: String, typ: String): TaschenInhalt = {
+  typ match {
+   case "Süßigkeit" => new Suessigkeit(name, groesse, beschreibung, farbe)
+   case "Brücke"    => new Bruecke(name, groesse, beschreibung, farbe)
+   case "Schlüssel" => new Schluessel(name, groesse, beschreibung, farbe)
+   case _           => throw new IllegalArgumentException(s"Unbekannter Typ: $typ")
+  }
+ }
+}
+
+// Beispielhafte Implementierungen von TaschenInhalt (konkrete Subklassen)
+class Suessigkeit(name: String, groesse: Double, beschreibung: String, farbe: String)
+  extends TaschenInhalt(name, groesse, beschreibung, farbe)
+
+class Bruecke(name: String, groesse: Double, beschreibung: String, farbe: String)
+  extends TaschenInhalt(name, groesse, beschreibung, farbe)
+
+class Schluessel(name: String, groesse: Double, beschreibung: String, farbe: String)
+  extends TaschenInhalt(name, groesse, beschreibung, farbe)
