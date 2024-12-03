@@ -1,15 +1,9 @@
 package Model
 
-import Controller.{Coordinate, LevelConfig}
 import Util.Observable
 
-object Spieler extends Observable {
-
-  // Die Position des Spielers
-  var posX: Int = 0
-  var posY: Int = 0
-  val maxX: Int = 10  // Beispiel-Maximalwerte, kannst du anpassen
-  val maxY: Int = 10
+//Hier macht ein Singleton Pattern keinen Sinn, da hier nur die Spielerbewegung kontrolliert wird
+class Spieler(var posX: Int, var posY: Int, val maxX: Int, val maxY: Int) extends Observable {
 
   // Enum-like sealed trait for directions
   sealed trait Direction
@@ -21,10 +15,11 @@ object Spieler extends Observable {
   var direction: Direction = Oben
   var eingesammelteJerms: Set[Coordinate] = Set()
 
+
   // Move method to handle different actions
-  def move(action: String, level: LevelConfig): Unit = {
+  def move(action: String): Unit = {
     action match {
-      case "moveForward()" => moveForward(level)
+      case "forward" => moveForward()
       case "turnRight()" => turnRight()
       case "turnLeft()" => turnLeft()
       case _ => // No action for unknown commands
@@ -54,7 +49,7 @@ object Spieler extends Observable {
   }
 
   // Move forward method based on direction with boundary and obstacle checks
-  def moveForward(level: LevelConfig): Unit = {
+  def moveForward(): Unit = {
     val newPos = direction match {
       case Oben    => (posX, posY - 1)
       case Rechts  => (posX + 1, posY)
@@ -62,24 +57,28 @@ object Spieler extends Observable {
       case Links   => (posX - 1, posY)
     }
 
-    if (isValidMove(newPos._1, newPos._2, level)) {
+
+    if (isValidMove(newPos._1, newPos._2)) {
       posX = newPos._1
       posY = newPos._2
-      einsammeln(newPos, level)
+      println(s"Spieler bewegt zu ($posX, $posY) in Richtung $direction")
+      einsammeln(newPos)
       notifyObservers()  // Benachrichtige Observer nach Bewegung
+    } else {
+      println("Ungültige Bewegung blockiert!")
     }
   }
 
   // Check if the new move is within bounds and not an obstacle
-  private def isValidMove(x: Int, y: Int, level: LevelConfig): Boolean = {
+  private def isValidMove(x: Int, y: Int): Boolean = {
     val withinBounds = x >= 0 && x < maxX && y >= 0 && y < maxY
-    val isObstacle = level.objects.obstacles.exists(obs => obs.coordinates.x == x && obs.coordinates.y == y)
+    val isObstacle = levelManager.getCurrentLevel.get.objects.obstacles.exists(obs => obs.coordinates.x == x && obs.coordinates.y == y)
     withinBounds && !isObstacle
   }
 
   // Collect jerms
-  private def einsammeln(pos: (Int, Int), level: LevelConfig): Unit = {
-    level.objects.jerm.find(jerm => jerm.x == pos._1 && jerm.y == pos._2) match {
+  private def einsammeln(pos: (Int, Int)): Unit = {
+    levelManager.getCurrentLevel.get.objects.jerm.find(jerm => jerm.x == pos._1 && jerm.y == pos._2) match {
       case Some(jerm) =>
         eingesammelteJerms += jerm
         println(s"Jerm an Position (${jerm.x}, ${jerm.y}) eingesammelt.")

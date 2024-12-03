@@ -4,11 +4,12 @@ import Util.Observable
 
 object Spielfeld extends Observable {
 
-  private var grid: Array[Array[Int]] = Array.ofDim[Int](10, 10)  // Standardgröße, z.B. 10x10
+  // Char-Array für das Spielfeld
+  private var grid: Array[Array[Char]] = Array.fill(10, 10)(' ') // Standardgröße, z.B. 10x10
 
-  // Alternativkonstruktor
-  def initialize(array: Array[Array[Int]]): Unit = {
-    grid = Array.ofDim[Int](array.length, if (array.isEmpty) 0 else array(0).length)
+  // Initialisieren des Grids mit einem übergebenen Char-Array
+  def initialize(array: Array[Array[Char]]): Unit = {
+    grid = Array.ofDim[Char](array.length, if (array.isEmpty) 0 else array(0).length)
     for (i <- array.indices; j <- array(i).indices) {
       grid(i)(j) = array(i)(j)
     }
@@ -16,7 +17,7 @@ object Spielfeld extends Observable {
   }
 
   // Methode, um einen Wert zu setzen
-  def hinsetze(x: Int, y: Int, value: Int): Unit = {
+  def hinsetze(x: Int, y: Int, value: Char): Unit = {
     if (isValid(x, y)) {
       grid(x)(y) = value
       notifyObservers()  // Benachrichtige Observer, dass das Grid geändert wurde
@@ -26,18 +27,11 @@ object Spielfeld extends Observable {
   }
 
   // Methode, um einen Wert abzurufen
-  def get(x: Int, y: Int): Int = {
+  def get(x: Int, y: Int): Char = {
     if (isValid(x, y)) {
       grid(x)(y)
     } else {
       throw new IndexOutOfBoundsException("Ungültige Position im Grid.")
-    }
-  }
-
-  // Methode, um das Grid auszugeben (für Debugging)
-  def printGrid(): Unit = {
-    for (row <- grid) {
-      println(row.mkString(" "))
     }
   }
 
@@ -46,15 +40,11 @@ object Spielfeld extends Observable {
     x >= 0 && x < grid.length && y >= 0 && y < grid(0).length
   }
 
-  // Beispielhafter Aufruf von notifyObservers(), um Beobachter zu benachrichtigen
-  def updateGrid(): Unit = {
-    // Änderungen am Grid vornehmen...
-    notifyObservers()  // Benachrichtige Observer über das Update
-  }
 
-  // Methode, um das Spielfeld zurückzusetzen (optional)
+
+  // Optional: Methode, um das Spielfeld zurückzusetzen
   def reset(): Unit = {
-    grid = Array.ofDim[Int](10, 10)  // Reset auf Standardgröße
+    grid = Array.fill(10, 10)(' ')  // Reset auf Standardgröße mit Leerzeichen als Standardwert
     notifyObservers()  // Benachrichtige Observer nach Reset
   }
 }

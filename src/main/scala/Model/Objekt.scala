@@ -4,7 +4,7 @@ import scala.language.postfixOps
 
 
 /** *
- * Grundsätzlich kann man sich überlegen ein Interface zu schreiben oder Vererbung anzuwenden
+ * DECORATOR PATTERN -> TRAIT MIT EIGENEN TYPEN -> objekt vom Typ Objekt. Kann nur in Klassen verwendet werden, die das interface implementieren
  */
 
 trait Objekt {

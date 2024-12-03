@@ -22,6 +22,6 @@ trait Observable {
 }
 
 // Das Observer-Trait, das von allen konkreten Observern implementiert werden muss
-trait Observer {
-  def update(): Unit  // Methode, die von konkreten Observern überschrieben wird
-}
+//trait Observer {
+//  def update(): Unit  // Methode, die von konkreten Observern überschrieben wird
+//}

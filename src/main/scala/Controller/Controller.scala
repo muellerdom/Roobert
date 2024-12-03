@@ -1,71 +1,77 @@
 package Controller
 
+import Model.{Coordinate, LevelConfig, Spieler, Spielfeld, levelManager}
 import Util.Observable
-import io.circe._
-import io.circe.parser._
-import io.circe.generic.auto._
-import java.io._
 
-case class Coordinate(x: Int, y: Int)
-case class Obstacle(`type`: String, coordinates: Coordinate)
-case class Goal(x: Int, y: Int)
-case class Objects(obstacles: List[Obstacle], jerm: List[Coordinate])
-case class LevelConfig(level: String, description: String, instruction: String, width: Int, height: Int, start: Coordinate, goal: Goal, objects: Objects)
-case class Levels(levels: List[LevelConfig])
+class Controller extends Observable {
 
-class Controller private() extends Observable {
+  private var player: Option[Spieler] = None
 
-  private var levels: Option[Levels] = None
-  private val levelFilePath = "src/main/resources/levels.json"
-  private var currentLevel: Option[LevelConfig] = None
-
-  // Lädst die Levels aus einer JSON-Datei
-  loadJsonFromFile(levelFilePath) match {
-    case Right(parsedLevels) => levels = Some(parsedLevels)
-    case Left(error) => println(s"Fehler beim Laden der Levels: $error")
-  }
-
-  def loadJsonFromFile(filePath: String): Either[String, Levels] = {
-    val source = scala.io.Source.fromFile(filePath)
-    val jsonString = try source.mkString finally source.close()
-    decode[Levels](jsonString) match {
-      case Right(parsedLevels) => Right(parsedLevels)
-      case Left(error) => Left(s"Fehler beim Parsen des JSON: $error")
+  /**
+   * Startet das angegebene Level.
+   */
+  def startLevel(levelName: String): Either[String, LevelConfig] = {
+    levelManager.ladeLevel(levelName) match {
+      case Right(level) =>
+        initializePlayer(level)
+        initializeSpielfeld(level)
+        Right(level)
+      case Left(error) => Left(error)
     }
   }
 
-  // Startet das Level und informiert die View
-  def startLevel(level: String): Either[String, LevelConfig] = {
-    levels match {
-      case Some(lvl) =>
-        lvl.levels.find(_.level == level) match {
-          case Some(foundLevel) =>
-            currentLevel = Some(foundLevel)
-            notifyObservers()  // Benachrichtige die View, dass ein neues Level gestartet wurde
-            Right(foundLevel)
-          case None => Left(s"Level '$level' nicht gefunden.")
-        }
-      case None => Left("Bitte laden Sie zuerst die Leveldaten.")
-    }
-  }
-
-  // Holt alle verfügbaren Levels
   def getAvailableLevels: List[String] = {
-    levels.map(_.levels.map(_.level)).getOrElse(List())
+    levelManager.getAvailableLevels
   }
 
-  def getCurrentLevelConfig: Option[LevelConfig] = currentLevel
-}
+  private def initializeSpielfeld(level: LevelConfig): Unit = {
+    val grid = Array.fill(level.width, level.height)(' ')
+    Spielfeld.initialize(grid)
 
-object Controller {
-  // Die Singleton-Instanz
-  private var instance: Option[Controller] = None
+    Spielfeld.hinsetze(level.goal.x, level.goal.y, 'G')
 
-  // Die Methode, um die Instanz zu holen (wird nur eine Instanz zugelassen)
-  def getInstance: Controller = {
-    if (instance.isEmpty) {
-      instance = Some(new Controller())
+    level.objects.obstacles.foreach { obstacle =>
+      Spielfeld.hinsetze(obstacle.coordinates.x, obstacle.coordinates.y, 'X')
     }
-    instance.get
+
+    level.objects.jerm.foreach { jerm =>
+      Spielfeld.hinsetze(jerm.x, jerm.y, 'J')
+    }
+
+    player.foreach(p => Spielfeld.hinsetze(p.posX, p.posY, 'R'))
   }
+
+  private def initializePlayer(level: LevelConfig): Unit = {
+    player = Some(new Spieler(level.start.x, level.start.y, level.width, level.height))
+  }
+
+  def movePlayer(action: String): Unit = {
+    player.foreach { p =>
+      Spielfeld.hinsetze(p.posX, p.posY, ' ')
+      p.move(action) // Assuming safe get, make sure this is safe
+      Spielfeld.hinsetze(p.posX, p.posY, 'R')
+    }
+  }
+
+  def moveForward() = movePlayer("forward")
+
+  def turnRight() = movePlayer("right")
+
+  def turnLeft() = movePlayer("left")
+
+
+  def isLevelComplete: Boolean = {
+    player.exists { p =>
+      val currentLevel = levelManager.getCurrentLevel.get
+      p.eingesammelteJerms.size == currentLevel.objects.jerm.size &&
+        p.posX == currentLevel.goal.x &&
+        p.posY == currentLevel.goal.y
+    }
+  }
+
+  def getGrid(x: Int, y: Int): Char = {
+    Spielfeld.get(x, y)
+  }
+
+  def getLevelConfig: Option[LevelConfig] = levelManager.getCurrentLevel
 }

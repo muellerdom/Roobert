@@ -4,11 +4,10 @@ import View.TUI
 import scala.io.StdIn.readLine
 
 object Main {
-  val controller = new Controller()
+  val controller = new Controller
   val tui = new TUI(controller)
-  controller.notifyObservers
+  //controller.notifyObservers()
   tui.start()
-
 
   def main(args: Array[String]): Unit = {
     if (args.nonEmpty) {

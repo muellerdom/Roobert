@@ -1,6 +1,6 @@
 package Util
 
 trait Observer {
-  def update: Unit
+  def update(): Unit
 }
 

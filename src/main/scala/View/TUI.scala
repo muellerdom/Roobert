@@ -1,19 +1,28 @@
 package View
 
-import Controller.{Controller, Coordinate, LevelConfig}
-import Model.Spieler
+import scala.tools.nsc.interpreter.IMain
+import scala.tools.nsc.interpreter.shell.ReplReporterImpl
+import scala.tools.nsc.Settings
+import Controller.Controller
 import Util.Observer
 
-object TUI extends Observer {
 
-  var player: Option[Spieler] = None
-  var remainingJerms: List[Coordinate] = List()
-  private var controller: Controller = _
+class TUI(controller: Controller) extends Observer {
 
-  def initialize(controller: Controller): Unit = {
-    this.controller = controller
-    controller.addObserver(this)
-  }
+  controller.addObserver(this)
+  private val settings = new Settings
+  settings.usejavacp.value = true // Set the class path
+  val reporter = new ReplReporterImpl(settings)
+  val repl = new IMain(settings, reporter)
+
+
+  // Binde den Controller in den REPL-Kontext
+  repl.bind("controller", "Controller.Controller", controller)
+  repl.interpret("""def moveForward() = controller.movePlayer("forward")""")
+  repl.interpret("""def turnRight() = controller.movePlayer("right")""")
+  repl.interpret("""def turnLeft() = controller.movePlayer("left")""")
+
+
 
   def start(): Unit = {
     val availableLevels = controller.getAvailableLevels
@@ -30,14 +39,15 @@ object TUI extends Observer {
     }
   }
 
-  def waitForLevelInput(): Unit = {
+  private def waitForLevelInput(): Unit = {
     val scanner = new java.util.Scanner(System.in)
-    var input: String = ""
 
+    var levelName = ""
     do {
-      input = scanner.nextLine().trim
-      processInputLine(input)
-    } while (input != "q")
+      println("Bitte wähle ein Level oder 'q' zum Beenden:")
+      levelName = scanner.nextLine().trim
+      processInputLine(levelName)
+    } while (levelName != "q")
   }
 
   def processInputLine(input: String): Unit = {
@@ -47,94 +57,77 @@ object TUI extends Observer {
       controller.startLevel(input) match {
         case Right(foundLevel) =>
           println(s"Starte Level ${foundLevel.level}: ${foundLevel.description}")
-          initializePlayer(foundLevel)
-          remainingJerms = foundLevel.objects.jerm
-          displayGrid(foundLevel)
-          waitForPlayerActions(foundLevel)
-
+          displayGrid()
+          waitForPlayerActions()
         case Left(errorMessage) =>
           println(errorMessage)
       }
     }
   }
 
-  def initializePlayer(level: LevelConfig): Unit = {
-    player = Some(new Spieler(level.start.x, level.start.y, level.width, level.height))
-  }
-
-  def displayGrid(level: LevelConfig): Unit = {
-    val grid = Array.fill(level.height, level.width)(' ')
-
-    // Set the goal
-    grid(level.goal.y)(level.goal.x) = 'G'
-
-    // Set the obstacles
-    level.objects.obstacles.foreach { obstacle =>
-      grid(obstacle.coordinates.y)(obstacle.coordinates.x) = 'X'
-    }
-
-    // Set the jerms
-    remainingJerms.foreach { jerm =>
-      grid(jerm.y)(jerm.x) = 'J'
-    }
-
-    // Set the player
-    player match {
-      case Some(p) => grid(p.posY)(p.posX) = 'P'
-      case None => // No player initialized
-    }
-
-    // Print the grid
-    println("Spielfeld:")
-    println("+" + ("---+" * level.width))
-    for (row <- grid) {
-      println("| " + row.mkString(" | ") + " |")
-      println("+" + ("---+" * level.width))
+  def displayGrid(): Unit = {
+    controller.getLevelConfig match {
+      case Some(level) =>
+        println("Spielfeld:")
+        println("+" + ("---+" * level.width))
+        for (y <- 0 until level.height) {
+          for (x <- 0 until level.width) {
+            val symbol = controller.getGrid(x, y)
+            print(s"| $symbol ")
+          }
+          println("|")
+          println("+" + ("---+" * level.width))
+        }
+      case None =>
+        println("Kein aktuelles Level geladen.")
     }
   }
 
-  def waitForPlayerActions(level: LevelConfig): Unit = {
+  def waitForPlayerActions(): Unit = {
     val scanner = new java.util.Scanner(System.in)
-    var action: String = ""
-
-    println("Gib die Methoden ein um Robert zu bewegen " +
-      "(moveForward(), turnRight(), turnLeft(), q zum Beenden):")
+    var action = ""
 
     do {
       action = scanner.nextLine().trim
-      if (action == "moveForward()" || action == "turnRight()" || action == "turnLeft()") {
-        movePlayer(action, level)
-        if (isLevelComplete(level)) {
+      if (action.toLowerCase != "q") {
+
+      //  if (action.contains("moveForward()") || action.contains("turnRight()") || action.contains("turnLeft()")) {
+        //  repl.interpret("controller." + action)
+        //} else {
+          repl.interpret(action)
+       // }
+        if (controller.isLevelComplete) {
           println("Herzlichen Glückwunsch! Robert ist angekommen!")
-          displayGrid(level)
-          start()
+          displayGrid()
+          start() // Startet das Spiel neu
         } else {
-          displayGrid(level)
+          displayGrid()
         }
-      } else if (action != "q") {
-        println("Unbekannter Befehl. Bitte versuche es erneut.")
       }
-    } while (action != "q")
+    } while (action.toLowerCase != "q")
+
+//    do {
+//      println("Gib die Richtung an um Robert zu bewegen (moveForward(), turnRight(), turnLeft(), oder 'q' zum Beenden):")
+//      action = scanner.nextLine().trim
+//      repl.interpret(action)
+//
+//      if (action == "moveForward()" || action == "turnRight()" || action == "turnLeft()") {
+//        controller.movePlayer(action)
+//        if (controller.isLevelComplete) {
+//          println("Herzlichen Glückwunsch! Robert ist angekommen!")
+//          displayGrid()
+//          start() // Startet das Spiel neu
+//        } else {
+//          displayGrid()
+//        }
+//      } else if (action != "q") {
+//        println("Unbekannter Befehl. Bitte versuche es erneut.")
+//      }
+//    } while (action != "q")
 
     println("Spiel beendet.")
   }
 
-  def movePlayer(action: String, level: LevelConfig): Unit = {
-    player.foreach { p =>
-      p.move(action, level)
-      remainingJerms = remainingJerms.filterNot(jerm => p.eingesammelteJerms.contains(jerm))
-    }
-  }
-
-  def isLevelComplete(level: LevelConfig): Boolean = {
-    player match {
-      case Some(p) =>
-        p.eingesammelteJerms.size == level.objects.jerm.size && p.posX == level.goal.x && p.posY == level.goal.y
-      case None => false
-    }
-  }
-
-  // Observer update implementation
   override def update(): Unit = {
     println("Aktualisierung vom Controller erhalten.")
   }
