@@ -12,9 +12,11 @@ case class Coordinate(x: Int, y: Int)
 
 case class Obstacle(`type`: String, coordinates: Coordinate)
 
+case class Jerm(coordinates: Coordinate)
+
 case class Goal(x: Int, y: Int)
 
-case class Objects(obstacles: List[Obstacle], jerm: List[Coordinate])
+case class Objects(obstacles: List[Obstacle], jerm: List[Jerm])
 
 case class LevelConfig(level: String, description: String, instruction: String, width: Int, height: Int, start: Coordinate, goal: Goal, objects: Objects)
 

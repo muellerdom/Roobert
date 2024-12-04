@@ -10,18 +10,17 @@ import Util.Observer
 class TUI(controller: Controller) extends Observer {
 
   controller.addObserver(this)
-  private val settings = new Settings
-  settings.usejavacp.value = true // Set the class path
-  val reporter = new ReplReporterImpl(settings)
-  val repl = new IMain(settings, reporter)
-
-
-  // Binde den Controller in den REPL-Kontext
-  repl.bind("controller", "Controller.Controller", controller)
-  repl.interpret("""def moveForward() = controller.movePlayer("forward")""")
-  repl.interpret("""def turnRight() = controller.movePlayer("right")""")
-  repl.interpret("""def turnLeft() = controller.movePlayer("left")""")
-
+//  private val settings = new Settings
+//  settings.usejavacp.value = true // Set the class path
+//  val reporter = new ReplReporterImpl(settings)
+//  val repl = new IMain(settings, reporter)
+//
+//
+//  // Binde den Controller in den REPL-Kontext
+//  repl.bind("controller", "Controller.Controller", controller)
+//  repl.interpret("""def moveForward() = controller.movePlayer("forward")""")
+//  repl.interpret("""def turnRight() = controller.movePlayer("right")""")
+//  repl.interpret("""def turnLeft() = controller.movePlayer("left")""")
 
 
   def start(): Unit = {
@@ -70,7 +69,7 @@ class TUI(controller: Controller) extends Observer {
       case Some(level) =>
         println("Spielfeld:")
         println("+" + ("---+" * level.width))
-        for (y <- 0 until level.height) {
+        for (y <- level.height -1 to 0 by -1) {
           for (x <- 0 until level.width) {
             val symbol = controller.getGrid(x, y)
             print(s"| $symbol ")
@@ -86,44 +85,37 @@ class TUI(controller: Controller) extends Observer {
   def waitForPlayerActions(): Unit = {
     val scanner = new java.util.Scanner(System.in)
     var action = ""
+    val codeBlock = new StringBuilder
+
 
     do {
       action = scanner.nextLine().trim
-      if (action.toLowerCase != "q") {
 
-      //  if (action.contains("moveForward()") || action.contains("turnRight()") || action.contains("turnLeft()")) {
-        //  repl.interpret("controller." + action)
-        //} else {
-          repl.interpret(action)
-       // }
-        if (controller.isLevelComplete) {
-          println("Herzlichen Glückwunsch! Robert ist angekommen!")
-          displayGrid()
-          start() // Startet das Spiel neu
-        } else {
-          displayGrid()
-        }
+      action.toLowerCase match {
+        case "q" =>
+          println("Spiel beendet.")
+        case "compile" =>
+          // Führe den gesammelten Codeblock aus
+          val code = codeBlock.toString()
+          //repl.interpret(code)
+          controller.repl(code)
+          // Lösche den Codeblock für die nächste Runde
+          codeBlock.clear()
+
+          if (controller.isLevelComplete) {
+            println("Herzlichen Glückwunsch! Robert ist angekommen!")
+            displayGrid()
+            start() // Startet das Spiel neu
+          } else {
+            displayGrid()
+          }
+
+        case _ =>
+          // Sammle Eingaben
+          codeBlock.append(action).append("\n")
       }
-    } while (action.toLowerCase != "q")
 
-//    do {
-//      println("Gib die Richtung an um Robert zu bewegen (moveForward(), turnRight(), turnLeft(), oder 'q' zum Beenden):")
-//      action = scanner.nextLine().trim
-//      repl.interpret(action)
-//
-//      if (action == "moveForward()" || action == "turnRight()" || action == "turnLeft()") {
-//        controller.movePlayer(action)
-//        if (controller.isLevelComplete) {
-//          println("Herzlichen Glückwunsch! Robert ist angekommen!")
-//          displayGrid()
-//          start() // Startet das Spiel neu
-//        } else {
-//          displayGrid()
-//        }
-//      } else if (action != "q") {
-//        println("Unbekannter Befehl. Bitte versuche es erneut.")
-//      }
-//    } while (action != "q")
+    } while (action.toLowerCase != "q")
 
     println("Spiel beendet.")
   }

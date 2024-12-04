@@ -1,11 +1,16 @@
 package Controller
 
-import Model.{Coordinate, LevelConfig, Spieler, Spielfeld, levelManager}
+import Model._
 import Util.Observable
+
 
 class Controller extends Observable {
 
-  private var player: Option[Spieler] = None
+  //private var player: Option[Spieler] = None
+
+  //private val replInstance = repl.getOrElse(new REPL(this))
+  //private val repl = new REPL(this)
+
 
   /**
    * Startet das angegebene Level.
@@ -35,22 +40,26 @@ class Controller extends Observable {
     }
 
     level.objects.jerm.foreach { jerm =>
-      Spielfeld.hinsetze(jerm.x, jerm.y, 'J')
+      Spielfeld.hinsetze(jerm.coordinates.x, jerm.coordinates.y, 'J')
     }
 
-    player.foreach(p => Spielfeld.hinsetze(p.posX, p.posY, 'R'))
+    Spielfeld.hinsetze(Spieler.getPosition.x, Spieler.getPosition.y, 'R')
   }
 
   private def initializePlayer(level: LevelConfig): Unit = {
-    player = Some(new Spieler(level.start.x, level.start.y, level.width, level.height))
+    Spieler.initialize(level.start.x, level.start.y)
   }
 
   def movePlayer(action: String): Unit = {
-    player.foreach { p =>
-      Spielfeld.hinsetze(p.posX, p.posY, ' ')
-      p.move(action) // Assuming safe get, make sure this is safe
-      Spielfeld.hinsetze(p.posX, p.posY, 'R')
+    //player.foreach { p =>
+    if(Spieler.getPosition.x == levelManager.getCurrentLevel.get.goal.x && Spieler.getPosition.y == levelManager.getCurrentLevel.get.goal.y) {
+      Spielfeld.hinsetze(Spieler.getPosition.x, Spieler.getPosition.y, 'G')
+    } else {
+      Spielfeld.hinsetze(Spieler.getPosition.x, Spieler.getPosition.y, ' ')
     }
+    Spieler.move(action) // Assuming safe get, make sure this is safe
+      Spielfeld.hinsetze(Spieler.getPosition.x, Spieler.getPosition.y, 'R')
+
   }
 
   def moveForward() = movePlayer("forward")
@@ -61,12 +70,12 @@ class Controller extends Observable {
 
 
   def isLevelComplete: Boolean = {
-    player.exists { p =>
+    //player.exists { p =>
       val currentLevel = levelManager.getCurrentLevel.get
-      p.eingesammelteJerms.size == currentLevel.objects.jerm.size &&
-        p.posX == currentLevel.goal.x &&
-        p.posY == currentLevel.goal.y
-    }
+      Spieler.eingesammelteJerms.size == currentLevel.objects.jerm.size &&
+        Spieler.getPosition.x == currentLevel.goal.x &&
+        Spieler.getPosition.y == currentLevel.goal.y
+    //}
   }
 
   def getGrid(x: Int, y: Int): Char = {
@@ -74,4 +83,6 @@ class Controller extends Observable {
   }
 
   def getLevelConfig: Option[LevelConfig] = levelManager.getCurrentLevel
+
+  def repl(code: String) : Unit = REPL.Interpret(code)
 }

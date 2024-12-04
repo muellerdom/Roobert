@@ -1,6 +1,13 @@
+import scala.collection.immutable.Seq
+
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalaVersion := "2.13.15"
+
+// Enable optimizations to speed up compile times
+scalacOptions ++= Seq(
+  "-optimize"
+)
 
 coverageEnabled := true
 
@@ -17,7 +24,11 @@ lazy val root = (project in file("."))
       "io.circe" %% "circe-core" % "0.14.10",
       "io.circe" %% "circe-generic" % "0.14.10",
       "io.circe" %% "circe-parser" % "0.14.10",
-      "org.scala-lang" % "scala-compiler" % "2.13.15"
+      "org.scala-lang" % "scala-compiler" % "2.13.15",
+      "com.lihaoyi" %% "ammonite" % "3.0.0" cross CrossVersion.full,
+      "org.scalamock" %% "scalamock" % "6.0.0" % Test
     )
   )
+
+
 

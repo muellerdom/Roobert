@@ -35,6 +35,15 @@ object Spielfeld extends Observable {
     }
   }
 
+  def getSpielerPos: Option[(Int, Int)] = {
+    val spieler = for {
+      x <- grid.indices.view
+      y <- grid(x).indices.view
+      if get(x, y) == 'R'
+    } yield (x, y)
+    spieler.headOption
+  }
+
   // Methode, um die Gültigkeit der Position zu überprüfen
   private def isValid(x: Int, y: Int): Boolean = {
     x >= 0 && x < grid.length && y >= 0 && y < grid(0).length

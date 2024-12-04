@@ -2,91 +2,118 @@ package Model
 
 import Util.Observable
 
-//Hier macht ein Singleton Pattern keinen Sinn, da hier nur die Spielerbewegung kontrolliert wird
-class Spieler(var posX: Int, var posY: Int, val maxX: Int, val maxY: Int) extends Observable {
+// Singleton-Object für den Spieler
+object Spieler extends Observable {
 
-  // Enum-like sealed trait for directions
+  // Enum für Richtungen
   sealed trait Direction
+
   case object Oben extends Direction
+
   case object Rechts extends Direction
+
   case object Unten extends Direction
+
   case object Links extends Direction
 
-  var direction: Direction = Oben
+  private var initialized = false // Kontrollflag für Initialisierung
+  var position: Option[Coordinate] = None // Startposition des Spielers
+  var direction: Direction = Oben // Start-Richtung
   var eingesammelteJerms: Set[Coordinate] = Set()
 
 
-  // Move method to handle different actions
+  private val maxX: Int = levelManager.getCurrentLevel.get.width
+  private val maxY: Int = levelManager.getCurrentLevel.get.height
+
+  // Initialisierungsmethode
+  def initialize(startX: Int, startY: Int): Unit = {
+
+    position = Some(Coordinate(startX, startY))
+    initialized = true
+    println(s"Spieler initialisiert bei ($startX, $startY)")
+  }
+
+  // Methode, um die aktuelle Position sicher zu erhalten
+  def getPosition: Coordinate = {
+    position.getOrElse(throw new IllegalStateException("Spieler ist nicht initialisiert!"))
+  }
+
+  // Bewegung basierend auf Aktionen
   def move(action: String): Unit = {
+    if (!initialized) throw new IllegalStateException("Spieler ist nicht initialisiert!")
     action match {
       case "forward" => moveForward()
-      case "turnRight()" => turnRight()
-      case "turnLeft()" => turnLeft()
-      case _ => // No action for unknown commands
+      case "right" => turnRight()
+      case "left" => turnLeft()
+      case _ => println("Unbekannte Aktion!")
     }
   }
 
-  // Turn right method
-  def turnRight(): Unit = {
+  // Nach rechts drehen
+  private def turnRight(): Unit = {
     direction = direction match {
-      case Oben   => Rechts
+      case Oben => Rechts
       case Rechts => Unten
-      case Unten  => Links
-      case Links  => Oben
+      case Unten => Links
+      case Links => Oben
     }
-    notifyObservers()  // Benachrichtige Observer nach Drehung
+    notifyObservers()
   }
 
-  // Turn left method
-  def turnLeft(): Unit = {
+  // Nach links drehen
+  private def turnLeft(): Unit = {
     direction = direction match {
-      case Oben   => Links
-      case Links  => Unten
-      case Unten  => Rechts
+      case Oben => Links
+      case Links => Unten
+      case Unten => Rechts
       case Rechts => Oben
     }
-    notifyObservers()  // Benachrichtige Observer nach Drehung
+    notifyObservers()
   }
 
-  // Move forward method based on direction with boundary and obstacle checks
-  def moveForward(): Unit = {
+  // Vorwärts bewegen
+  private def moveForward(): Unit = {
+    val currentPosition = getPosition
     val newPos = direction match {
-      case Oben    => (posX, posY - 1)
-      case Rechts  => (posX + 1, posY)
-      case Unten   => (posX, posY + 1)
-      case Links   => (posX - 1, posY)
+      case Oben => Coordinate(currentPosition.x, currentPosition.y + 1)
+      case Rechts => Coordinate(currentPosition.x + 1, currentPosition.y)
+      case Unten => Coordinate(currentPosition.x, currentPosition.y - 1)
+      case Links => Coordinate(currentPosition.x - 1, currentPosition.y)
     }
 
-
-    if (isValidMove(newPos._1, newPos._2)) {
-      posX = newPos._1
-      posY = newPos._2
-      println(s"Spieler bewegt zu ($posX, $posY) in Richtung $direction")
+    if (isValidMove(newPos)) {
+      position = Some(newPos)
+      println(s"Spieler bewegt zu $newPos in Richtung $direction")
       einsammeln(newPos)
-      notifyObservers()  // Benachrichtige Observer nach Bewegung
+      notifyObservers()
     } else {
       println("Ungültige Bewegung blockiert!")
     }
   }
 
-  // Check if the new move is within bounds and not an obstacle
-  private def isValidMove(x: Int, y: Int): Boolean = {
-    val withinBounds = x >= 0 && x < maxX && y >= 0 && y < maxY
-    val isObstacle = levelManager.getCurrentLevel.get.objects.obstacles.exists(obs => obs.coordinates.x == x && obs.coordinates.y == y)
+  // Überprüfen, ob Bewegung gültig ist
+  private def isValidMove(pos: Coordinate): Boolean = {
+    val withinBounds = pos.x >= 0 && pos.x < maxX && pos.y >= 0 && pos.y < maxY
+    val isObstacle = levelManager.getCurrentLevel.get.objects.obstacles.exists(_.coordinates == pos)
     withinBounds && !isObstacle
   }
 
-  // Collect jerms
-  private def einsammeln(pos: (Int, Int)): Unit = {
-    levelManager.getCurrentLevel.get.objects.jerm.find(jerm => jerm.x == pos._1 && jerm.y == pos._2) match {
+  // Jerm einsammeln
+  def einsammeln(pos: Coordinate): Unit = {
+    val level = levelManager.getCurrentLevel.get
+    level.objects.jerm.find(_.coordinates == pos) match {
       case Some(jerm) =>
-        eingesammelteJerms += jerm
-        println(s"Jerm an Position (${jerm.x}, ${jerm.y}) eingesammelt.")
-        notifyObservers()  // Benachrichtige Observer nach dem Einsammeln
-      case None => // No jerm at this position
+        eingesammelteJerms += pos
+        //---- Jedesmal wenn sich der SPieler über das Feld wo ein Jerm sein soll bewegt, sammelt er ihn ein
+        //--> infinite jerm glitch
+        //Dies ist zu korrigieren
+        //level.objects.jerm = level.objects.jerm.filterNot(_.coordinates == pos) // Entferne eingesammelten Jerm
+        println(s"Jerm an Position $pos eingesammelt.")
+        notifyObservers()
+      case None =>
+        println("Kein Jerm an dieser Position.")
     }
   }
 
-  // String representation for testing
-  override def toString: String = s"Model.Spieler($posX, $posY)"
+  override def toString: String = s"Spieler(Position: ${getPosition}, Richtung: $direction)"
 }

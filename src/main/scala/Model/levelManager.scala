@@ -30,5 +30,4 @@ object levelManager extends Observable {
   def getCurrentLevel: Option[LevelConfig] = currentLevel
 
   // ... (weitere Methoden)
-
 }
