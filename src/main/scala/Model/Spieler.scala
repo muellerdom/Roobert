@@ -3,22 +3,39 @@ package Model
 import Controller.{Coordinate, LevelConfig}
 import Util.Observable
 
+// Die Case Class für den Zustand des Spielers
+case class SpielerState(posX: Int, posY: Int, direction: Direction, eingesammelteJerms: Set[Coordinate])
+
+sealed trait Direction
+case object Oben extends Direction
+case object Rechts extends Direction
+case object Unten extends Direction
+case object Links extends Direction
+
+// Singleton für den Spieler
 object Spieler extends Observable {
 
-  // Die Position des Spielers
-  var posX: Int = 0
-  var posY: Int = 0
+  // Die private Instanz des Spielers (nur eine Instanz existiert)
+  private var instance: Option[SpielerState] = None
+
   val maxX: Int = 10
   val maxY: Int = 10
 
-  sealed trait Direction
-  case object Oben extends Direction
-  case object Rechts extends Direction
-  case object Unten extends Direction
-  case object Links extends Direction
+  // Getter für die Instanz
+  def getInstance: SpielerState = {
+    if (instance.isEmpty) {
+      // Initialisierung der Instanz, wenn sie noch nicht existiert
+      instance = Some(SpielerState(0, 0, Oben, Set()))
+    }
+    instance.get // Gibt die einzige Instanz zurück
+  }
 
-  var direction: Direction = Oben
-  var eingesammelteJerms: Set[Coordinate] = Set()
+  // Initialisierung des Spielers
+  def initializePlayer(startX: Int, startY: Int): Unit = {
+    val currentState = getInstance
+    instance = Some(currentState.copy(posX = startX, posY = startY, direction = Oben, eingesammelteJerms = Set()))
+    notifyObservers()
+  }
 
   def move(action: String, level: LevelConfig): Unit = {
     action match {
@@ -30,36 +47,41 @@ object Spieler extends Observable {
   }
 
   def turnRight(): Unit = {
-    direction = direction match {
+    val currentState = getInstance
+    val newDirection = currentState.direction match {
       case Oben   => Rechts
       case Rechts => Unten
       case Unten  => Links
       case Links  => Oben
     }
+    instance = Some(currentState.copy(direction = newDirection))
     notifyObservers()
   }
 
   def turnLeft(): Unit = {
-    direction = direction match {
+    val currentState = getInstance
+    val newDirection = currentState.direction match {
       case Oben   => Links
       case Links  => Unten
       case Unten  => Rechts
       case Rechts => Oben
     }
+    instance = Some(currentState.copy(direction = newDirection))
     notifyObservers()
   }
 
   def moveForward(level: LevelConfig): Unit = {
-    val newPos = direction match {
-      case Oben    => (posX, posY - 1)
-      case Rechts  => (posX + 1, posY)
-      case Unten   => (posX, posY + 1)
-      case Links   => (posX - 1, posY)
+    val currentState = getInstance
+    val newPos = currentState.direction match {
+      case Oben    => (currentState.posX, currentState.posY - 1)
+      case Rechts  => (currentState.posX + 1, currentState.posY)
+      case Unten   => (currentState.posX, currentState.posY + 1)
+      case Links   => (currentState.posX - 1, currentState.posY)
     }
 
     if (isValidMove(newPos._1, newPos._2, level)) {
-      posX = newPos._1
-      posY = newPos._2
+      val updatedState = currentState.copy(posX = newPos._1, posY = newPos._2)
+      instance = Some(updatedState)
       einsammeln(newPos, level)
       notifyObservers()
     }
@@ -74,31 +96,14 @@ object Spieler extends Observable {
   private def einsammeln(pos: (Int, Int), level: LevelConfig): Unit = {
     level.objects.jerm.find(jerm => jerm.x == pos._1 && jerm.y == pos._2) match {
       case Some(jerm) =>
-        eingesammelteJerms += jerm
+        val currentState = getInstance
+        val updatedJerms = currentState.eingesammelteJerms + jerm
+        instance = Some(currentState.copy(eingesammelteJerms = updatedJerms))
         println(s"Jerm an Position (${jerm.x}, ${jerm.y}) eingesammelt.")
         notifyObservers()
       case None =>
     }
   }
 
-  override def toString: String = s"Model.Spieler($posX, $posY)"
-}
-
-// Factory für den Spieler
-object SpielerFactory {
-
-  // Factory-Methode zur Erstellung eines Spielers mit Startposition
-  def createPlayer(startX: Int, startY: Int): Spieler.type = {
-    Spieler.posX = startX
-    Spieler.posY = startY
-    Spieler.eingesammelteJerms = Set()
-    Spieler.direction = Spieler.Oben // Optional: initiale Richtung
-    Spieler
-  }
-
-  // Weitere Factory-Methode, die einen Spieler basierend auf Level-Konfiguration erstellt
-  def createPlayerFromLevel(level: LevelConfig): Spieler.type = {
-    // Hier könnte man auch eine Startposition aus der Level-Konfiguration ziehen
-    createPlayer(0, 0)  // Beispiel: Erstelle den Spieler bei Position (0, 0)
-  }
+  override def toString: String = s"Model.Spieler(${getInstance.posX}, ${getInstance.posY})"
 }

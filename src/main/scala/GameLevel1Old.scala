@@ -1,14 +1,18 @@
-import Model.GameModel
-import View.GameView
-import Controller.GameController
+package Game
 
-object Game {
-  def main(args: Array[String]): Unit = {
-    val boardSize = 5
-    val model = new GameModel(boardSize)
-    val view = new GameView
-    val controller = new GameController(model, view)
+abstract class GameTemplate {
 
-    controller.startGame()
+  // Template-Methode
+  def startGame(): Unit = {
+    initializeGame()
+    setupBoard()
+    startPlaying()
+    endGame()
   }
+
+  // Abstrakte Methoden, die von den konkreten Klassen implementiert werden müssen
+  protected def initializeGame(): Unit
+  protected def setupBoard(): Unit
+  protected def startPlaying(): Unit
+  protected def endGame(): Unit
 }

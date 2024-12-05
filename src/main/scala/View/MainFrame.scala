@@ -2,53 +2,59 @@ package View
 
 import javax.swing._
 import java.awt._
-import Controller.GalgenmaennchenLevel1
+import Controller.GameController
 import Util.Observer
 
-// Abstrakte Factory zur Erstellung der Haupt-GUI für Level
-trait GUIFactory {
-  def createMainPanel(frame: JFrame): JPanel
-}
+// MainFrame als Singleton und Observer
+abstract class MainFrameTemplate private() extends Observer {
 
-// Konkrete Factory für Level 1
-class Level1GUIFactory extends GUIFactory {
-  override def createMainPanel(frame: JFrame): JPanel = {
-    val gameController = new GalgenmaennchenLevel1()
-    val mainPanel = new JPanel(new BorderLayout())
-    mainPanel.setBackground(new Color(0xFFFFFF))
-    mainPanel.add(gameController.getMainPanel, BorderLayout.CENTER)
-    mainPanel
+  protected val frame = new JFrame("Galgenmännchen - Hauptmenü")
+  protected val sideMenu = new JPanel()
+  protected val mainPanel = new JPanel(new BorderLayout())
+  protected val level1Button = new JButton("Level 1")
+  protected val level2Button = new JButton("Level 2")
+  protected val gameController = GameControllerSingleton.getInstance() // Singleton Instanz des Controllers
+
+  protected var currentPanel: JPanel = _
+
+  // Template-Methode: Definiert den Ablauf
+  final def initializeFrame(): Unit = {
+    setupFrame()          // Allgemeine Frame-Einstellungen
+    setupSideMenu()       // Konfiguration des Seitenmenüs
+    setupMainPanel()      // Hauptinhalt konfigurieren
+    setupListeners()      // Event-Listener hinzufügen
+    finalizeFrame()       // Frame sichtbar machen
   }
-}
 
-// Konkrete Factory für Level 2 (Wenn gewünscht, für Level 2 spezifische GUI hinzufügen)
-class Level2GUIFactory extends GUIFactory {
-  override def createMainPanel(frame: JFrame): JPanel = {
-    // Dies ist nur ein Beispiel, wie du Level 2 weiter implementieren könntest.
-    val mainPanel = new JPanel(new BorderLayout())
-    mainPanel.setBackground(new Color(0xFFFFFF))
-    // Füge hier das Level 2 spezifische Panel hinzu.
-    mainPanel
+  // Abstrakte Methoden für die spezifischen Details
+  protected def setupMainPanel(): Unit
+  protected def setupListeners(): Unit
+
+  // Default-Implementierungen für Frame- und SideMenu-Setup
+  protected def setupFrame(): Unit = {
+    frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
+    frame.setSize(600, 400)
+    frame.getContentPane.setBackground(new Color(0x6CB2F3))
   }
-}
 
-class MainFrame extends Observer {
+  protected def setupSideMenu(): Unit = {
+    sideMenu.setLayout(new BoxLayout(sideMenu, BoxLayout.Y_AXIS))
+    sideMenu.setBackground(new Color(108, 178, 243))
+    sideMenu.setPreferredSize(new Dimension((frame.getWidth * 0.2).toInt, frame.getHeight))
 
-  private val frame = new JFrame("Galgenmännchen - Hauptmenü")
-  private val sideMenu = new JPanel()
-  private val mainPanel = new JPanel(new BorderLayout())
-  private val level1Button = new JButton("Level 1")
-  private val level2Button = new JButton("Level 2")
-  private val gameController = new GalgenmaennchenLevel1()
+    sideMenu.add(level1Button)
+    sideMenu.add(level2Button)
+    frame.getContentPane.add(sideMenu, BorderLayout.WEST)
+  }
 
-  private var currentFactory: GUIFactory = new Level1GUIFactory()
+  protected def finalizeFrame(): Unit = {
+    frame.setVisible(true)
+  }
 
-  init()
-
-  // Diese Methode wird aufgerufen, wenn der Controller oder das Modell eine Änderung vornimmt
+  // Observer-Methode
   override def update(): Unit = {
     println("Das Spiel hat sich geändert. Das Hauptfenster wird aktualisiert.")
-    if (gameController.isLevelCompleted) {
+    if (GameController.isLevelCompleted) {
       level1Button.setEnabled(true)
       level2Button.setEnabled(true)
       println("Level abgeschlossen! Weiter zu Level 2.")
@@ -58,60 +64,80 @@ class MainFrame extends Observer {
     }
   }
 
-  private def init(): Unit = {
-    frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
-    frame.setSize(600, 400)
-    frame.getContentPane.setBackground(new Color(0x6CB2F3))
+  // Methode zum Aktualisieren des MainPanels
+  protected def updateMainPanel(): Unit = {
+    mainPanel.removeAll()
+    mainPanel.add(currentPanel, BorderLayout.CENTER)
+    frame.revalidate()
+    frame.repaint()
+  }
+}
 
-    sideMenu.setLayout(new BoxLayout(sideMenu, BoxLayout.Y_AXIS))
-    sideMenu.setBackground(new Color(108, 178, 243))
-    sideMenu.setPreferredSize(new Dimension((frame.getWidth * 0.2).toInt, frame.getHeight))
+// Konkrete Implementierung des MainFrames für Level 1
+class MainFrameLevel1 extends MainFrameTemplate {
 
-    sideMenu.add(level1Button)
-    sideMenu.add(level2Button)
-
-    mainPanel.setBackground(new Color(0xFFFFFF))
+  // Initiales Setup des MainPanels
+  override protected def setupMainPanel(): Unit = {
+    currentPanel = createLevel1Panel()
     updateMainPanel()
+  }
 
-    val toggleButton = new JButton("Auf zum nächsten Level!")
-    toggleButton.addActionListener(_ => {
-      sideMenu.setVisible(!sideMenu.isVisible)
-      frame.revalidate()
-      frame.repaint()
-    })
-    mainPanel.add(toggleButton, BorderLayout.SOUTH)
-
+  // Listener-Setup für Level 1
+  override protected def setupListeners(): Unit = {
     level1Button.addActionListener(_ => {
-      GalgenmaennchenLevel1.startLevel1(frame)
+      // Startet Level 1 und zeigt es im MainFrame an
+      GameController.completeLevel()  // Level 1 abgeschlossen
       level2Button.setEnabled(true)
+    })
+
+    level2Button.addActionListener(_ => {
+      changeToLevel2() // Wechsel zu Level 2
     })
 
     // Initiale Deaktivierung von Level 2 Button bis Level 1 abgeschlossen ist
     level2Button.setEnabled(false)
-
-    frame.getContentPane.add(sideMenu, BorderLayout.WEST)
-    frame.getContentPane.add(mainPanel, BorderLayout.CENTER)
-    frame.setVisible(true)
   }
 
-  // Methode zum Aktualisieren des MainPanels mit der richtigen Factory
-  private def updateMainPanel(): Unit = {
-    val newMainPanel = currentFactory.createMainPanel(frame)
-    mainPanel.removeAll()
-    mainPanel.add(newMainPanel, BorderLayout.CENTER)
-    frame.revalidate()
-    frame.repaint()
+  // Methode zum Erstellen des Panels für Level 1
+  private def createLevel1Panel(): JPanel = {
+    val level1Panel = new JPanel(new BorderLayout())
+    level1Panel.setBackground(new Color(0xFFFFFF))
+    level1Panel.add(new JLabel("Level 1 wird gespielt..."), BorderLayout.CENTER)
+    level1Panel
   }
 
-  // Eventuell möchtest du später mit einem Level-Wechsel auch die Factory wechseln
+  // Methode zum Wechseln zu Level 2
   private def changeToLevel2(): Unit = {
-    currentFactory = new Level2GUIFactory()
+    currentPanel = createLevel2Panel()
     updateMainPanel()
+  }
+
+  // Methode zum Erstellen des Panels für Level 2
+  private def createLevel2Panel(): JPanel = {
+    val level2Panel = new JPanel(new BorderLayout())
+    level2Panel.setBackground(new Color(0xFFFFFF))
+    level2Panel.add(new JLabel("Level 2 wird gespielt..."), BorderLayout.CENTER)
+    level2Panel
   }
 }
 
-object MainFrame {
-  def main(args: Array[String]): Unit = {
-    new MainFrame()
+// Singleton-Objekt für die GUI-Instanz
+object MainFrameSingleton {
+
+  private var instance: Option[MainFrameTemplate] = None
+
+  // Thread-sichere Methode, um die passende GUI zu setzen
+  def getInstance: MainFrameTemplate = synchronized {
+    if (instance.isEmpty) {
+      val newFrame = new MainFrameLevel1()
+      newFrame.initializeFrame() // Template-Methode wird aufgerufen
+      instance = Some(newFrame)
+    }
+    instance.get
   }
+}
+
+object GameControllerSingleton {
+
+  def getInstance(): GameController = ??? // Implementiere den GameController
 }

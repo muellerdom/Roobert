@@ -3,10 +3,16 @@ package Galgenmaennchen
 import Util.Observable
 
 /**
- * Galgenmaennchen Game Model
+ * Singleton Galgenmaennchen Game Model
  * Repräsentiert das Spiel Galgenmännchen mit geheimem Wort, Fehlerzählung und Fortschritt.
  */
-class Galgenmaennchen private(secretWord: String, maxGuesses: Int = 6) extends Observable {
+object Galgenmaennchen extends Observable {
+
+  // Das geheime Wort des Spiels
+  private var secretWord: String = ""
+
+  // Maximale Anzahl erlaubter Fehlversuche
+  private var maxGuesses: Int = 6
 
   // Die Buchstaben im geheimen Wort, die bereits korrekt geraten wurden
   private val guessedLetters = scala.collection.mutable.Set[Char]()
@@ -15,11 +21,24 @@ class Galgenmaennchen private(secretWord: String, maxGuesses: Int = 6) extends O
   private var incorrectGuesses = 0
 
   /**
+   * Initialisiert das Spiel mit einem neuen geheimen Wort und der maximalen Anzahl an Fehlversuchen.
+   * @param word Das geheime Wort des Spiels.
+   * @param maxFehlversuche Die maximal erlaubte Anzahl von Fehlversuchen.
+   */
+  def initialize(word: String, maxFehlversuche: Int = 6): Unit = {
+    secretWord = word.toLowerCase
+    maxGuesses = maxFehlversuche
+    guessedLetters.clear()
+    incorrectGuesses = 0
+    notifyObservers()
+  }
+
+  /**
    * Überprüft, ob ein Buchstabe im geheimen Wort enthalten ist, und aktualisiert den Spielstatus.
    * @param buchstabe Der Buchstabe, der überprüft werden soll.
    * @return true, wenn der Buchstabe korrekt geraten wurde, false bei einem Fehlversuch.
    */
-  def pruefeBuchstabeOeffentlich(buchstabe: Char): Boolean = {
+  def pruefeBuchstabe(buchstabe: Char): Boolean = {
     val lowerBuchstabe = buchstabe.toLower
     val isCorrect = if (secretWord.contains(lowerBuchstabe)) {
       guessedLetters += lowerBuchstabe
@@ -40,7 +59,7 @@ class Galgenmaennchen private(secretWord: String, maxGuesses: Int = 6) extends O
    * @return true, wenn alle Buchstaben des geheimen Wortes korrekt geraten wurden.
    */
   def isGameWon: Boolean = {
-    val won = secretWord.toLowerCase.toSet.subsetOf(guessedLetters)
+    val won = secretWord.toSet.subsetOf(guessedLetters)
     if (won) notifyObservers()
     won
   }
@@ -61,7 +80,7 @@ class Galgenmaennchen private(secretWord: String, maxGuesses: Int = 6) extends O
    */
   def displayGuessedWord: String = {
     secretWord.map { char =>
-      if (guessedLetters.contains(char.toLower)) char else '_'
+      if (guessedLetters.contains(char)) char else '_'
     }.mkString(" ")
   }
 
@@ -70,20 +89,4 @@ class Galgenmaennchen private(secretWord: String, maxGuesses: Int = 6) extends O
    * @return Die Anzahl der verbleibenden Fehlversuche.
    */
   def guessesLeft: Int = maxGuesses - incorrectGuesses
-}
-
-/**
- * Factory zur Erstellung von Galgenmaennchen-Instanzen.
- */
-object GalgenmaennchenFactory {
-
-  /**
-   * Factory-Methode zur Erstellung eines Galgenmaennchen-Objekts.
-   * @param secretWord Das geheime Wort des Spiels.
-   * @param maxGuesses Die maximal erlaubte Anzahl von Fehlversuchen.
-   * @return Eine Instanz von Galgenmaennchen.
-   */
-  def createGalgenmaennchen(secretWord: String, maxGuesses: Int = 6): Galgenmaennchen = {
-    new Galgenmaennchen(secretWord, maxGuesses)
-  }
 }

@@ -6,58 +6,72 @@ import scala.io.StdIn
 import Util.Observable
 
 /**
- * Controller für das Spiel im MVC-Pattern
- * Verwaltet die Interaktionen zwischen Model und View.
+ * Abstrakte Klasse für den GameController, die das Template Method Pattern implementiert.
+ * Definiert den allgemeinen Ablauf des Spiels.
  */
-class GameController private(model: GameModel, view: GameView) extends Observable {
+abstract class AbstractGameController(model: GameModel, view: GameView) extends Observable {
 
-  // Startet das Spiel
+  // Template-Methode: Definiert den allgemeinen Ablauf des Spiels
   def startGame(): Unit = {
     model.initializeGame() // Initialisiere das Spiel
     updateView()           // Zeige das anfängliche Spielfeld an
 
     // Schleife, die solange läuft, bis das Ziel erreicht ist
-    while (!model.isOnTarget) {
+    while (!isLevelCompleted) {
       view.displayMessage("Bitte gib 'right', 'down', 'up' oder 'left' ein, um die Figur zu bewegen:")
       val input = StdIn.readLine() // Liest die Eingabe des Benutzers
 
-      input match {
-        case "right" | "down" | "up" | "left" => // Überprüfe, ob die Eingabe gültig ist
-          if (model.move(input)) { // Versuche, die Figur zu bewegen
-            if (model.isOnTarget) {
-              view.displayMessage("Hurrah!") // Wenn das Ziel erreicht ist, feiere
-            }
-            updateView()         // Update die Ansicht
-            notifyObservers()    // Benachrichtige alle Observer (z. B. View), dass sich das Spiel geändert hat
-          } else {
-            view.displayMessage("Ungültige Bewegung. Versuche es erneut.") // Gib eine Fehlermeldung bei ungültiger Bewegung aus
-          }
-
-        case _ => view.displayMessage("Ungültiger Befehl. Bitte versuche es erneut.") // Bei ungültiger Eingabe
+      if (isValidMove(input)) { // Überprüfe, ob die Eingabe gültig ist
+        moveCharacter(input) // Bewege die Figur
+        if (isLevelCompleted) {
+          view.displayMessage("Hurrah! Das Ziel wurde erreicht!") // Wenn das Ziel erreicht ist, feiere
+        }
+        updateView()         // Update die Ansicht
+        notifyObservers()    // Benachrichtige alle Observer (z. B. View), dass sich das Spiel geändert hat
+      } else {
+        view.displayMessage("Ungültiger Befehl. Bitte versuche es erneut.") // Bei ungültiger Eingabe
       }
     }
   }
 
-  // Methode, um die Ansicht (View) zu aktualisieren
-  private def updateView(): Unit = {
-    view.displayBoard(model.getBoard) // Zeige das aktualisierte Spielfeld
-  }
+  // Abstrakte Methode, um die Eingabe zu validieren
+  protected def isValidMove(input: String): Boolean
+
+  // Abstrakte Methode, um die Spielfigur zu bewegen
+  protected def moveCharacter(input: String): Unit
+
+  // Abstrakte Methode, um die Ansicht zu aktualisieren
+  protected def updateView(): Unit
+
+  // Abstrakte Methode, um zu prüfen, ob das Level abgeschlossen ist
+  protected def isLevelCompleted: Boolean
 }
 
 /**
- * Factory zur Erstellung von GameController-Instanzen.
+ * Konkrete Implementierung des GameControllers für das Spiel.
  */
-object GameControllerFactory {
+class GameController(model: GameModel, view: GameView) extends AbstractGameController(model, view) {
 
-  /**
-   * Factory-Methode zur Erstellung eines GameController.
-   * @param model Das Model, das die Spielzustände verwaltet.
-   * @param view Die View, die die GUI oder CLI für das Spiel bereitstellt.
-   * @return Eine neue Instanz von GameController.
-   */
-  def createController(model: GameModel, view: GameView): GameController = {
-    new GameController(model, view)
+  // Validiert, ob die Eingabe eine gültige Richtung ist
+  override protected def isValidMove(input: String): Boolean = {
+    input match {
+      case "right" | "down" | "up" | "left" => true
+      case _ => false
+    }
   }
+
+  // Bewegt die Spielfigur basierend auf der Eingabe
+  override protected def moveCharacter(input: String): Unit = {
+    model.move(input)
+  }
+
+  // Aktualisiert die Ansicht, um das Spielfeld anzuzeigen
+  override protected def updateView(): Unit = {
+    view.displayBoard(model.getBoard)
+  }
+
+  // Überprüft, ob das Level abgeschlossen ist (wenn die Spielfigur das Ziel erreicht hat)
+  override protected def isLevelCompleted: Boolean = model.isOnTarget
 }
 
 /**
@@ -75,7 +89,7 @@ object GameController {
    */
   def getInstance(model: GameModel, view: GameView): GameController = {
     if (instance.isEmpty) {
-      instance = Some(GameControllerFactory.createController(model, view))
+      instance = Some(new GameController(model, view)) // Direkte Instanziierung ohne Factory
     }
     instance.get
   }

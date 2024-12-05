@@ -6,7 +6,7 @@ object Spielfeld extends Observable {
 
   private var grid: Array[Array[Int]] = Array.ofDim[Int](10, 10)  // Standardgröße, z.B. 10x10
 
-  // Alternativkonstruktor
+  // Initialisiert das Spielfeld mit einem benutzerdefinierten Array
   def initialize(array: Array[Array[Int]]): Unit = {
     grid = Array.ofDim[Int](array.length, if (array.isEmpty) 0 else array(0).length)
     for (i <- array.indices; j <- array(i).indices) {
@@ -56,23 +56,5 @@ object Spielfeld extends Observable {
   def reset(): Unit = {
     grid = Array.ofDim[Int](10, 10)  // Reset auf Standardgröße
     notifyObservers()  // Benachrichtige Observer nach Reset
-  }
-
-  // Factory-Pattern für Spielfeld
-  object SpielfeldFactory {
-
-    // Factory-Methode für ein Spielfeld mit benutzerdefinierter Größe
-    def createSpielfeld(rows: Int, cols: Int): Spielfeld.type = {
-      val newGrid = Array.ofDim[Int](rows, cols)
-      Spielfeld.grid = newGrid
-      notifyObservers()  // Benachrichtige Observer nach der Erstellung eines neuen Spielfeldes
-      Spielfeld
-    }
-
-    // Factory-Methode für ein Spielfeld mit einer benutzerdefinierten Initialisierung
-    def createSpielfeldWithInitialization(array: Array[Array[Int]]): Spielfeld.type = {
-      Spielfeld.initialize(array)
-      Spielfeld
-    }
   }
 }

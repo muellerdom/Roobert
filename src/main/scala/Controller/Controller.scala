@@ -1,109 +1,62 @@
 package Controller
 
-import Util.Observable
-import io.circe._
-import io.circe.parser._
-import io.circe.generic.auto._
-import java.io._
+import Model.GameModel
+import View.GameView
 
-case class Coordinate(x: Int, y: Int)
-case class Obstacle(`type`: String, coordinates: Coordinate)
-case class Goal(x: Int, y: Int)
-case class Objects(obstacles: List[Obstacle], jerm: List[Coordinate])
-case class LevelConfig(level: String, description: String, instruction: String, width: Int, height: Int, start: Coordinate, goal: Goal, objects: Objects)
-case class Levels(levels: List[LevelConfig])
+// Abstrakte Controller-Klasse mit Schablonenmethode
+abstract class GameController(model: GameModel, view: GameView) {
 
-/**
- * Hauptcontroller der Anwendung
- * Der Controller wird als Singleton implementiert.
- */
-class Controller private(levelFilePath: String) extends Observable {
-
-  private var levels: Option[Levels] = None
-  private var currentLevel: Option[LevelConfig] = None
-
-  // Lädt die Levels aus einer JSON-Datei
-  loadJsonFromFile(levelFilePath) match {
-    case Right(parsedLevels) => levels = Some(parsedLevels)
-    case Left(error) => println(s"Fehler beim Laden der Levels: $error")
+  // Schablonenmethode
+  def startGame(): Unit = {
+    initializeGame()
+    while (!isLevelCompleted) {
+      promptForMove()
+      val input = getUserInput()
+      if (isValidMove(input)) {
+        processMove(input)
+        updateView()
+      }
+    }
+    endGame()
   }
 
-  def loadJsonFromFile(filePath: String): Either[String, Levels] = {
-    val source = scala.io.Source.fromFile(filePath)
-    val jsonString = try source.mkString finally source.close()
-    decode[Levels](jsonString) match {
-      case Right(parsedLevels) => Right(parsedLevels)
-      case Left(error) => Left(s"Fehler beim Parsen des JSON: $error")
+  // Schritt 1: Initialisierung des Spiels (kann variabel sein, aber Grundlogik bleibt gleich)
+  protected def initializeGame(): Unit = {
+    model.initializeGame()
+    updateView()
+  }
+
+  // Schritt 2: Überprüfung, ob das Level abgeschlossen ist
+  protected def isLevelCompleted: Boolean = model.isOnTarget
+
+  // Schritt 3: Benutzeraufforderung
+  protected def promptForMove(): Unit = {
+    view.displayMessage("Bitte gib 'right', 'down', 'up' oder 'left' ein, um die Figur zu bewegen:")
+  }
+
+  // Schritt 4: Benutzereingabe verarbeiten
+  protected def getUserInput(): String = scala.io.StdIn.readLine()
+
+  // Schritt 5: Überprüfen der Eingabe
+  protected def isValidMove(input: String): Boolean = {
+    input == "right" || input == "down" || input == "up" || input == "left"
+  }
+
+  // Schritt 6: Verarbeite die Bewegung und aktualisiere das Spielfeld
+  protected def processMove(input: String): Unit = {
+    model.move(input)
+    if (model.isOnTarget) {
+      view.displayMessage("Hurrah! Das Ziel erreicht!")
     }
   }
 
-  // Startet das Level und informiert die View
-  def startLevel(level: String): Either[String, LevelConfig] = {
-    levels match {
-      case Some(lvl) =>
-        lvl.levels.find(_.level == level) match {
-          case Some(foundLevel) =>
-            currentLevel = Some(foundLevel)
-            notifyObservers()  // Benachrichtige die View, dass ein neues Level gestartet wurde
-            Right(foundLevel)
-          case None => Left(s"Level '$level' nicht gefunden.")
-        }
-      case None => Left("Bitte laden Sie zuerst die Leveldaten.")
-    }
+  // Schritt 7: Ansicht aktualisieren
+  protected def updateView(): Unit = {
+    view.displayBoard(model.getBoard)
   }
 
-  // Holt alle verfügbaren Levels
-  def getAvailableLevels: List[String] = {
-    levels.map(_.levels.map(_.level)).getOrElse(List())
-  }
-
-  def getCurrentLevelConfig: Option[LevelConfig] = currentLevel
-}
-
-/**
- * Companion-Objekt für das Singleton-Muster des Controllers
- */
-object Controller {
-
-  // Die einzige Instanz des Controllers (Singleton)
-  private var instance: Option[Controller] = None
-
-  // Zugriff auf die Singleton-Instanz des Controllers
-  def getInstance(levelFilePath: String): Controller = {
-    instance match {
-      case Some(ctrl) => ctrl  // Wenn bereits eine Instanz existiert, wird diese zurückgegeben
-      case None =>
-        val newInstance = new Controller(levelFilePath)  // Eine neue Instanz wird erstellt
-        instance = Some(newInstance)
-        newInstance
-    }
-  }
-
-  // Factory-Methode für die Erstellung von Controllern
-  def createController(levelFilePath: String): Controller = {
-    // Wenn du sicherstellen willst, dass immer nur eine Instanz erstellt wird, könnte diese Methode ebenfalls das Singleton verwenden.
-    getInstance(levelFilePath) // Gibt die Singleton-Instanz zurück.
-  }
-}
-
-/**
- * Beispiel für die Verwendung des Singleton- und Factory Patterns
- */
-object MainApp {
-  def main(args: Array[String]): Unit = {
-    // Controller über das Singleton-Muster erstellen
-    val levelFilePath = "src/main/resources/levels.json"
-    val controller = Controller.getInstance(levelFilePath)
-
-    // Beispielaktionen
-    println(s"Verfügbare Levels: ${controller.getAvailableLevels.mkString(", ")}")
-    controller.startLevel("level1") match {
-      case Right(levelConfig) => println(s"Level gestartet: ${levelConfig.description}")
-      case Left(error) => println(s"Fehler: $error")
-    }
-
-    // Alternativ: Controller über die Factory-Methode erstellen
-    val anotherController = Controller.createController(levelFilePath)
-    println(s"Verfügbare Levels: ${anotherController.getAvailableLevels.mkString(", ")}")
+  // Schritt 8: Das Spiel beenden
+  protected def endGame(): Unit = {
+    view.displayMessage("Das Spiel ist zu Ende!")
   }
 }

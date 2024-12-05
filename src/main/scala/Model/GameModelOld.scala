@@ -5,7 +5,7 @@ import Util.Observable
 /**
  * Repräsentiert das Spielfeld und die Spiellogik.
  */
-class GameModel private(val size: Int) extends Observable {
+class GameModel(val size: Int) extends Observable {
 
   private val board: Array[Array[Char]] = Array.fill(size, size)('-')
   private var figureX: Int = 0
@@ -19,7 +19,7 @@ class GameModel private(val size: Int) extends Observable {
   def initializeGame(): Unit = {
     placeFigure(figureX, figureY, 'F')
     placeFigure(targetX, targetY, 'Z')
-    notifyObservers()  // Benachrichtige Observer nach der Initialisierung des Spiels
+    notifyObservers() // Benachrichtige Observer nach der Initialisierung des Spiels
   }
 
   /**
@@ -32,7 +32,7 @@ class GameModel private(val size: Int) extends Observable {
   def placeFigure(x: Int, y: Int, symbol: Char): Boolean = {
     if (isValidPosition(x, y)) {
       board(x)(y) = symbol
-      notifyObservers()  // Benachrichtige Observer, wenn eine Figur gesetzt wird
+      notifyObservers() // Benachrichtige Observer, wenn eine Figur gesetzt wird
       true
     } else {
       false
@@ -58,7 +58,7 @@ class GameModel private(val size: Int) extends Observable {
       figureX = newX
       figureY = newY
       board(figureX)(figureY) = 'F'
-      notifyObservers()  // Benachrichtige Observer nach jeder gültigen Bewegung
+      notifyObservers() // Benachrichtige Observer nach jeder gültigen Bewegung
       true
     } else {
       false
@@ -86,17 +86,30 @@ class GameModel private(val size: Int) extends Observable {
   private def isValidPosition(x: Int, y: Int): Boolean = x >= 0 && x < size && y >= 0 && y < size
 }
 
+
 /**
- * Factory zur Erstellung von GameModel-Instanzen.
+ * Singleton für das Spielfeld-Management.
+ * Ist verantwortliche für das Verwalten der Instanz udn sorgt dafür, dass keine Mehrfachinstanzen angelegt werden
  */
-object GameModelFactory {
+object GameManager {
+  private var instance: Option[GameModel] = None
 
   /**
-   * Factory-Methode zur Erstellung eines GameModel-Objekts.
-   * @param size Die Größe des Spielfeldes.
-   * @return Eine Instanz von GameModel.
+   * Gibt die einzige Instanz von GameModel zurück. Erstellt eine neue Instanz, falls keine existiert.
+   * @param size Die Größe des Spielfeldes (nur bei der ersten Initialisierung relevant).
+   * @return Die Instanz von GameModel.
    */
-  def createGameModel(size: Int): GameModel = {
-    new GameModel(size)
+  def getInstance(size: Int): GameModel = {
+    if (instance.isEmpty) {
+      instance = Some(new GameModel(size))
+    }
+    instance.get
+  }
+
+  /**
+   * Setzt das Singleton zurück (z. B. für ein neues Spiel).
+   */
+  def resetInstance(): Unit = {
+    instance = None
   }
 }

@@ -1,26 +1,20 @@
-package Controller
-
 import Util.{Observable, Observer}
 import javax.swing._
 import java.awt._
-import java.io.File
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import scala.util.{Failure, Success, Try}
-import View.GUILevel1
+import java.io.File
 
-/**
- * GalgenmaennchenLevel1 Controller
- * Verwaltet Level 1 des Spiels.
- */
-class GalgenmaennchenLevel1 private(configFilePath: String) extends Observable {
+// Abstrakte Klasse GalgenmaennchenLevel, die das Template Method Pattern umsetzt
+abstract class GalgenmaennchenLevel(private val configFilePath: String) extends Observable {
 
   // Setzt Layout für das Hauptpanel
-  GalgenmaennchenLevel1.mainPanel.setLayout(GalgenmaennchenLevel1.cardLayout)
+  GalgenmaennchenLevel.mainPanel.setLayout(GalgenmaennchenLevel.cardLayout)
 
   // Konstruktor: Lädt die Konfiguration aus der JSON-Datei
   loadConfiguration(configFilePath)
 
-  def getMainPanel: JPanel = GalgenmaennchenLevel1.mainPanel
+  def getMainPanel: JPanel = GalgenmaennchenLevel.mainPanel
 
   // Methode, um Observer hinzuzufügen
   override def addObserver(observer: Observer): Unit = {
@@ -32,76 +26,98 @@ class GalgenmaennchenLevel1 private(configFilePath: String) extends Observable {
     super.notifyObservers() // Notify Observer im Observable
   }
 
-  // Lädt die Konfiguration und setzt das Level
+  // Template-Methode: definiert den allgemeinen Ablauf zum Laden des Levels
   private def loadConfiguration(configFilePath: String): Unit = {
+    val config = readConfigFile(configFilePath)
+
+    if (config != null) {
+      val currentLevel = getCurrentLevel(config)
+
+      // Überprüfe, ob das aktuelle Level das passende ist
+      if (currentLevel == "Level1") {
+        val levelConfig = getLevelConfig(config, "Level1")
+        setupLevelPanel(levelConfig)
+        notifyObservers()
+      }
+    }
+  }
+
+  // Schritt 1: Lese die Konfigurationsdatei (kann von Unterklassen spezifiziert werden)
+  protected def readConfigFile(configFilePath: String): JsonNode = {
     val mapper = new ObjectMapper()
     val configFile = new File(configFilePath)
-
     if (!configFile.exists()) {
       println(s"Config-Datei nicht gefunden: ${configFile.getAbsolutePath}")
-      return
+      return null
     }
 
     Try(mapper.readTree(configFile)) match {
-      case Success(config) =>
-        val currentLevel = config.get("currentLevel").asText()
-
-        // Überprüfe, ob Level1 geladen werden muss
-        if (currentLevel == "Level1") {
-          val level1Config = config.get("levels").get("Level1")
-          val secretWord = level1Config.get("secretWord").asText()
-          val maxGuesses = level1Config.get("maxGuesses").asInt()
-
-          // Level1-Panel hinzufügen
-          val level1Panel = new GUILevel1(secretWord, maxGuesses)
-          GalgenmaennchenLevel1.mainPanel.add(level1Panel.getPanel, "Level1")
-
-          // Benachrichtige alle Observer (z. B. View)
-          notifyObservers()
-          println("Level1-Panel hinzugefügt")
-        }
-
+      case Success(config) => config
       case Failure(e) =>
-        e.printStackTrace()  // Fehlerbehandlung bei JSON-Leseproblemen
+        e.printStackTrace()
+        null
     }
   }
+
+  // Schritt 2: Bestimme das aktuelle Level (kann von Unterklassen spezifiziert werden)
+  protected def getCurrentLevel(config: JsonNode): String = {
+    config.get("currentLevel").asText()
+  }
+
+  // Schritt 3: Lade die Levelkonfiguration für ein bestimmtes Level
+  protected def getLevelConfig(config: JsonNode, level: String): JsonNode = {
+    config.get("levels").get(level)
+  }
+
+  // Schritt 4: Erstelle das Panel und füge es hinzu (wird in Unterklassen spezifiziert)
+  protected def setupLevelPanel(levelConfig: JsonNode): Unit
 }
 
 /**
- * Factory für die Erstellung von GalgenmaennchenLevel1-Objekten.
+ * GalgenmaennchenLevel1 spezifische Implementierung
  */
-object GalgenmaennchenLevel1Factory {
+class GalgenmaennchenLevel1(configFilePath: String) extends GalgenmaennchenLevel(configFilePath) {
 
-  /**
-   * Factory-Methode zur Erstellung eines GalgenmaennchenLevel1 Controllers.
-   * @param configFilePath Der Pfad zur Konfigurationsdatei.
-   * @return Eine Instanz von GalgenmaennchenLevel1.
-   */
-  def createController(configFilePath: String): GalgenmaennchenLevel1 = {
-    new GalgenmaennchenLevel1(configFilePath)
+  // Schritt 4: Setup für Level 1, wie es im spezifischen Fall benötigt wird
+  override protected def setupLevelPanel(levelConfig: JsonNode): Unit = {
+    val secretWord = levelConfig.get("secretWord").asText()
+    val maxGuesses = levelConfig.get("maxGuesses").asInt()
+
+    // Level1-Panel erstellen und hinzufügen
+    val level1Panel = new GUILevel1(secretWord, maxGuesses)
+    GalgenmaennchenLevel.mainPanel.add(level1Panel.getPanel, "Level1")
+    println("Level1-Panel hinzugefügt")
   }
 }
 
-/**
- * Singleton-Objekt, um eine einzige Instanz von GalgenmaennchenLevel1 zu verwalten.
- */
-object GalgenmaennchenLevel1 {
+// Das GUILevel1-Panel zur Darstellung der Level1-spezifischen Komponenten
+class GUILevel1(secretWord: String, maxGuesses: Int) {
+  // Erstelle das Panel für Level1
+  private val panel: JPanel = new JPanel()
+  private val label: JLabel = new JLabel(s"Secret word: $secretWord, Max guesses: $maxGuesses")
+
+  panel.add(label)
+
+  def getPanel: JPanel = panel
+}
+
+object GalgenmaennchenLevel {
   // Das Hauptpanel und Layout für die verschiedenen Levels
   val mainPanel: JPanel = new JPanel()
   val cardLayout: CardLayout = new CardLayout()
 
   // Singleton-Instanz
-  private var instance: Option[GalgenmaennchenLevel1] = None
+  private var instance: Option[GalgenmaennchenLevel] = None
 
   /**
    * Liefert die Singleton-Instanz von GalgenmaennchenLevel1.
-   * Wenn sie noch nicht existiert, wird sie mit einer Standard-Konfigurationsdatei erzeugt.
+   * Wenn sie noch nicht existiert, wird sie mit einer Konfigurationsdatei erzeugt.
    * @param configFilePath Der Pfad zur Konfigurationsdatei.
    * @return Die Singleton-Instanz.
    */
-  def getInstance(configFilePath: String): GalgenmaennchenLevel1 = {
+  def getInstance(configFilePath: String): GalgenmaennchenLevel = {
     if (instance.isEmpty) {
-      instance = Some(GalgenmaennchenLevel1Factory.createController(configFilePath))
+      instance = Some(new GalgenmaennchenLevel1(configFilePath))
     }
     instance.get
   }
