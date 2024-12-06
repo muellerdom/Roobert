@@ -1,7 +1,8 @@
 import Util.{Observable, Observer}
 import javax.swing._
 import java.awt._
-import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
+import scala.util.parsing.json.JSON
+import scala.io.Source
 import scala.util.{Failure, Success, Try}
 import java.io.File
 
@@ -26,11 +27,21 @@ abstract class GalgenmaennchenLevel(private val configFilePath: String) extends 
     super.notifyObservers() // Notify Observer im Observable
   }
 
+  // Enumeration der verschiedenen Spielphasen
+  sealed trait GameStage
+  case object InitializationStage extends GameStage
+  case object UserInputStage extends GameStage
+  case object ProcessMoveStage extends GameStage
+  case object GameEndStage extends GameStage
+
+  // Aktuelle Spielphase
+  private var currentStage: GameStage = InitializationStage
+
   // Template-Methode: definiert den allgemeinen Ablauf zum Laden des Levels
   private def loadConfiguration(configFilePath: String): Unit = {
     val config = readConfigFile(configFilePath)
 
-    if (config != null) {
+    if (config.nonEmpty) {
       val currentLevel = getCurrentLevel(config)
 
       // Überprüfe, ob das aktuelle Level das passende ist
@@ -38,39 +49,96 @@ abstract class GalgenmaennchenLevel(private val configFilePath: String) extends 
         val levelConfig = getLevelConfig(config, "Level1")
         setupLevelPanel(levelConfig)
         notifyObservers()
+        currentStage = UserInputStage  // Setzt die Phase auf "Benutzereingabe"
       }
     }
   }
 
-  // Schritt 1: Lese die Konfigurationsdatei (kann von Unterklassen spezifiziert werden)
-  protected def readConfigFile(configFilePath: String): JsonNode = {
-    val mapper = new ObjectMapper()
-    val configFile = new File(configFilePath)
-    if (!configFile.exists()) {
-      println(s"Config-Datei nicht gefunden: ${configFile.getAbsolutePath}")
-      return null
+  // Schritt 1: Lese die Konfigurationsdatei
+  protected def readConfigFile(configFilePath: String): Map[String, Any] = {
+    val file = new File(configFilePath)
+    if (!file.exists()) {
+      println(s"Config-Datei nicht gefunden: ${file.getAbsolutePath}")
+      return Map.empty
     }
 
-    Try(mapper.readTree(configFile)) match {
+    Try {
+      val source = Source.fromFile(file)
+      val jsonString = try source.mkString finally source.close()
+      JSON.parseFull(jsonString) match {
+        case Some(data: Map[String, Any]) => data
+        case _ =>
+          println("Ungültiges JSON-Format.")
+          Map.empty
+      }
+    } match {
       case Success(config) => config
       case Failure(e) =>
         e.printStackTrace()
-        null
+        Map.empty
     }
   }
 
-  // Schritt 2: Bestimme das aktuelle Level (kann von Unterklassen spezifiziert werden)
-  protected def getCurrentLevel(config: JsonNode): String = {
-    config.get("currentLevel").asText()
+  // Schritt 2: Bestimme das aktuelle Level
+  protected def getCurrentLevel(config: Map[String, Any]): String = {
+    config.get("currentLevel").map(_.toString).getOrElse("")
   }
 
   // Schritt 3: Lade die Levelkonfiguration für ein bestimmtes Level
-  protected def getLevelConfig(config: JsonNode, level: String): JsonNode = {
-    config.get("levels").get(level)
+  protected def getLevelConfig(config: Map[String, Any], level: String): Map[String, Any] = {
+    config.get("levels") match {
+      case Some(levels: Map[String, Any]) =>
+        levels.get(level) match {
+          case Some(levelConfig: Map[String, Any]) => levelConfig
+          case _ => Map.empty
+        }
+      case _ => Map.empty
+    }
   }
 
   // Schritt 4: Erstelle das Panel und füge es hinzu (wird in Unterklassen spezifiziert)
-  protected def setupLevelPanel(levelConfig: JsonNode): Unit
+  protected def setupLevelPanel(levelConfig: Map[String, Any]): Unit
+
+  // Spielsteuerung je nach Phase
+  def runGameCycle(): Unit = {
+    currentStage match {
+      case InitializationStage => initializeGame()
+      case UserInputStage => promptForMove()
+      case ProcessMoveStage => processMove(getUserInput())
+      case GameEndStage => endGame()
+    }
+  }
+
+  // Startet das Spiel
+  protected def initializeGame(): Unit = {
+    // Initialisiere Level, lade Konfiguration etc.
+    println("Spiel wird initialisiert...")
+    currentStage = UserInputStage  // Setzt die Phase auf "Benutzereingabe"
+  }
+
+  // Benutzereingabe anfordern
+  protected def promptForMove(): Unit = {
+    println("Bitte gib einen Buchstaben zum Raten ein...")
+    currentStage = ProcessMoveStage  // Setzt die Phase auf "Bewege verarbeiten"
+  }
+
+  // Verarbeitet den Benutzerzug
+  protected def processMove(input: String): Unit = {
+    println(s"Verarbeite Eingabe: $input")
+    // Verarbeite das Ratewort etc.
+    currentStage = if (isLevelCompleted) GameEndStage else UserInputStage
+  }
+
+  // Überprüft, ob das Level abgeschlossen ist
+  protected def isLevelCompleted: Boolean = {
+    // Überprüfe, ob der Benutzer das richtige Wort erraten hat oder die maximale Anzahl an Versuchen erreicht ist
+    false
+  }
+
+  // Beendet das Spiel
+  protected def endGame(): Unit = {
+    println("Das Spiel ist zu Ende!")
+  }
 }
 
 /**
@@ -79,9 +147,9 @@ abstract class GalgenmaennchenLevel(private val configFilePath: String) extends 
 class GalgenmaennchenLevel1(configFilePath: String) extends GalgenmaennchenLevel(configFilePath) {
 
   // Schritt 4: Setup für Level 1, wie es im spezifischen Fall benötigt wird
-  override protected def setupLevelPanel(levelConfig: JsonNode): Unit = {
-    val secretWord = levelConfig.get("secretWord").asText()
-    val maxGuesses = levelConfig.get("maxGuesses").asInt()
+  override protected def setupLevelPanel(levelConfig: Map[String, Any]): Unit = {
+    val secretWord = levelConfig.getOrElse("secretWord", "unknown").toString
+    val maxGuesses = levelConfig.getOrElse("maxGuesses", 0).toString.toInt
 
     // Level1-Panel erstellen und hinzufügen
     val level1Panel = new GUILevel1(secretWord, maxGuesses)

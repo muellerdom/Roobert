@@ -175,3 +175,25 @@ object TUI {
     instance
   }
 }
+// Diese Case-Class repräsentiert die Konfiguration eines Levels im Spiel
+case class LevelConfig(
+                        level: Int,             // Die Levelnummer
+                        description: String,    // Eine Beschreibung des Levels
+                        width: Int,             // Breite des Spielfelds
+                        height: Int,            // Höhe des Spielfelds
+                        start: Coordinate,      // Der Startpunkt des Spielers (Koordinate)
+                        goal: Coordinate,       // Das Ziel des Spielers (Koordinate)
+                        objects: LevelObjects   // Objekte im Level (z.B. Hindernisse und "Jerms")
+                      )
+
+// Diese Case-Class repräsentiert die Objekte auf dem Spielfeld
+case class LevelObjects(
+                         obstacles: List[Coordinate], // Liste der Hindernisse (Koordinaten)
+                         jerm: List[Coordinate]      // Liste der Jerms (Koordinaten)
+                       )
+
+// Diese Case-Class repräsentiert eine Koordinate auf dem Spielfeld
+case class Coordinate(
+                       x: Int,   // x-Koordinate
+                       y: Int    // y-Koordinate
+                     )

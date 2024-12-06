@@ -16,7 +16,9 @@ lazy val root = (project in file("."))
       "com.fasterxml.jackson.core" % "jackson-annotations" % "2.13.0",
       "io.circe" %% "circe-core" % "0.14.10",
       "io.circe" %% "circe-generic" % "0.14.10",
+      "org.scala-lang.modules" %% "scala-swing" % "2.1.0", // Scala Swing-Abhängigkeit,
       "io.circe" %% "circe-parser" % "0.14.10"
+
     )
   )
 

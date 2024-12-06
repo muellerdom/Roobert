@@ -33,4 +33,3 @@ object Bruecke extends TaschenInhalt("Bruecke", 50.0, "Eine Bruecke, die ueber e
 object Schluessel extends TaschenInhalt("Schluessel", 2.0, "Ein Schluessel, der eine Tuer oeffnet", "Silber")
 
 
-Suessigkeit.einsammeln(Bruecke)  // Beispiel für das Einsammeln eines Objekts

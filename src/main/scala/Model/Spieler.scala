@@ -1,4 +1,4 @@
-package Model
+/*package Model
 
 import Controller.{Coordinate, LevelConfig}
 import Util.Observable
@@ -106,4 +106,4 @@ object Spieler extends Observable {
   }
 
   override def toString: String = s"Model.Spieler(${getInstance.posX}, ${getInstance.posY})"
-}
+}*/

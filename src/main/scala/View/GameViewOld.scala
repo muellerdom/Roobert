@@ -3,13 +3,19 @@ package View
 import Util.Observer
 import Model.{GameManager, GameModel}
 
-// Abstrakte Klasse für Views mit Template Method Pattern
 abstract class GameView extends Observer {
-  // Template-Methode, die den Ablauf definiert
+  // Template-Methode, die den Rendering-Ablauf definiert
   final def renderView(): Unit = {
     val board = GameManager.getInstance(5).getBoard // Holen des aktuellen Spielfelds aus dem Modell
-    displayBoard(board) // Darstellung des Spielfelds
-    displayAdditionalInfo() // Optionale zusätzliche Informationen, durch Subklassen definiert
+
+    // Phasen des Renderns ausführen
+    val stages = List(
+      new DisplayBoardStage(board, this),
+      new DisplayAdditionalInfoStage(this),
+      new DisplayMessageStage("Spiel läuft...", this)
+    )
+
+    stages.foreach(_.execute()) // Jede Phase wird nacheinander ausgeführt
   }
 
   // Diese Methode zeigt das Spielfeld an
@@ -25,7 +31,32 @@ abstract class GameView extends Observer {
   override def update(): Unit = renderView()
 }
 
-// Eine konkrete GameView-Implementierung (einfache Darstellung des Spiels)
+// Die ViewStage-Abstract-Klasse, die den Ablauf jeder Phase definiert
+abstract class ViewStage {
+  def execute(): Unit
+}
+
+// Die konkrete Implementierung für das Anzeigen des Spielfelds
+class DisplayBoardStage(board: Array[Array[Char]], gameView: GameView) extends ViewStage {
+  override def execute(): Unit = {
+    gameView.displayBoard(board)
+  }
+}
+
+// Die konkrete Implementierung für das Anzeigen zusätzlicher Informationen
+class DisplayAdditionalInfoStage(gameView: GameView) extends ViewStage {
+  override def execute(): Unit = {
+    gameView.displayAdditionalInfo()
+  }
+}
+
+// Die konkrete Implementierung für das Anzeigen von Nachrichten
+class DisplayMessageStage(message: String, gameView: GameView) extends ViewStage {
+  override def execute(): Unit = {
+    gameView.displayMessage(message)
+  }
+}
+
 class SimpleGameView extends GameView {
   override def displayBoard(board: Array[Array[Char]]): Unit = {
     println("Einfaches Spielfeld:")
@@ -39,7 +70,6 @@ class SimpleGameView extends GameView {
   }
 }
 
-// Eine detaillierte GameView-Implementierung (erweiterte Darstellung)
 class DetailedGameView extends GameView {
   override def displayBoard(board: Array[Array[Char]]): Unit = {
     println("Detaillierte Ansicht des Spielfelds:")

@@ -1,143 +1,177 @@
-package View
-
-import javax.swing._
-import java.awt._
-import Controller.GameController
 import Util.Observer
+import apple.laf.JRSUIConstants.Orientation
 
-// MainFrame als Singleton und Observer
-abstract class MainFrameTemplate private() extends Observer {
+import scala.swing._
+import scala.swing.event._
+import java.awt.{Color, Dimension}
 
-  protected val frame = new JFrame("Galgenmännchen - Hauptmenü")
-  protected val sideMenu = new JPanel()
-  protected val mainPanel = new JPanel(new BorderLayout())
-  protected val level1Button = new JButton("Level 1")
-  protected val level2Button = new JButton("Level 2")
-  protected val gameController = GameControllerSingleton.getInstance() // Singleton Instanz des Controllers
+// Abstrakte Klasse für das Stage-Pattern
+trait GameStage {
+  def enter(): Unit
+  def exit(): Unit
+}
+/*
+// Haupt-Frame als Singleton und Observer
+abstract class MainFrameTemplate extends Observer {
 
-  protected var currentPanel: JPanel = _
+  protected val frame = new MainFrame {
+    title = "Galgenmännchen - Hauptmenü"
+    preferredSize = new Dimension(600, 400)
+  }
+  protected val sideMenu = new BoxPanel(Orientation.Vertical) {
+    background = new Color(108, 178, 243)
+  }
+  protected val level1Button = new Button("Level 1")
+  protected val level2Button = new Button("Level 2")
+
+  protected var currentPanel: Panel = new FlowPanel() // Standard Panel
+
+  // Aktuelle Stage des Spiels
+  protected var currentStage: GameStage = _
 
   // Template-Methode: Definiert den Ablauf
   final def initializeFrame(): Unit = {
     setupFrame()          // Allgemeine Frame-Einstellungen
     setupSideMenu()       // Konfiguration des Seitenmenüs
-    setupMainPanel()      // Hauptinhalt konfigurieren
     setupListeners()      // Event-Listener hinzufügen
+    setupMainPanel()      // Hauptinhalt konfigurieren
     finalizeFrame()       // Frame sichtbar machen
   }
 
   // Abstrakte Methoden für die spezifischen Details
-  protected def setupMainPanel(): Unit
   protected def setupListeners(): Unit
+  protected def setupMainPanel(): Unit
 
   // Default-Implementierungen für Frame- und SideMenu-Setup
   protected def setupFrame(): Unit = {
-    frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
-    frame.setSize(600, 400)
-    frame.getContentPane.setBackground(new Color(0x6CB2F3))
+    frame.peer.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE)
+    frame.background = new Color(0x6CB2F3)
   }
 
   protected def setupSideMenu(): Unit = {
-    sideMenu.setLayout(new BoxLayout(sideMenu, BoxLayout.Y_AXIS))
-    sideMenu.setBackground(new Color(108, 178, 243))
-    sideMenu.setPreferredSize(new Dimension((frame.getWidth * 0.2).toInt, frame.getHeight))
-
-    sideMenu.add(level1Button)
-    sideMenu.add(level2Button)
-    frame.getContentPane.add(sideMenu, BorderLayout.WEST)
-  }
-
-  protected def finalizeFrame(): Unit = {
-    frame.setVisible(true)
-  }
-
-  // Observer-Methode
-  override def update(): Unit = {
-    println("Das Spiel hat sich geändert. Das Hauptfenster wird aktualisiert.")
-    if (GameController.isLevelCompleted) {
-      level1Button.setEnabled(true)
-      level2Button.setEnabled(true)
-      println("Level abgeschlossen! Weiter zu Level 2.")
-    } else {
-      level1Button.setEnabled(false)
-      println("Level 1 läuft noch.")
+    sideMenu.contents += level1Button
+    sideMenu.contents += level2Button
+    frame.contents = new BorderPanel {
+      layout(sideMenu) = BorderPanel.Position.West
+      layout(currentPanel) = BorderPanel.Position.Center
     }
   }
 
-  // Methode zum Aktualisieren des MainPanels
-  protected def updateMainPanel(): Unit = {
-    mainPanel.removeAll()
-    mainPanel.add(currentPanel, BorderLayout.CENTER)
-    frame.revalidate()
-    frame.repaint()
+  protected def finalizeFrame(): Unit = {
+    frame.visible = true
+  }
+
+  // Methoden zur Verwaltung der aktuellen Stage
+  protected def setCurrentStage(stage: GameStage): Unit = {
+    if (currentStage != null) currentStage.exit() // Vorherige Stage verlassen
+    currentStage = stage
+    currentStage.enter() // Neue Stage betreten
   }
 }
 
-// Konkrete Implementierung des MainFrames für Level 1
-class MainFrameLevel1 extends MainFrameTemplate {
+// Konkrete Implementierungen der Stages
+class MenuStage(mainFrame: MainFrameTemplate) extends GameStage {
 
-  // Initiales Setup des MainPanels
-  override protected def setupMainPanel(): Unit = {
-    currentPanel = createLevel1Panel()
-    updateMainPanel()
+  override def enter(): Unit = {
+    mainFrame.currentPanel = new BoxPanel(Orientation.Vertical) {
+      contents += new Label("Willkommen zum Galgenmännchen-Spiel!")
+      contents += mainFrame.level1Button
+      contents += mainFrame.level2Button
+    }
+    mainFrame.frame.contents = new BorderPanel {
+      layout(mainFrame.sideMenu) = BorderPanel.Position.West
+      layout(mainFrame.currentPanel) = BorderPanel.Position.Center
+    }
   }
 
-  // Listener-Setup für Level 1
-  override protected def setupListeners(): Unit = {
-    level1Button.addActionListener(_ => {
-      // Startet Level 1 und zeigt es im MainFrame an
-      GameController.completeLevel()  // Level 1 abgeschlossen
-      level2Button.setEnabled(true)
-    })
-
-    level2Button.addActionListener(_ => {
-      changeToLevel2() // Wechsel zu Level 2
-    })
-
-    // Initiale Deaktivierung von Level 2 Button bis Level 1 abgeschlossen ist
-    level2Button.setEnabled(false)
-  }
-
-  // Methode zum Erstellen des Panels für Level 1
-  private def createLevel1Panel(): JPanel = {
-    val level1Panel = new JPanel(new BorderLayout())
-    level1Panel.setBackground(new Color(0xFFFFFF))
-    level1Panel.add(new JLabel("Level 1 wird gespielt..."), BorderLayout.CENTER)
-    level1Panel
-  }
-
-  // Methode zum Wechseln zu Level 2
-  private def changeToLevel2(): Unit = {
-    currentPanel = createLevel2Panel()
-    updateMainPanel()
-  }
-
-  // Methode zum Erstellen des Panels für Level 2
-  private def createLevel2Panel(): JPanel = {
-    val level2Panel = new JPanel(new BorderLayout())
-    level2Panel.setBackground(new Color(0xFFFFFF))
-    level2Panel.add(new JLabel("Level 2 wird gespielt..."), BorderLayout.CENTER)
-    level2Panel
+  override def exit(): Unit = {
+    // Hier könnte die Logik zum Verlassen des Menüs kommen (z.B. alle Buttons deaktivieren)
   }
 }
 
-// Singleton-Objekt für die GUI-Instanz
+class PlayLevel1Stage(mainFrame: MainFrameTemplate) extends GameStage {
+
+  override def enter(): Unit = {
+    mainFrame.currentPanel = new BoxPanel(Orientation.Vertical) {
+      contents += new Label("Level 1 wird gespielt...")
+      val backButton = new Button("Zurück zum Menü")
+      contents += backButton
+
+      listenTo(backButton)
+      reactions += {
+        case ButtonClicked(`backButton`) =>
+          mainFrame.setCurrentStage(new MenuStage(mainFrame)) // Zurück zum Menü
+      }
+    }
+    mainFrame.frame.contents = new BorderPanel {
+      layout(mainFrame.sideMenu) = BorderPanel.Position.West
+      layout(mainFrame.currentPanel) = BorderPanel.Position.Center
+    }
+  }
+
+  override def exit(): Unit = {
+    // Optional: Level 1 beenden oder vorherige Logik ausführen
+  }
+}
+
+class PlayLevel2Stage(mainFrame: MainFrameTemplate) extends GameStage {
+
+  override def enter(): Unit = {
+    mainFrame.currentPanel = new BoxPanel(Orientation.Vertical) {
+      contents += new Label("Level 2 wird gespielt...")
+      val backButton = new Button("Zurück zum Menü")
+      contents += backButton
+
+      listenTo(backButton)
+      reactions += {
+        case ButtonClicked(`backButton`) =>
+          mainFrame.setCurrentStage(new MenuStage(mainFrame)) // Zurück zum Menü
+      }
+    }
+    mainFrame.frame.contents = new BorderPanel {
+      layout(mainFrame.sideMenu) = BorderPanel.Position.West
+      layout(mainFrame.currentPanel) = BorderPanel.Position.Center
+    }
+  }
+
+  override def exit(): Unit = {
+    // Optional: Level 2 beenden oder vorherige Logik ausführen
+  }
+}
+
+// Singleton für das MainFrame
 object MainFrameSingleton {
 
   private var instance: Option[MainFrameTemplate] = None
 
-  // Thread-sichere Methode, um die passende GUI zu setzen
   def getInstance: MainFrameTemplate = synchronized {
     if (instance.isEmpty) {
-      val newFrame = new MainFrameLevel1()
-      newFrame.initializeFrame() // Template-Methode wird aufgerufen
+      val newFrame = new MainFrameTemplate {
+        override protected def setupListeners(): Unit = {
+          level1Button.reactions += {
+            case ButtonClicked(_) =>
+              setCurrentStage(new PlayLevel1Stage(this)) // Wechselt zu Level 1
+          }
+          level2Button.reactions += {
+            case ButtonClicked(_) =>
+              setCurrentStage(new PlayLevel2Stage(this)) // Wechselt zu Level 2
+          }
+        }
+
+        override protected def setupMainPanel(): Unit = {
+          // Start mit dem Menü
+          setCurrentStage(new MenuStage(this))
+        }
+      }
+      newFrame.initializeFrame() // Template-Methode aufrufen
       instance = Some(newFrame)
     }
     instance.get
   }
 }
 
-object GameControllerSingleton {
-
-  def getInstance(): GameController = ??? // Implementiere den GameController
+// Initialisierung des Spiels
+object GameApp extends App {
+  MainFrameSingleton.getInstance // Initialisiere das Hauptfenster
 }
+*/

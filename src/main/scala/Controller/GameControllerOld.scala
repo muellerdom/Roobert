@@ -11,40 +11,77 @@ import Util.Observable
  */
 abstract class AbstractGameController(model: GameModel, view: GameView) extends Observable {
 
+  // Enumeration der verschiedenen Spielphasen
+  sealed trait GameStage
+  case object InitializationStage extends GameStage
+  case object UserInputStage extends GameStage
+  case object ProcessMoveStage extends GameStage
+  case object GameEndStage extends GameStage
+
+  // Aktuelle Spielphase
+  private var currentStage: GameStage = InitializationStage
+
   // Template-Methode: Definiert den allgemeinen Ablauf des Spiels
   def startGame(): Unit = {
-    model.initializeGame() // Initialisiere das Spiel
-    updateView()           // Zeige das anfängliche Spielfeld an
+    // Initialisierung des Spiels
+    model.initializeGame()
+    updateView() // Zeige das anfängliche Spielfeld an
+    currentStage = UserInputStage // Setze die Phase auf Benutzereingabe
 
     // Schleife, die solange läuft, bis das Ziel erreicht ist
-    while (!isLevelCompleted) {
-      view.displayMessage("Bitte gib 'right', 'down', 'up' oder 'left' ein, um die Figur zu bewegen:")
-      val input = StdIn.readLine() // Liest die Eingabe des Benutzers
-
-      if (isValidMove(input)) { // Überprüfe, ob die Eingabe gültig ist
-        moveCharacter(input) // Bewege die Figur
-        if (isLevelCompleted) {
-          view.displayMessage("Hurrah! Das Ziel wurde erreicht!") // Wenn das Ziel erreicht ist, feiere
-        }
-        updateView()         // Update die Ansicht
-        notifyObservers()    // Benachrichtige alle Observer (z. B. View), dass sich das Spiel geändert hat
-      } else {
-        view.displayMessage("Ungültiger Befehl. Bitte versuche es erneut.") // Bei ungültiger Eingabe
+    while (currentStage != GameEndStage) {
+      currentStage match {
+        case InitializationStage => initializeGame()
+        case UserInputStage => promptForMove()
+        case ProcessMoveStage => processMove()
+        case GameEndStage => endGame()
       }
     }
   }
 
-  // Abstrakte Methode, um die Eingabe zu validieren
+  // Abstrakte Methoden, die von der konkreten Implementierung überschrieben werden müssen
   protected def isValidMove(input: String): Boolean
-
-  // Abstrakte Methode, um die Spielfigur zu bewegen
   protected def moveCharacter(input: String): Unit
-
-  // Abstrakte Methode, um die Ansicht zu aktualisieren
   protected def updateView(): Unit
-
-  // Abstrakte Methode, um zu prüfen, ob das Level abgeschlossen ist
   protected def isLevelCompleted: Boolean
+
+  // Methoden zur Verwaltung der verschiedenen Phasen
+  private def initializeGame(): Unit = {
+    // Hier können z.B. Level und Spielfigur initialisiert werden
+    println("Spiel wird initialisiert...")
+    currentStage = UserInputStage // Wechsel zu Benutzereingabe
+  }
+
+  private def promptForMove(): Unit = {
+    // Zeige Aufforderung für die Benutzereingabe
+    view.displayMessage("Bitte gib 'right', 'down', 'up' oder 'left' ein, um die Figur zu bewegen:")
+    currentStage = ProcessMoveStage // Wechsel zu Verarbeitungsphase
+  }
+
+  private def processMove(): Unit = {
+    // Liest die Eingabe des Benutzers
+    val input = StdIn.readLine()
+
+    // Überprüfe, ob die Eingabe gültig ist
+    if (isValidMove(input)) {
+      moveCharacter(input) // Bewege die Spielfigur
+      updateView() // Aktualisiere die Ansicht
+      if (isLevelCompleted) {
+        view.displayMessage("Hurrah! Das Ziel wurde erreicht!") // Wenn das Ziel erreicht ist
+        currentStage = GameEndStage // Wechsel zu Spielende
+      } else {
+        currentStage = UserInputStage // Zurück zur Benutzereingabe
+      }
+    } else {
+      view.displayMessage("Ungültiger Befehl. Bitte versuche es erneut.") // Bei ungültiger Eingabe
+      currentStage = UserInputStage // Wieder zur Benutzereingabe
+    }
+  }
+
+  private def endGame(): Unit = {
+    // Das Spiel ist zu Ende
+    view.displayMessage("Das Spiel ist zu Ende!")
+  }
 }
 
 /**
