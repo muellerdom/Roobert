@@ -3,7 +3,7 @@ package View
 import scala.tools.nsc.interpreter.IMain
 import scala.tools.nsc.interpreter.shell.ReplReporterImpl
 import scala.tools.nsc.Settings
-import Controller.Controller
+import Controller.{Controller, SpielStatus}
 import Util.Observer
 
 
@@ -96,6 +96,7 @@ class TUI(controller: Controller) extends Observer {
           codeBlock.clear()
 
           if (controller.isLevelComplete) {
+            controller.spielStatus = SpielStatus.GameEndStage
             println("Herzlichen Glückwunsch! Robert ist angekommen!")
             displayGrid()
             start() // Startet das Spiel neu

@@ -1,9 +1,12 @@
 package Controller
 
+import Controller.SpielStatus.{InitializationStage, ProcessMoveStage, SpielStatus, UserInputStage}
 import Model._
 import Util.{Observable, UndoManager}
 
-class Controller() extends Observable {
+class Controller extends Observable {
+
+  var spielStatus: SpielStatus = InitializationStage
 
   def startLevel(levelName: String): Either[String, LevelConfig] = {
     levelManager.ladeLevel(levelName) match {
@@ -35,18 +38,23 @@ class Controller() extends Observable {
   def movePlayer(action: String): Unit = {
     val command = new SetCommand(action)
     undoManager.doStep(command)
+    spielStatus = ProcessMoveStage
     notifyObservers()
   }
 
   def undo(): Unit = {
     undoManager.undoStep
     println(Spieler.getPosition)
+    spielStatus = ProcessMoveStage
+
     notifyObservers()
   }
 
   def redo(): Unit = {
     undoManager.redoStep
     println(Spieler.getPosition)
+    spielStatus = ProcessMoveStage
+
     notifyObservers()
   }
   def isLevelComplete: Boolean = {
@@ -60,6 +68,9 @@ class Controller() extends Observable {
 
   def getLevelConfig: Option[LevelConfig] = levelManager.getCurrentLevel
 
-  def repl(code: String): Unit = REPL.Interpret(code)
+  def repl(code: String): Unit = {
+    spielStatus = UserInputStage
+    REPL.Interpret(code)
+  }
 
 }
