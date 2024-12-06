@@ -10,18 +10,6 @@ import Util.Observer
 class TUI(controller: Controller) extends Observer {
 
   controller.addObserver(this)
-//  private val settings = new Settings
-//  settings.usejavacp.value = true // Set the class path
-//  val reporter = new ReplReporterImpl(settings)
-//  val repl = new IMain(settings, reporter)
-//
-//
-//  // Binde den Controller in den REPL-Kontext
-//  repl.bind("controller", "Controller.Controller", controller)
-//  repl.interpret("""def moveForward() = controller.movePlayer("forward")""")
-//  repl.interpret("""def turnRight() = controller.movePlayer("right")""")
-//  repl.interpret("""def turnLeft() = controller.movePlayer("left")""")
-
 
   def start(): Unit = {
     val availableLevels = controller.getAvailableLevels
@@ -69,7 +57,7 @@ class TUI(controller: Controller) extends Observer {
       case Some(level) =>
         println("Spielfeld:")
         println("+" + ("---+" * level.width))
-        for (y <- level.height -1 to 0 by -1) {
+        for (y <- level.height - 1 to 0 by -1) {
           for (x <- 0 until level.width) {
             val symbol = controller.getGrid(x, y)
             print(s"| $symbol ")
@@ -94,6 +82,11 @@ class TUI(controller: Controller) extends Observer {
       action.toLowerCase match {
         case "q" =>
           println("Spiel beendet.")
+        case "z" => controller.undo()
+          displayGrid()
+
+        case "y" => controller.redo()
+          displayGrid()
         case "compile" =>
           // Führe den gesammelten Codeblock aus
           val code = codeBlock.toString()

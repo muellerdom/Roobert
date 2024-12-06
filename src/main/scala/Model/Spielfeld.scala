@@ -6,6 +6,7 @@ object Spielfeld extends Observable {
 
   // Char-Array für das Spielfeld
   private var grid: Array[Array[Char]] = Array.fill(10, 10)(' ') // Standardgröße, z.B. 10x10
+  private var spielerPosition: Option[Coordinate] = None // Speichert die Position des Spielers
 
   // Initialisieren des Grids mit einem übergebenen Char-Array
   def initialize(array: Array[Array[Char]]): Unit = {
@@ -16,11 +17,12 @@ object Spielfeld extends Observable {
     notifyObservers()  // Benachrichtige Observer nach der Initialisierung
   }
 
-  // Methode, um einen Wert zu setzen
+  // Hinsetzen eines Wertes auf das Spielfeld
   def hinsetze(x: Int, y: Int, value: Char): Unit = {
     if (isValid(x, y)) {
       grid(x)(y) = value
-      notifyObservers()  // Benachrichtige Observer, dass das Grid geändert wurde
+      if (value == 'R') setSpielerPosition(Coordinate(x, y))
+      notifyObservers()
     } else {
       throw new IndexOutOfBoundsException("Ungültige Position im Grid.")
     }
@@ -35,6 +37,14 @@ object Spielfeld extends Observable {
     }
   }
 
+  def getSpielfeld: Array[Array[Char]] = {
+    grid
+  }
+
+  def setup(newGrid : Array[Array[Char]]): Unit = {
+    grid = newGrid
+  }
+
   def getSpielerPos: Option[(Int, Int)] = {
     val spieler = for {
       x <- grid.indices.view
@@ -42,6 +52,27 @@ object Spielfeld extends Observable {
       if get(x, y) == 'R'
     } yield (x, y)
     spieler.headOption
+  }
+
+  // Methode, um die Spielerposition zu aktualisieren
+  def setSpielerPosition(pos: Coordinate): Unit = {
+    spielerPosition = Some(pos)
+    notifyObservers()
+  }
+
+  // Getter für die Spielerposition
+  def getSpielerPosition: Option[Coordinate] = spielerPosition
+
+
+
+  // Entfernen eines Wertes
+  def entfernen(x: Int, y: Int): Unit = {
+    if (isValid(x, y)) {
+      grid(x)(y) = ' '
+      notifyObservers()
+    } else {
+      throw new IndexOutOfBoundsException("Ungültige Position im Grid.")
+    }
   }
 
   // Methode, um die Gültigkeit der Position zu überprüfen
@@ -52,8 +83,8 @@ object Spielfeld extends Observable {
 
 
   // Optional: Methode, um das Spielfeld zurückzusetzen
-  def reset(): Unit = {
-    grid = Array.fill(10, 10)(' ')  // Reset auf Standardgröße mit Leerzeichen als Standardwert
-    notifyObservers()  // Benachrichtige Observer nach Reset
-  }
+//  def reset(): Unit = {
+//    grid = Array.fill(10, 10)(' ')  // Reset auf Standardgröße mit Leerzeichen als Standardwert
+//    notifyObservers()  // Benachrichtige Observer nach Reset
+//  }
 }

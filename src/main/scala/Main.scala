@@ -5,7 +5,7 @@ import View.TUI
 import scala.io.StdIn.readLine
 
 object Main {
-  val controller = new Controller
+  val controller = new Controller()
   REPL.replBind(controller)
   val tui = new TUI(controller)
   controller.notifyObservers()

@@ -41,6 +41,7 @@ object Spieler extends Observable {
   // Bewegung basierend auf Aktionen
   def move(action: String): Unit = {
     if (!initialized) throw new IllegalStateException("Spieler ist nicht initialisiert!")
+
     action match {
       case "forward" => moveForward()
       case "right" => turnRight()
@@ -73,6 +74,8 @@ object Spieler extends Observable {
 
   // Vorwärts bewegen
   private def moveForward(): Unit = {
+    println(s"Aktuelle Position: ${getPosition}, Richtung: $direction")
+
     val currentPosition = getPosition
     val newPos = direction match {
       case Oben => Coordinate(currentPosition.x, currentPosition.y + 1)
@@ -82,7 +85,17 @@ object Spieler extends Observable {
     }
 
     if (isValidMove(newPos)) {
+
+      if (position.get.x == levelManager.getCurrentLevel.get.goal.x &&
+        position.get.y == levelManager.getCurrentLevel.get.goal.y) {
+        Spielfeld.hinsetze(position.get.x, position.get.y, 'G')
+      } else {
+        Spielfeld.hinsetze(currentPosition.x, currentPosition.y, ' ')
+      }
       position = Some(newPos)
+
+      Spielfeld.hinsetze(position.get.x, position.get.y, 'R')
+
       println(s"Spieler bewegt zu $newPos in Richtung $direction")
       einsammeln(newPos)
       notifyObservers()
