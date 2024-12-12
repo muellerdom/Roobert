@@ -14,7 +14,6 @@ object Spielfeld extends Observable {
     for (i <- array.indices; j <- array(i).indices) {
       grid(i)(j) = array(i)(j)
     }
-    notifyObservers()  // Benachrichtige Observer nach der Initialisierung
   }
 
   // Hinsetzen eines Wertes auf das Spielfeld
@@ -22,7 +21,6 @@ object Spielfeld extends Observable {
     if (isValid(x, y)) {
       grid(x)(y) = value
       if (value == 'R') setSpielerPosition(Coordinate(x, y))
-      notifyObservers()
     } else {
       throw new IndexOutOfBoundsException("Ungültige Position im Grid.")
     }
@@ -57,7 +55,6 @@ object Spielfeld extends Observable {
   // Methode, um die Spielerposition zu aktualisieren
   def setSpielerPosition(pos: Coordinate): Unit = {
     spielerPosition = Some(pos)
-    notifyObservers()
   }
 
   // Getter für die Spielerposition

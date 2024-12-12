@@ -49,3 +49,4 @@ tmp/
 *.ipr
 *.iws
 .idea
+.codiumai

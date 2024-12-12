@@ -19,7 +19,7 @@ object levelManager extends Observable {
     levels.find(_.level == levelName) match {
       case Some(level) =>
         currentLevel = Some(level)
-        notifyObservers()
+        //notifyObservers()
         Right(level)
       case None => Left(s"Level '$levelName' nicht gefunden.")
     }
@@ -29,5 +29,4 @@ object levelManager extends Observable {
 
   def getCurrentLevel: Option[LevelConfig] = currentLevel
 
-  // ... (weitere Methoden)
 }

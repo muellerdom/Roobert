@@ -11,6 +11,7 @@ class Controller extends Observable {
   def startLevel(levelName: String): Either[String, LevelConfig] = {
     levelManager.ladeLevel(levelName) match {
       case Right(level) =>
+        notifyObservers()
         initializePlayer(level)
         initializeSpielfeld(level)
         Right(level)
@@ -46,7 +47,6 @@ class Controller extends Observable {
     undoManager.undoStep
     println(Spieler.getPosition)
     spielStatus = ProcessMoveStage
-
     notifyObservers()
   }
 
@@ -57,6 +57,7 @@ class Controller extends Observable {
 
     notifyObservers()
   }
+
   def isLevelComplete: Boolean = {
     val currentLevel = levelManager.getCurrentLevel.get
     Spieler.eingesammelteJerms.size == currentLevel.objects.jerm.size &&
@@ -71,6 +72,6 @@ class Controller extends Observable {
   def repl(code: String): Unit = {
     spielStatus = UserInputStage
     REPL.Interpret(code)
+    //notifyObservers()
   }
-
 }

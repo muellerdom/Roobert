@@ -1,15 +1,11 @@
 package View
 
-import scala.tools.nsc.interpreter.IMain
-import scala.tools.nsc.interpreter.shell.ReplReporterImpl
-import scala.tools.nsc.Settings
 import Controller.{Controller, SpielStatus}
 import Util.Observer
 
-
 class TUI(controller: Controller) extends Observer {
 
-  controller.addObserver(this)
+  controller.addObserver(this) // TUI als Observer registrieren
 
   def start(): Unit = {
     val availableLevels = controller.getAvailableLevels
@@ -44,7 +40,7 @@ class TUI(controller: Controller) extends Observer {
       controller.startLevel(input) match {
         case Right(foundLevel) =>
           println(s"Starte Level ${foundLevel.level}: ${foundLevel.description}")
-          displayGrid()
+          // Keine direkte Grid-Anzeige mehr hier!
           waitForPlayerActions()
         case Left(errorMessage) =>
           println(errorMessage)
@@ -52,7 +48,7 @@ class TUI(controller: Controller) extends Observer {
     }
   }
 
-  def displayGrid(): Unit = {
+  private def displayGrid(): Unit = {
     controller.getLevelConfig match {
       case Some(level) =>
         println("Spielfeld:")
@@ -75,37 +71,32 @@ class TUI(controller: Controller) extends Observer {
     var action = ""
     val codeBlock = new StringBuilder
 
-
     do {
       action = scanner.nextLine().trim
 
       action.toLowerCase match {
         case "q" =>
           println("Spiel beendet.")
-        case "z" => controller.undo()
-          displayGrid()
 
-        case "y" => controller.redo()
-          displayGrid()
+        case "z" =>
+          controller.undo() // Observer ruft automatisch displayGrid() auf
+
+        case "y" =>
+          controller.redo() // Observer ruft automatisch displayGrid() auf
+
         case "compile" =>
           // Führe den gesammelten Codeblock aus
           val code = codeBlock.toString()
-          //repl.interpret(code)
-          controller.repl(code)
-          // Lösche den Codeblock für die nächste Runde
+          controller.repl(code) // Grid wird durch update() nachgeführt
           codeBlock.clear()
 
           if (controller.isLevelComplete) {
             controller.spielStatus = SpielStatus.GameEndStage
             println("Herzlichen Glückwunsch! Robert ist angekommen!")
-            displayGrid()
-            start() // Startet das Spiel neu
-          } else {
-            displayGrid()
+            start() // Zurück zur Levelauswahl
           }
 
         case _ =>
-          // Sammle Eingaben
           codeBlock.append(action).append("\n")
       }
 
@@ -116,5 +107,6 @@ class TUI(controller: Controller) extends Observer {
 
   override def update(): Unit = {
     println("Aktualisierung vom Controller erhalten.")
+    displayGrid() // Grid automatisch aktualisieren, wenn der Controller dies veranlasst
   }
 }

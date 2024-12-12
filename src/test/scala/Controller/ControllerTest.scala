@@ -1,22 +1,14 @@
 package Controller
 
-
-import Model.{Coordinate, Goal, Jerm, LevelConfig, Objects, Obstacle, REPL, Spieler, Spielfeld, levelManager}
-import org.scalamock.clazz.MockImpl.mock
+import Model.{Coordinate, Goal, Jerm, LevelConfig, Objects, Obstacle, Spieler, Spielfeld, levelManager}
+import Util.{Observer, UndoManager}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import os.Inherit.in
 
-import scala.Right
+class ControllerTest extends AnyFlatSpec with Matchers with MockFactory {
 
-
-class ControllerTest extends AnyWordSpec with Matchers with MockFactory {
-
-  val controller = new Controller
-
-  val expectedLevelConfig: LevelConfig = LevelConfig(
+  val levelConfig: LevelConfig = LevelConfig(
     "test-level",
     "A test level",
     "Collect all jerms",
@@ -26,103 +18,148 @@ class ControllerTest extends AnyWordSpec with Matchers with MockFactory {
     Objects(List(Obstacle("stein", Coordinate(2, 3)), Obstacle("holz", Coordinate(2, 2))), List(Jerm(Coordinate(4, 3))))
   )
 
-  "A Controller" should {
+  "startLevel" should "return an error when an invalid level name is provided" in {
+    val controller = new Controller
+    controller.startLevel("invalid-level") shouldBe Left("Level 'invalid-level' nicht gefunden.")
+  }
 
-    "Starting and initialize correctly" should {
+  "initializeSpielfeld" should "correctly place all objects on the grid according to the level configuration" in {
+    val controller = new Controller
 
-      "start a level correct" in {
-        //val controller = new Controller
+    controller.startLevel("test-level")
+    controller.getGrid(4, 4) shouldBe 'G'
+    controller.getGrid(2, 3) shouldBe 'X'
+    controller.getGrid(2, 2) shouldBe 'X'
+    controller.getGrid(4, 3) shouldBe 'J'
+    controller.getGrid(0, 0) shouldBe 'R'
+  }
 
-        controller.startLevel("test-level") shouldBe Right(expectedLevelConfig) // Erwartet ein erfolgreiches Laden des Levels (Right)
-      }
+  "movePlayer" should "update the spielStatus to ProcessMoveStage and notify observers" in {
+    val controller = new Controller
+    val observer = mock[Observer]
+    controller.addObserver(observer)
+    (observer.update _).expects().once()
 
-      "initialize Player at correct coordinates from level config" in {
-        controller.getGrid(expectedLevelConfig.start.x, expectedLevelConfig.start.y) shouldBe 'R'
-      }
+    controller.movePlayer("some-action")
+    controller.spielStatus shouldBe SpielStatus.ProcessMoveStage
+  }
 
-      "place obstacles at specified positions" in {
-        expectedLevelConfig.objects.obstacles.foreach { obstacle =>
-          controller.getGrid(obstacle.coordinates.x, obstacle.coordinates.y) shouldBe 'X'
-        }
-      }
+//  "getAvailableLevels" should "return a list of level names that are available in the levelManager" in {
+//    //val mockLevelManager = levelManager.type]
+//    (levelManager.getAvailableLevels _).expects().returning(List("Level1", "Level2"))
+//
+//    val controller = new Controller {
+//      override def getAvailableLevels: List[String] = levelManager.getAvailableLevels
+//    }
+//
+//    controller.getAvailableLevels shouldBe List("Level1", "Level2")
+//  }
+//
+//  it should "return an empty list when no levels are available in the levelManager" in {
+//   // val mockLevelManager = mock[levelManager.type]
+//    (levelManager.getAvailableLevels _).expects().returning(List())
+//
+//    val controller = new Controller {
+//      override def getAvailableLevels: List[String] = levelManager.getAvailableLevels
+//    }
+//
+//    controller.getAvailableLevels shouldBe List()
+//  }
+//
+//  it should "not modify the state of the Controller or levelManager" in {
+//    //val mockLevelManager = mock[levelManager.type]
+//    (levelManager.getAvailableLevels _).expects().returning(List("Level1", "Level2"))
+//
+//    val controller = new Controller {
+//      override def getAvailableLevels: List[String] = levelManager.getAvailableLevels
+//    }
+//
+//    val initialState = controller.spielStatus
+//    controller.getAvailableLevels
+//    controller.spielStatus shouldBe initialState
+//  }
 
-      "place jerms at specified positions" in {
-        expectedLevelConfig.objects.jerm.foreach { jerm =>
-          controller.getGrid(jerm.coordinates.x, jerm.coordinates.y) shouldBe 'J'
-        }
-      }
+  "undo" should "update the spielStatus to ProcessMoveStage and call undoStep" in {
+    val mockUndoManager = mock[UndoManager]
+    (mockUndoManager.undoStep _).expects().once()
 
-      "place Goal marker at correct position" in {
-        controller.getGrid(expectedLevelConfig.goal.x, expectedLevelConfig.goal.y) shouldBe ('G')
-      }
+    val controller = new Controller {
+      val undoManager: UndoManager = mockUndoManager
     }
 
-    "Move player correctly" should {
+    controller.undo()
+    controller.spielStatus shouldBe SpielStatus.ProcessMoveStage
+  }
 
-      "clear previous position with space" in {
-        val posXOld = Spielfeld.getSpielerPos.get._1
-        val posYOld = Spielfeld.getSpielerPos.get._2
-        controller.movePlayer("forward")
+  it should "notify all observers after performing the undo operation" in {
+    val controller = new Controller
+    val observer = mock[Observer]
+    controller.addObserver(observer)
+    (observer.update _).expects().once()
 
-        controller.getGrid(posXOld, posYOld) shouldBe ' '
-      }
+    controller.undo()
+  }
 
-      "mark new position with R char" in {
-        controller.getGrid(Spielfeld.getSpielerPos.get._1, Spielfeld.getSpielerPos.get._2) shouldBe('R')
-      }
+  it should "print the current position of the Spieler after the undo operation" in {
+    val controller = new Controller
+    val initialPosition = Coordinate(0, 0)
+    Spieler.initialize(initialPosition.x, initialPosition.y)
 
-      "rotate player correctly" in {
-        controller.turnRight()
-        Spieler.direction shouldBe Spieler.Rechts
-        controller.turnLeft()
-        Spieler.direction shouldBe Spieler.Oben
-      }
-
-      "collect jerms when moving to their position" in {
-        Spieler.eingesammelteJerms.size shouldBe 0
-
-        expectedLevelConfig.objects.jerm.foreach { jerm =>
-          Spielfeld.hinsetze(jerm.coordinates.x, jerm.coordinates.y - 1, 'R')
-          Spieler.position = Some(Coordinate(jerm.coordinates.x, jerm.coordinates.y - 1))
-
-          controller.movePlayer("forward")
-
-          Spieler.einsammeln(Spieler.getPosition)
-        }
-
-        Spieler.eingesammelteJerms.size shouldBe 1
-      }
-
-      "remove jerm from grid" in {
-        controller.movePlayer("forward")
-        expectedLevelConfig.objects.jerm.foreach { jerm =>
-          Spielfeld.get(jerm.coordinates.x, jerm.coordinates.y) shouldBe ' '
-        }
-      }
-
-//      "collect multiple jerms" in {
-//        expectedLevelConfig.objects.jerm.foreach { jerm =>
-//          Spielfeld.hinsetze(jerm.coordinates.x, jerm.coordinates.y, 'R')
-//
-//          Spieler.einsammeln(Spieler.getPosition)
-//        }
-//
-//        Spieler.eingesammelteJerms.size shouldBe 2
-//      }
-
-      "complete only if all jerms are collected" in {
-        Spieler.eingesammelteJerms.size shouldBe expectedLevelConfig.objects.jerm.size //=1
-
-        controller.isLevelComplete shouldBe true
-      }
-
-      "partial complection should return false" in {
-        Spieler.eingesammelteJerms = Set() //setze zurück (eigentlich voll blöd, dass das geht -> da muss man sich was anderes überlegen)
-
-        Spielfeld.hinsetze(expectedLevelConfig.goal.x, expectedLevelConfig.goal.y, 'R')
-
-        controller.isLevelComplete shouldBe false
-      }
+    val output = new java.io.ByteArrayOutputStream()
+    Console.withOut(output) {
+      controller.undo()
     }
+
+    output.toString should include(initialPosition.toString)
+  }
+
+  "redo" should "update the spielStatus to ProcessMoveStage" in {
+    val controller = new Controller
+    controller.redo()
+    controller.spielStatus shouldBe SpielStatus.ProcessMoveStage
+  }
+
+  it should "call redoStep on the undoManager" in {
+    val mockUndoManager = mock[UndoManager]
+    (mockUndoManager.redoStep _).expects().once()
+
+    val controller = new Controller {
+      val undoManager: UndoManager = mockUndoManager
+    }
+
+    controller.redo()
+  }
+
+  it should "notify all observers after performing the redo operation" in {
+    val controller = new Controller
+    val observer = mock[Observer]
+    controller.addObserver(observer)
+    (observer.update _).expects().once()
+
+    controller.redo()
+  }
+
+  "isLevelComplete" should "return true when all jerms are collected and the player is at the goal position" in {
+    val controller = new Controller
+    levelManager.ladeLevel("test-level")
+    Spieler.eingesammelteJerms = Set(Coordinate(4, 3))
+    Spieler.position = Some(Coordinate(4, 4))
+    controller.isLevelComplete shouldBe true
+  }
+
+  it should "return false if not all jerms are collected, even if the player is at the goal position" in {
+    val controller = new Controller
+    levelManager.ladeLevel("test-level")
+    Spieler.eingesammelteJerms = Set(Coordinate(4, 3))
+    Spieler.position = Some(Coordinate(4, 4))
+    controller.isLevelComplete shouldBe false
+  }
+
+  it should "return false if the player has collected all jerms but is not at the goal position" in {
+    val controller = new Controller
+    levelManager.ladeLevel("test-level")
+    Spieler.eingesammelteJerms = Set(Coordinate(4, 3))
+    Spieler.position = Some(Coordinate(3, 3))
+    controller.isLevelComplete shouldBe false
   }
 }

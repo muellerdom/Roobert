@@ -1,6 +1,6 @@
 package Controller
 
-import Util.Command
+import Util.{Command, Observable, Observer}
 import Model.{Coordinate, Spieler, Spielfeld}
 
 class SetCommand(action: String) extends Command {
@@ -20,4 +20,9 @@ class SetCommand(action: String) extends Command {
   }
 
   override def redoStep(): Unit = doStep()
+  
+  //Ischt zum testen
+  def getMemento(): Array[Array[Char]] = {
+    memento
+  }
 }

@@ -58,7 +58,7 @@ object Spieler extends Observable {
       case Unten => Links
       case Links => Oben
     }
-    notifyObservers()
+   // notifyObservers()
   }
 
   // Nach links drehen
@@ -69,7 +69,6 @@ object Spieler extends Observable {
       case Unten => Rechts
       case Rechts => Oben
     }
-    notifyObservers()
   }
 
   // Vorwärts bewegen
@@ -98,7 +97,6 @@ object Spieler extends Observable {
 
       println(s"Spieler bewegt zu $newPos in Richtung $direction")
       einsammeln(newPos)
-      notifyObservers()
     } else {
       println("Ungültige Bewegung blockiert!")
     }
@@ -122,9 +120,7 @@ object Spieler extends Observable {
         //Dies ist zu korrigieren
         //level.objects.jerm = level.objects.jerm.filterNot(_.coordinates == pos) // Entferne eingesammelten Jerm
         println(s"Jerm an Position $pos eingesammelt.")
-        notifyObservers()
       case None =>
-        println("Kein Jerm an dieser Position.")
     }
   }
 
