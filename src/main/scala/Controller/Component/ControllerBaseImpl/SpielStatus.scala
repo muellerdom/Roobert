@@ -1,4 +1,4 @@
-package Controller
+package Controller.Component.ControllerBaseImpl
 
 // Definieren von verschiedenen Phasen des Spiels
 //trait SpielStatus

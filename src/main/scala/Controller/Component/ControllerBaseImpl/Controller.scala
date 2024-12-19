@@ -1,6 +1,6 @@
-package Controller
+package Controller.Component.ControllerBaseImpl
 
-import Controller.SpielStatus.{InitializationStage, ProcessMoveStage, SpielStatus, UserInputStage}
+import SpielStatus.{InitializationStage, ProcessMoveStage, SpielStatus, UserInputStage}
 import Model._
 import Util.{Observable, UndoManager}
 

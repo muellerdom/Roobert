@@ -1,7 +1,7 @@
-package Controller
+package Controller.Component.ControllerBaseImpl
 
-import Util.{Command, Observable, Observer}
 import Model.{Coordinate, Spieler, Spielfeld}
+import Util.Command
 
 class SetCommand(action: String) extends Command {
   private var memento: Array[Array[Char]] = Spielfeld.getSpielfeld.map(_.clone)
