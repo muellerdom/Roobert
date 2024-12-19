@@ -1,109 +1,128 @@
-/*package Model
+package Model
 
-import Controller.{Coordinate, LevelConfig}
 import Util.Observable
 
-// Die Case Class für den Zustand des Spielers
-case class SpielerState(posX: Int, posY: Int, direction: Direction, eingesammelteJerms: Set[Coordinate])
-
-sealed trait Direction
-case object Oben extends Direction
-case object Rechts extends Direction
-case object Unten extends Direction
-case object Links extends Direction
-
-// Singleton für den Spieler
+// Singleton-Object für den Spieler
 object Spieler extends Observable {
 
-  // Die private Instanz des Spielers (nur eine Instanz existiert)
-  private var instance: Option[SpielerState] = None
+  // Enum für Richtungen
+  sealed trait Direction
 
-  val maxX: Int = 10
-  val maxY: Int = 10
+  case object Oben extends Direction
 
-  // Getter für die Instanz
-  def getInstance: SpielerState = {
-    if (instance.isEmpty) {
-      // Initialisierung der Instanz, wenn sie noch nicht existiert
-      instance = Some(SpielerState(0, 0, Oben, Set()))
-    }
-    instance.get // Gibt die einzige Instanz zurück
+  case object Rechts extends Direction
+
+  case object Unten extends Direction
+
+  case object Links extends Direction
+
+  private var initialized = false // Kontrollflag für Initialisierung
+  var position: Option[Coordinate] = None // Startposition des Spielers
+  var direction: Direction = Oben // Start-Richtung
+  var eingesammelteJerms: Set[Coordinate] = Set()
+
+
+  private val maxX: Int = levelManager.getCurrentLevel.get.width
+  private val maxY: Int = levelManager.getCurrentLevel.get.height
+
+  // Initialisierungsmethode
+  def initialize(startX: Int, startY: Int): Unit = {
+
+    position = Some(Coordinate(startX, startY))
+    initialized = true
+    println(s"Spieler initialisiert bei ($startX, $startY)")
   }
 
-  // Initialisierung des Spielers
-  def initializePlayer(startX: Int, startY: Int): Unit = {
-    val currentState = getInstance
-    instance = Some(currentState.copy(posX = startX, posY = startY, direction = Oben, eingesammelteJerms = Set()))
-    notifyObservers()
+  // Methode, um die aktuelle Position sicher zu erhalten
+  def getPosition: Coordinate = {
+    position.getOrElse(throw new IllegalStateException("Spieler ist nicht initialisiert!"))
   }
 
-  def move(action: String, level: LevelConfig): Unit = {
+  // Bewegung basierend auf Aktionen
+  def move(action: String): Unit = {
+    if (!initialized) throw new IllegalStateException("Spieler ist nicht initialisiert!")
+
     action match {
-      case "moveForward()" => moveForward(level)
-      case "turnRight()" => turnRight()
-      case "turnLeft()" => turnLeft()
-      case _ =>
+      case "forward" => moveForward()
+      case "right" => turnRight()
+      case "left" => turnLeft()
+      case _ => println("Unbekannte Aktion!")
     }
   }
 
-  def turnRight(): Unit = {
-    val currentState = getInstance
-    val newDirection = currentState.direction match {
-      case Oben   => Rechts
+  // Nach rechts drehen
+  private def turnRight(): Unit = {
+    direction = direction match {
+      case Oben => Rechts
       case Rechts => Unten
-      case Unten  => Links
-      case Links  => Oben
+      case Unten => Links
+      case Links => Oben
     }
-    instance = Some(currentState.copy(direction = newDirection))
-    notifyObservers()
+   // notifyObservers()
   }
 
-  def turnLeft(): Unit = {
-    val currentState = getInstance
-    val newDirection = currentState.direction match {
-      case Oben   => Links
-      case Links  => Unten
-      case Unten  => Rechts
+  // Nach links drehen
+  private def turnLeft(): Unit = {
+    direction = direction match {
+      case Oben => Links
+      case Links => Unten
+      case Unten => Rechts
       case Rechts => Oben
     }
-    instance = Some(currentState.copy(direction = newDirection))
-    notifyObservers()
   }
 
-  def moveForward(level: LevelConfig): Unit = {
-    val currentState = getInstance
-    val newPos = currentState.direction match {
-      case Oben    => (currentState.posX, currentState.posY - 1)
-      case Rechts  => (currentState.posX + 1, currentState.posY)
-      case Unten   => (currentState.posX, currentState.posY + 1)
-      case Links   => (currentState.posX - 1, currentState.posY)
+  // Vorwärts bewegen
+  private def moveForward(): Unit = {
+    println(s"Aktuelle Position: ${getPosition}, Richtung: $direction")
+
+    val currentPosition = getPosition
+    val newPos = direction match {
+      case Oben => Coordinate(currentPosition.x, currentPosition.y + 1)
+      case Rechts => Coordinate(currentPosition.x + 1, currentPosition.y)
+      case Unten => Coordinate(currentPosition.x, currentPosition.y - 1)
+      case Links => Coordinate(currentPosition.x - 1, currentPosition.y)
     }
 
-    if (isValidMove(newPos._1, newPos._2, level)) {
-      val updatedState = currentState.copy(posX = newPos._1, posY = newPos._2)
-      instance = Some(updatedState)
-      einsammeln(newPos, level)
-      notifyObservers()
+    if (isValidMove(newPos)) {
+
+      if (position.get.x == levelManager.getCurrentLevel.get.goal.x &&
+        position.get.y == levelManager.getCurrentLevel.get.goal.y) {
+        Spielfeld.hinsetze(position.get.x, position.get.y, 'G')
+      } else {
+        Spielfeld.hinsetze(currentPosition.x, currentPosition.y, ' ')
+      }
+      position = Some(newPos)
+
+      Spielfeld.hinsetze(position.get.x, position.get.y, 'R')
+
+      println(s"Spieler bewegt zu $newPos in Richtung $direction")
+      einsammeln(newPos)
+    } else {
+      println("Ungültige Bewegung blockiert!")
     }
   }
 
-  private def isValidMove(x: Int, y: Int, level: LevelConfig): Boolean = {
-    val withinBounds = x >= 0 && x < maxX && y >= 0 && y < maxY
-    val isObstacle = level.objects.obstacles.exists(obs => obs.coordinates.x == x && obs.coordinates.y == y)
+  // Überprüfen, ob Bewegung gültig ist
+  private def isValidMove(pos: Coordinate): Boolean = {
+    val withinBounds = pos.x >= 0 && pos.x < maxX && pos.y >= 0 && pos.y < maxY
+    val isObstacle = levelManager.getCurrentLevel.get.objects.obstacles.exists(_.coordinates == pos)
     withinBounds && !isObstacle
   }
 
-  private def einsammeln(pos: (Int, Int), level: LevelConfig): Unit = {
-    level.objects.jerm.find(jerm => jerm.x == pos._1 && jerm.y == pos._2) match {
+  // Jerm einsammeln
+  def einsammeln(pos: Coordinate): Unit = {
+    val level = levelManager.getCurrentLevel.get
+    level.objects.jerm.find(_.coordinates == pos) match {
       case Some(jerm) =>
-        val currentState = getInstance
-        val updatedJerms = currentState.eingesammelteJerms + jerm
-        instance = Some(currentState.copy(eingesammelteJerms = updatedJerms))
-        println(s"Jerm an Position (${jerm.x}, ${jerm.y}) eingesammelt.")
-        notifyObservers()
+        eingesammelteJerms += pos
+        //---- Jedesmal wenn sich der SPieler über das Feld wo ein Jerm sein soll bewegt, sammelt er ihn ein
+        //--> infinite jerm glitch
+        //Dies ist zu korrigieren
+        //level.objects.jerm = level.objects.jerm.filterNot(_.coordinates == pos) // Entferne eingesammelten Jerm
+        println(s"Jerm an Position $pos eingesammelt.")
       case None =>
     }
   }
 
-  override def toString: String = s"Model.Spieler(${getInstance.posX}, ${getInstance.posY})"
-}*/
+  override def toString: String = s"Spieler(Position: ${getPosition}, Richtung: $direction)"
+}

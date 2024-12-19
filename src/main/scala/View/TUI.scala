@@ -1,199 +1,112 @@
 package View
 
-import Controller.{Coordinate, LevelConfig}
-import Model.Spieler
+import Controller.{Controller, SpielStatus}
 import Util.Observer
 
-import java.lang.ModuleLayer
-import java.lang.ModuleLayer.Controller
+class TUI(controller: Controller) extends Observer {
 
-// Abstrakte TUI-Klasse, die das Template Method Pattern implementiert
-abstract class TUITemplate private() extends Observer {
+  controller.addObserver(this) // TUI als Observer registrieren
 
-  protected var remainingJerms: List[Coordinate] = List()
-  protected var controller: ModuleLayer.Controller = _
-
-  // Template-Methode: Definiert den Ablauf des Spiels
-  final def run(): Unit = {
-    println("Willkommen bei 'Hilf Robert'!")
+  def start(): Unit = {
     val availableLevels = controller.getAvailableLevels
 
+    println("Hilf Roobert!")
     if (availableLevels.nonEmpty) {
-      showAvailableLevels(availableLevels)
-      val level = getLevelFromInput()
-      level match {
-        case Right(foundLevel) =>
-          setupGame(foundLevel) // Setup des Spiels (abstrakte Methode)
-          startLevel(foundLevel) // Level-Logik starten (abstrakte Methode)
-        case Left(errorMessage) =>
-          println(errorMessage)
-      }
+      println("Verfügbare Levels:")
+      availableLevels.foreach(level => println(s"- $level"))
+
+      println("Bitte gib ein Level an, mit dem du starten möchtest:")
+      waitForLevelInput()
     } else {
       println("Keine verfügbaren Levels gefunden. Bitte überprüfe die Leveldatei.")
     }
   }
 
-  // Abstrakte Methoden für spezifische Schritte
-  protected def showAvailableLevels(levels: List[String]): Unit
-  protected def getLevelFromInput(): Either[String, LevelConfig]
-  protected def setupGame(level: LevelConfig): Unit
-  protected def startLevel(level: LevelConfig): Unit
-
-  // Observer-Methode
-  override def update(): Unit = {
-    println("Aktualisierung vom Controller erhalten.")
-  }
-}
-
-// Konkrete TUI-Implementierung
-class TUI private() extends TUITemplate {
-
-  // Überschreibe die Methode zum Anzeigen verfügbarer Levels
-  override def showAvailableLevels(levels: List[String]): Unit = {
-    println("Verfügbare Levels:")
-    levels.foreach(level => println(s"- $level"))
-    println("Bitte gib ein Level an, mit dem du starten möchtest:")
-  }
-
-  // Überschreibe die Methode zur Eingabe des Levels
-  override def getLevelFromInput(): Either[String, LevelConfig] = {
+  private def waitForLevelInput(): Unit = {
     val scanner = new java.util.Scanner(System.in)
-    val input = scanner.nextLine().trim
-    createLevel(input)
+
+    var levelName = ""
+    do {
+      println("Bitte wähle ein Level oder 'q' zum Beenden:")
+      levelName = scanner.nextLine().trim
+      processInputLine(levelName)
+    } while (levelName != "q")
   }
 
-  // Überschreibe die Methode zum Setup des Spiels
-  override def setupGame(level: LevelConfig): Unit = {
-    initializePlayer(level)
-    remainingJerms = level.objects.jerm
-    displayGrid(level)
+  def processInputLine(input: String): Unit = {
+    if (input == "q") {
+      println("Beende die Anwendung...")
+    } else {
+      controller.startLevel(input) match {
+        case Right(foundLevel) =>
+          println(s"Starte Level ${foundLevel.level}: ${foundLevel.description}")
+          // Keine direkte Grid-Anzeige mehr hier!
+          waitForPlayerActions()
+        case Left(errorMessage) =>
+          println(errorMessage)
+      }
+    }
   }
 
-  // Überschreibe die Methode zum Starten des Levels
-  override def startLevel(level: LevelConfig): Unit = {
+  private def displayGrid(): Unit = {
+    controller.getLevelConfig match {
+      case Some(level) =>
+        println("Spielfeld:")
+        println("+" + ("---+" * level.width))
+        for (y <- level.height - 1 to 0 by -1) {
+          for (x <- 0 until level.width) {
+            val symbol = controller.getGrid(x, y)
+            print(s"| $symbol ")
+          }
+          println("|")
+          println("+" + ("---+" * level.width))
+        }
+      case None =>
+        println("Kein aktuelles Level geladen.")
+    }
+  }
+
+  def waitForPlayerActions(): Unit = {
     val scanner = new java.util.Scanner(System.in)
-    var action: String = ""
-
-    println("Gib die Methoden ein, um Robert zu bewegen " +
-      "(moveForward(), turnRight(), turnLeft(), q zum Beenden):")
+    var action = ""
+    val codeBlock = new StringBuilder
 
     do {
       action = scanner.nextLine().trim
-      if (action == "moveForward()" || action == "turnRight()" || action == "turnLeft()") {
-        movePlayer(action, level)
-        if (isLevelComplete(level)) {
-          println("Herzlichen Glückwunsch! Robert ist angekommen!")
-          displayGrid(level)
-          run() // Neustart des Spiels mit verfügbaren Levels
-        } else {
-          displayGrid(level)
-        }
-      } else if (action != "q") {
-        println("Unbekannter Befehl. Bitte versuche es erneut.")
+
+      action.toLowerCase match {
+        case "q" =>
+          println("Spiel beendet.")
+
+        case "z" =>
+          controller.undo() // Observer ruft automatisch displayGrid() auf
+
+        case "y" =>
+          controller.redo() // Observer ruft automatisch displayGrid() auf
+
+        case "compile" =>
+          // Führe den gesammelten Codeblock aus
+          val code = codeBlock.toString()
+          controller.repl(code) // Grid wird durch update() nachgeführt
+          codeBlock.clear()
+
+          if (controller.isLevelComplete) {
+            controller.spielStatus = SpielStatus.GameEndStage
+            println("Herzlichen Glückwunsch! Robert ist angekommen!")
+            start() // Zurück zur Levelauswahl
+          }
+
+        case _ =>
+          codeBlock.append(action).append("\n")
       }
-    } while (action != "q")
+
+    } while (action.toLowerCase != "q")
 
     println("Spiel beendet.")
   }
 
-  // Hilfsmethoden für das konkrete Setup des Spiels
-  private def initializePlayer(level: LevelConfig): Unit = {
-    Spieler.initializePlayer(level.start.x, level.start.y)
-  }
-
-  private def displayGrid(level: LevelConfig): Unit = {
-    val grid = Array.fill(level.height, level.width)(' ')
-
-    // Set the goal
-    grid(level.goal.y)(level.goal.x) = 'G'
-
-    // Set the obstacles
-    level.objects.obstacles.foreach { obstacle =>
-      grid(obstacle.coordinates.y)(obstacle.coordinates.x) = 'X'
-    }
-
-    // Set the jerms
-    remainingJerms.foreach { jerm =>
-      grid(jerm.y)(jerm.x) = 'J'
-    }
-
-    // Set the player
-    val playerInstance = Spieler.getInstance
-    grid(playerInstance.posY)(playerInstance.posX) = 'P'
-
-    // Print the grid
-    println("Spielfeld:")
-    println("+" + ("---+" * level.width))
-    for (row <- grid) {
-      println("| " + row.mkString(" | ") + " |")
-      println("+" + ("---+" * level.width))
-    }
-  }
-
-  private def movePlayer(action: String, level: LevelConfig): Unit = {
-    Spieler.move(action, level) // Aufruf der move-Methode in der Singleton-Spieler-Instanz
-    val playerInstance = Spieler.getInstance
-    remainingJerms = remainingJerms.filterNot(jerm => playerInstance.eingesammelteJerms.contains(jerm))
-  }
-
-  private def isLevelComplete(level: LevelConfig): Boolean = {
-    val playerInstance = Spieler.getInstance
-    playerInstance.eingesammelteJerms.size == level.objects.jerm.size && playerInstance.posX == level.goal.x && playerInstance.posY == level.goal.y
-  }
-
-  // Methode zur direkten Level-Erstellung ohne Factory
-  private def createLevel(input: String): Either[String, LevelConfig] = {
-    input match {
-      case "Level1" =>
-        Right(LevelConfig(
-          level = 1,
-          description = "Dies ist Level 1",
-          width = 5,
-          height = 5,
-          start = Coordinate(0, 0),
-          goal = Coordinate(4, 4),
-          objects = new LevelObjects(
-            obstacles = List(Coordinate(2, 2), Coordinate(3, 3)),
-            jerm = List(Coordinate(1, 1), Coordinate(2, 3)))))
-      case "Level2" =>
-        Right(LevelConfig(level = 2, description = "Dies ist Level 2", width = 6, height = 6, start = Coordinate(0, 0), goal = Coordinate(5, 5), objects = new LevelObjects(
-          obstacles = List(Coordinate(2, 2), Coordinate(4, 4)),
-          jerm = List(Coordinate(1, 3), Coordinate(3, 2))
-        )))
-      case _ =>
-        Left("Unbekanntes Level. Bitte Level1 oder Level2 eingeben.")
-    }
+  override def update(): Unit = {
+    println("Aktualisierung vom Controller erhalten.")
+    displayGrid() // Grid automatisch aktualisieren, wenn der Controller dies veranlasst
   }
 }
-
-// Companion-Object, das die Singleton-Instanz verwaltet
-object TUI {
-  private val instance: TUI = new TUI()
-
-  def getInstance(controller: Controller): TUI = {
-    instance.controller = controller
-    instance
-  }
-}
-// Diese Case-Class repräsentiert die Konfiguration eines Levels im Spiel
-case class LevelConfig(
-                        level: Int,             // Die Levelnummer
-                        description: String,    // Eine Beschreibung des Levels
-                        width: Int,             // Breite des Spielfelds
-                        height: Int,            // Höhe des Spielfelds
-                        start: Coordinate,      // Der Startpunkt des Spielers (Koordinate)
-                        goal: Coordinate,       // Das Ziel des Spielers (Koordinate)
-                        objects: LevelObjects   // Objekte im Level (z.B. Hindernisse und "Jerms")
-                      )
-
-// Diese Case-Class repräsentiert die Objekte auf dem Spielfeld
-case class LevelObjects(
-                         obstacles: List[Coordinate], // Liste der Hindernisse (Koordinaten)
-                         jerm: List[Coordinate]      // Liste der Jerms (Koordinaten)
-                       )
-
-// Diese Case-Class repräsentiert eine Koordinate auf dem Spielfeld
-case class Coordinate(
-                       x: Int,   // x-Koordinate
-                       y: Int    // y-Koordinate
-                     )

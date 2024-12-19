@@ -4,29 +4,30 @@ import Util.Observable
 
 object Spielfeld extends Observable {
 
-  private var grid: Array[Array[Int]] = Array.ofDim[Int](10, 10)  // Standardgröße, z.B. 10x10
+  // Char-Array für das Spielfeld
+  private var grid: Array[Array[Char]] = Array.fill(10, 10)(' ') // Standardgröße, z.B. 10x10
+  private var spielerPosition: Option[Coordinate] = None // Speichert die Position des Spielers
 
-  // Initialisiert das Spielfeld mit einem benutzerdefinierten Array
-  def initialize(array: Array[Array[Int]]): Unit = {
-    grid = Array.ofDim[Int](array.length, if (array.isEmpty) 0 else array(0).length)
+  // Initialisieren des Grids mit einem übergebenen Char-Array
+  def initialize(array: Array[Array[Char]]): Unit = {
+    grid = Array.ofDim[Char](array.length, if (array.isEmpty) 0 else array(0).length)
     for (i <- array.indices; j <- array(i).indices) {
       grid(i)(j) = array(i)(j)
     }
-    notifyObservers()  // Benachrichtige Observer nach der Initialisierung
   }
 
-  // Methode, um einen Wert zu setzen
-  def hinsetze(x: Int, y: Int, value: Int): Unit = {
+  // Hinsetzen eines Wertes auf das Spielfeld
+  def hinsetze(x: Int, y: Int, value: Char): Unit = {
     if (isValid(x, y)) {
       grid(x)(y) = value
-      notifyObservers()  // Benachrichtige Observer, dass das Grid geändert wurde
+      if (value == 'R') setSpielerPosition(Coordinate(x, y))
     } else {
       throw new IndexOutOfBoundsException("Ungültige Position im Grid.")
     }
   }
 
   // Methode, um einen Wert abzurufen
-  def get(x: Int, y: Int): Int = {
+  def get(x: Int, y: Int): Char = {
     if (isValid(x, y)) {
       grid(x)(y)
     } else {
@@ -34,10 +35,40 @@ object Spielfeld extends Observable {
     }
   }
 
-  // Methode, um das Grid auszugeben (für Debugging)
-  def printGrid(): Unit = {
-    for (row <- grid) {
-      println(row.mkString(" "))
+  def getSpielfeld: Array[Array[Char]] = {
+    grid
+  }
+
+  def setup(newGrid : Array[Array[Char]]): Unit = {
+    grid = newGrid
+  }
+
+  def getSpielerPos: Option[(Int, Int)] = {
+    val spieler = for {
+      x <- grid.indices.view
+      y <- grid(x).indices.view
+      if get(x, y) == 'R'
+    } yield (x, y)
+    spieler.headOption
+  }
+
+  // Methode, um die Spielerposition zu aktualisieren
+  def setSpielerPosition(pos: Coordinate): Unit = {
+    spielerPosition = Some(pos)
+  }
+
+  // Getter für die Spielerposition
+  def getSpielerPosition: Option[Coordinate] = spielerPosition
+
+
+
+  // Entfernen eines Wertes
+  def entfernen(x: Int, y: Int): Unit = {
+    if (isValid(x, y)) {
+      grid(x)(y) = ' '
+      notifyObservers()
+    } else {
+      throw new IndexOutOfBoundsException("Ungültige Position im Grid.")
     }
   }
 
@@ -46,15 +77,11 @@ object Spielfeld extends Observable {
     x >= 0 && x < grid.length && y >= 0 && y < grid(0).length
   }
 
-  // Beispielhafter Aufruf von notifyObservers(), um Beobachter zu benachrichtigen
-  def updateGrid(): Unit = {
-    // Änderungen am Grid vornehmen...
-    notifyObservers()  // Benachrichtige Observer über das Update
-  }
 
-  // Methode, um das Spielfeld zurückzusetzen (optional)
-  def reset(): Unit = {
-    grid = Array.ofDim[Int](10, 10)  // Reset auf Standardgröße
-    notifyObservers()  // Benachrichtige Observer nach Reset
-  }
+
+  // Optional: Methode, um das Spielfeld zurückzusetzen
+//  def reset(): Unit = {
+//    grid = Array.fill(10, 10)(' ')  // Reset auf Standardgröße mit Leerzeichen als Standardwert
+//    notifyObservers()  // Benachrichtige Observer nach Reset
+//  }
 }

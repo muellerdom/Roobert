@@ -15,11 +15,28 @@
         "y": 4
       },
       "objects": {
-        "obstacles": [],
+        "obstacles": [
+          {
+            "type": "stein",
+            "coordinates": {
+              "x": 2,
+              "y": 3
+            }
+          },
+          {
+            "type": "holz",
+            "coordinates": {
+              "x": 2,
+              "y": 2
+            }
+          }
+        ],
         "jerm": [
           {
-            "x": 1,
-            "y": 0
+            "coordinates": {
+              "x": 4,
+              "y": 3
+            }
           }
         ]
       }
@@ -57,8 +74,10 @@
         ],
         "jerm": [
           {
-            "x": 5,
-            "y": 3
+            "coordinates": {
+              "x": 5,
+              "y": 3
+            }
           }
         ]
       }

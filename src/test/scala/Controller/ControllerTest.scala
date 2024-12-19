@@ -1,42 +1,165 @@
 package Controller
 
-import Controller.Controller
+import Model.{Coordinate, Goal, Jerm, LevelConfig, Objects, Obstacle, Spieler, Spielfeld, levelManager}
+import Util.{Observer, UndoManager}
+import org.scalamock.scalatest.MockFactory
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class ControllerTest extends AnyFlatSpec with Matchers {
+class ControllerTest extends AnyFlatSpec with Matchers with MockFactory {
 
-  "A Controller" should "load levels correctly" in {
-    val controller = new Controller()
+  val levelConfig: LevelConfig = LevelConfig(
+    "test-level",
+    "A test level",
+    "Collect all jerms",
+    5, 5,
+    Coordinate(0, 0),
+    Goal(4, 4),
+    Objects(List(Obstacle("stein", Coordinate(2, 3)), Obstacle("holz", Coordinate(2, 2))), List(Jerm(Coordinate(4, 3))))
+  )
 
-    // Sicherstellen, dass das Level "test-level" verfügbar ist
-    // Hier ein Beispiel, wie man ein Test-Level hinzufügen könnte
-    val result = controller.startLevel("test-level")
-
-    // Füge eine println-Anweisung hinzu, um den Fehler zu debuggen
-    println(s"Result of startLevel: $result")
-
-    // Überprüfe, ob das Ergebnis ein Erfolg (Right) ist
-    result should be ('right) // Erwartet ein erfolgreiches Laden des Levels (Right)
+  "startLevel" should "return an error when an invalid level name is provided" in {
+    val controller = new Controller
+    controller.startLevel("invalid-level") shouldBe Left("Level 'invalid-level' nicht gefunden.")
   }
 
-//  it should "validate levels correctly" in {
-//    val controller = new Controller()
+  "initializeSpielfeld" should "correctly place all objects on the grid according to the level configuration" in {
+    val controller = new Controller
+
+    controller.startLevel("test-level")
+    controller.getGrid(4, 4) shouldBe 'G'
+    controller.getGrid(2, 3) shouldBe 'X'
+    controller.getGrid(2, 2) shouldBe 'X'
+    controller.getGrid(4, 3) shouldBe 'J'
+    controller.getGrid(0, 0) shouldBe 'R'
+  }
+
+  "movePlayer" should "update the spielStatus to ProcessMoveStage and notify observers" in {
+    val controller = new Controller
+    val observer = mock[Observer]
+    controller.addObserver(observer)
+    (observer.update _).expects().once()
+
+    controller.movePlayer("some-action")
+    controller.spielStatus shouldBe SpielStatus.ProcessMoveStage
+  }
+
+//  "getAvailableLevels" should "return a list of level names that are available in the levelManager" in {
+//    //val mockLevelManager = levelManager.type]
+//    (levelManager.getAvailableLevels _).expects().returning(List("Level1", "Level2"))
 //
-//    // Erstelle ein fehlerhaftes und ein gültiges Level
-//    val faultyLevel = LevelConfig("faulty", "", "", 3, 3, Coordinate(0, 0), Goal(4, 4), Objects(List(), List()))
-//    val validLevel = LevelConfig("valid", "", "", 3, 3, Coordinate(0, 0), Goal(2, 2), Objects(List(), List()))
+//    val controller = new Controller {
+//      override def getAvailableLevels: List[String] = levelManager.getAvailableLevels
+//    }
 //
-//    // Teste die Validierung der Levels
-//    val faultyValidation = controller.validateLevels(List(faultyLevel))
-//    val validValidation = controller.validateLevels(List(validLevel))
-//
-//    // Füge println-Anweisungen hinzu, um den Status der Validierungen zu überprüfen
-//    println(s"Faulty level validation result: $faultyValidation")
-//    println(s"Valid level validation result: $validValidation")
-//
-//    // Überprüfe, ob die Fehlerbehandlung für fehlerhafte Levels korrekt ist
-//    faultyValidation should be ('left) // Erwartet einen Fehler bei der Validierung des fehlerhaften Levels (Left)
-//    validValidation should be ('right)  // Erwartet eine erfolgreiche Validierung des gültigen Levels (Right)
+//    controller.getAvailableLevels shouldBe List("Level1", "Level2")
 //  }
+//
+//  it should "return an empty list when no levels are available in the levelManager" in {
+//   // val mockLevelManager = mock[levelManager.type]
+//    (levelManager.getAvailableLevels _).expects().returning(List())
+//
+//    val controller = new Controller {
+//      override def getAvailableLevels: List[String] = levelManager.getAvailableLevels
+//    }
+//
+//    controller.getAvailableLevels shouldBe List()
+//  }
+//
+//  it should "not modify the state of the Controller or levelManager" in {
+//    //val mockLevelManager = mock[levelManager.type]
+//    (levelManager.getAvailableLevels _).expects().returning(List("Level1", "Level2"))
+//
+//    val controller = new Controller {
+//      override def getAvailableLevels: List[String] = levelManager.getAvailableLevels
+//    }
+//
+//    val initialState = controller.spielStatus
+//    controller.getAvailableLevels
+//    controller.spielStatus shouldBe initialState
+//  }
+
+  "undo" should "update the spielStatus to ProcessMoveStage and call undoStep" in {
+    val mockUndoManager = mock[UndoManager]
+    (mockUndoManager.undoStep _).expects().once()
+
+    val controller = new Controller {
+      val undoManager: UndoManager = mockUndoManager
+    }
+
+    controller.undo()
+    controller.spielStatus shouldBe SpielStatus.ProcessMoveStage
+  }
+
+  it should "notify all observers after performing the undo operation" in {
+    val controller = new Controller
+    val observer = mock[Observer]
+    controller.addObserver(observer)
+    (observer.update _).expects().once()
+
+    controller.undo()
+  }
+
+  it should "print the current position of the Spieler after the undo operation" in {
+    val controller = new Controller
+    val initialPosition = Coordinate(0, 0)
+    Spieler.initialize(initialPosition.x, initialPosition.y)
+
+    val output = new java.io.ByteArrayOutputStream()
+    Console.withOut(output) {
+      controller.undo()
+    }
+
+    output.toString should include(initialPosition.toString)
+  }
+
+  "redo" should "update the spielStatus to ProcessMoveStage" in {
+    val controller = new Controller
+    controller.redo()
+    controller.spielStatus shouldBe SpielStatus.ProcessMoveStage
+  }
+
+  it should "call redoStep on the undoManager" in {
+    val mockUndoManager = mock[UndoManager]
+    (mockUndoManager.redoStep _).expects().once()
+
+    val controller = new Controller {
+      val undoManager: UndoManager = mockUndoManager
+    }
+
+    controller.redo()
+  }
+
+  it should "notify all observers after performing the redo operation" in {
+    val controller = new Controller
+    val observer = mock[Observer]
+    controller.addObserver(observer)
+    (observer.update _).expects().once()
+
+    controller.redo()
+  }
+
+  "isLevelComplete" should "return true when all jerms are collected and the player is at the goal position" in {
+    val controller = new Controller
+    levelManager.ladeLevel("test-level")
+    Spieler.eingesammelteJerms = Set(Coordinate(4, 3))
+    Spieler.position = Some(Coordinate(4, 4))
+    controller.isLevelComplete shouldBe true
+  }
+
+  it should "return false if not all jerms are collected, even if the player is at the goal position" in {
+    val controller = new Controller
+    levelManager.ladeLevel("test-level")
+    Spieler.eingesammelteJerms = Set(Coordinate(4, 3))
+    Spieler.position = Some(Coordinate(4, 4))
+    controller.isLevelComplete shouldBe false
+  }
+
+  it should "return false if the player has collected all jerms but is not at the goal position" in {
+    val controller = new Controller
+    levelManager.ladeLevel("test-level")
+    Spieler.eingesammelteJerms = Set(Coordinate(4, 3))
+    Spieler.position = Some(Coordinate(3, 3))
+    controller.isLevelComplete shouldBe false
+  }
 }
