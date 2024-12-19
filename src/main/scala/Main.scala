@@ -12,7 +12,7 @@ object Main {
   GUI.setController(controller)
   //GUI.start()
   controller.notifyObservers()
-
+//hehehhehehehehehheoiqh3eoi  fjöoqeruhgöqogiuzöqoiuzö4o8zfoqu8zöq34zö8 ztmzgö  3g
 
 
   def main(args: Array[String]): Unit = {
