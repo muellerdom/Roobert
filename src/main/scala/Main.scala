@@ -13,7 +13,7 @@ object Main {
   //GUI.start()
   controller.notifyObservers()
 
-
+//Das ist ein Kommentar
 
   def main(args: Array[String]): Unit = {
 
