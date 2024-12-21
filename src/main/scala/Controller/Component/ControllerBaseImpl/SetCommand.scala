@@ -1,21 +1,24 @@
 package Controller.Component.ControllerBaseImpl
 
-import Model.{Coordinate, Spieler, Spielfeld}
+import Model.REPLComponent.REPLBaseImpl.REPL.Interpret
+import Model.SpielerComponent.PlayerBaseImpl.Spieler
+import Model.SpielfeldComponent.Coordinate
+import Model.SpielfeldComponent.SpielfeldBaseImpl.Spielfeld
 import Util.Command
 
-class SetCommand(action: String) extends Command {
+class SetCommand(action: String, controller: Controller) extends Command {
   private var memento: Array[Array[Char]] = Spielfeld.getSpielfeld.map(_.clone)
   private var playerPosition: (Coordinate) = Spieler.getPosition
 
   override def doStep(): Unit = {
     memento = Spielfeld.getSpielfeld.map(_.clone)
-    playerPosition = Spieler.getPosition
-    Spieler.move(action)
-    Spielfeld.hinsetze(Spieler.getPosition.x, Spieler.getPosition.y, 'R')
+    //playerPosition = Spieler.getPosition
+    //Spieler.move(action)
+    Interpret(action)
   }
 
   override def undoStep(): Unit = {
-    Spielfeld.setup(memento)
+    Spielfeld.->(memento) //.setup(memento)
     Spieler.position = Some(playerPosition)
   }
 

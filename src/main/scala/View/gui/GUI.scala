@@ -8,7 +8,6 @@ import scalafx.scene.layout.Pane
 
 object GUI extends JFXApp3 with Observer {
 
-  // Optionaler Controller
   private var controller: Option[Controller] = None
 
   // Setzt den Controller und registriert sich als Observer
@@ -19,7 +18,6 @@ object GUI extends JFXApp3 with Observer {
 
   // Initialisierung und Start der GUI
   override def start(): Unit = {
-    // Hauptstage (bereitgestellt von JFXApp3)
     stage = new JFXApp3.PrimaryStage {
       title = "Hilf Roobert"
       scene = new Scene(400, 300) {
@@ -27,12 +25,9 @@ object GUI extends JFXApp3 with Observer {
       }
     }
 
-    stage.show() // Zeige das Fenster an
+    stage.show()
 
-    // Wechsel in die LevelView (wenn Controller verfügbar)
-    //controller.foreach(switchToLevelView)
-
-    // Starte erst nach der GUI-Initialisierung
+    // Nach der Initialisierung des GUI-Threads Controller benachrichtigen
     Platform.runLater(() => {
       controller.foreach(_.notifyObservers())
     })
@@ -40,6 +35,10 @@ object GUI extends JFXApp3 with Observer {
 
   // View-Wechsel-Funktion: Tausche den root-Knoten der Scene aus
   private def setView(newRoot: Pane): Unit = {
+    if (stage == null) {
+      println("WARNUNG: Stage ist noch nicht initialisiert.")
+      return
+    }
     Platform.runLater(() => {
       stage.scene = new Scene(800, 600) {
         root = newRoot
@@ -47,33 +46,35 @@ object GUI extends JFXApp3 with Observer {
     })
   }
 
-  // Wechsle zur Level-Auswahl-Ansicht
+  // Wechsel zur Level-Auswahl-Ansicht
   def switchToLevelView(controller: Controller): Unit = {
     println("Wechsle zur LevelView.")
     setView(new LevelView(controller))
   }
 
-  // Wechsle zur Spiel-Ansicht
+  // Wechsel zur Spiel-Ansicht
   def switchToGameView(controller: Controller): Unit = {
     println("Wechsle zur GameView.")
     setView(new GameView(controller))
   }
 
-  // Automatische Aktualisierungen basierend auf dem Controller
   override def update(): Unit = {
     if (!Platform.isFxApplicationThread) {
-      println("Toolkit nicht initialisiert, update wird übersprungen.")
+      Platform.runLater(() => update())
       return
     }
 
-    Platform.runLater(() => {
-      controller.foreach { ctrl =>
-        if (ctrl.getLevelConfig.isDefined) {
-          switchToGameView(ctrl)
-        } else {
-          switchToLevelView(ctrl)
-        }
+    controller.foreach { ctrl =>
+      if (stage == null) {
+        println("WARNUNG: Stage ist noch nicht bereit für Updates.")
+        return
       }
-    })
+
+      if (ctrl.getLevelConfig.isDefined) {
+        switchToGameView(ctrl)
+      } else {
+        switchToLevelView(ctrl)
+      }
+    }
   }
 }

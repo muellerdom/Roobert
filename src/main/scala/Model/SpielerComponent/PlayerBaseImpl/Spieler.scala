@@ -1,8 +1,18 @@
-package Model
+package Model.SpielerComponent.PlayerBaseImpl
 
+import Model.LevelComponent.levelManager
+import Model.SpielfeldComponent.SpielfeldBaseImpl.{Jerm, Spielfeld}
+import Model.SpielfeldComponent.{Coordinate, KomponentenInterface}
 import Util.Observable
 
 // Singleton-Object für den Spieler
+//MACHT DAS SINN? -> sollte case class sein
+//Interface für Spieler lol
+//NAMEN NUR IN EINER SPRACHE (BESTENS AUF ENGLISH)
+//Immutable machen (values anstatt vars)
+
+
+
 object Spieler extends Observable {
 
   // Enum für Richtungen
@@ -16,21 +26,25 @@ object Spieler extends Observable {
 
   case object Links extends Direction
 
-  private var initialized = false // Kontrollflag für Initialisierung
-  var position: Option[Coordinate] = None // Startposition des Spielers
-  var direction: Direction = Oben // Start-Richtung
-  var eingesammelteJerms: Set[Coordinate] = Set()
+  private val startPosX = levelManager.getCurrentLevel.get.start.x
+  private val startPosY = levelManager.getCurrentLevel.get.start.y
 
+  val inventory = new Inventory()
+
+
+  //var wegkriegen
+  var position: Option[Coordinate] = None
+  var direction: Direction = Oben // Start-Richtung
+  //var eingesammelteJerms: Set[Coordinate] = Set()
 
   private val maxX: Int = levelManager.getCurrentLevel.get.width
   private val maxY: Int = levelManager.getCurrentLevel.get.height
 
-  // Initialisierungsmethode
-  def initialize(startX: Int, startY: Int): Unit = {
+  def Symbol: Char = 'R' // Symbol für Spieler
 
-    position = Some(Coordinate(startX, startY))
-    initialized = true
-    println(s"Spieler initialisiert bei ($startX, $startY)")
+  def initialize(): Unit = {
+    direction = Oben // Start-Richtung
+    position = Some(Coordinate(startPosX, startPosY)) // Startposition des Spielers
   }
 
   // Methode, um die aktuelle Position sicher zu erhalten
@@ -40,7 +54,6 @@ object Spieler extends Observable {
 
   // Bewegung basierend auf Aktionen
   def move(action: String): Unit = {
-    if (!initialized) throw new IllegalStateException("Spieler ist nicht initialisiert!")
 
     action match {
       case "forward" => moveForward()
@@ -58,7 +71,6 @@ object Spieler extends Observable {
       case Unten => Links
       case Links => Oben
     }
-   // notifyObservers()
   }
 
   // Nach links drehen
@@ -84,16 +96,7 @@ object Spieler extends Observable {
     }
 
     if (isValidMove(newPos)) {
-
-      if (position.get.x == levelManager.getCurrentLevel.get.goal.x &&
-        position.get.y == levelManager.getCurrentLevel.get.goal.y) {
-        Spielfeld.hinsetze(position.get.x, position.get.y, 'G')
-      } else {
-        Spielfeld.hinsetze(currentPosition.x, currentPosition.y, ' ')
-      }
-      position = Some(newPos)
-
-      Spielfeld.hinsetze(position.get.x, position.get.y, 'R')
+      position = Some(newPos) //update position
 
       println(s"Spieler bewegt zu $newPos in Richtung $direction")
       einsammeln(newPos)
@@ -109,20 +112,42 @@ object Spieler extends Observable {
     withinBounds && !isObstacle
   }
 
-  // Jerm einsammeln
+
+  // Jerm einsammeln -
   def einsammeln(pos: Coordinate): Unit = {
-    val level = levelManager.getCurrentLevel.get
-    level.objects.jerm.find(_.coordinates == pos) match {
-      case Some(jerm) =>
-        eingesammelteJerms += pos
-        //---- Jedesmal wenn sich der SPieler über das Feld wo ein Jerm sein soll bewegt, sammelt er ihn ein
-        //--> infinite jerm glitch
-        //Dies ist zu korrigieren
-        //level.objects.jerm = level.objects.jerm.filterNot(_.coordinates == pos) // Entferne eingesammelten Jerm
+
+    //      println("Aktuelle Komponenten:")
+    //      Spielfeld.components.foreach { component =>
+    //        println(s"- Typ: ${component.getClass.getSimpleName}, Position: ${component.getPosition}")
+    //      }
+    //
+
+
+    Spielfeld.components.find(_.getPosition == pos) match {
+      case Some(jerm: Jerm) =>
+        inventory.addItem(jerm) // Jerm zum Inventar hinzufügen
+        Spielfeld.entfernen(pos.x, pos.y) // Jerm vom Spielfeld entfernen
         println(s"Jerm an Position $pos eingesammelt.")
-      case None =>
+      case _ =>
     }
   }
+}
 
-  override def toString: String = s"Spieler(Position: ${getPosition}, Richtung: $direction)"
+class Inventory {
+  private var items: Set[KomponentenInterface] = Set()
+
+  // Objekt hinzufügen
+  def addItem(item: KomponentenInterface): Unit = {
+    items += (item)
+  }
+
+  // Überprüfen, ob ein bestimmtes Item eingesammelt wurde
+  def containsItem(name: KomponentenInterface): Boolean =
+    items.contains(name)
+
+  // Alle eingesammelten Items abrufen
+  def getItems: Set[KomponentenInterface] = items
+
+  // Anzahl der eingesammelten Objekte
+  def size: Int = items.size
 }

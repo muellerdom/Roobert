@@ -1,40 +1,43 @@
-import Controller.Controller
-import Model.REPL
-import View.{GUI, TUI}
+import Controller.Component.ControllerBaseImpl.Controller
+import View.TUI
+import View.gui.GUI
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.io.StdIn.readLine
 
 object Main {
   val controller = new Controller()
-  REPL.replBind(controller)
   val tui = new TUI(controller)
   GUI.setController(controller)
-  //GUI.start()
-  controller.notifyObservers()
-
-
 
   def main(args: Array[String]): Unit = {
-
-    // TUI im Hauptthread
+    // GUI im Hauptthread starten
     Future {
       GUI.main(args)
-    }(scala.concurrent.ExecutionContext.global)
+    }
 
-    // GUI im separaten Thread starten (Dadurch wird sichergestellt,dass
-    // TUI-Ereignisse weiterhin verarbeitet werden können)
-    new Thread(() =>       tui.start())
+    // TUI in einem separaten Thread ausführen
+    Future {
+      startTUI(args)
+    }
 
+    // Initiale Observer-Benachrichtigung
+    controller.notifyObservers()
+  }
+
+  /** Startet die TUI und verarbeitet Eingaben */
+  private def startTUI(args: Array[String]): Unit = {
+    tui.start() // TUI initialisieren
 
     if (args.nonEmpty) {
-      tui.processInputLine(args(0))
+      tui.processInputLine(args(0)) // Argumente direkt verarbeiten
     } else {
       var input: String = ""
       do {
-        input = readLine().toString
+        input = readLine()
         tui.processInputLine(input)
-      } while (input != "q")
+      } while (input != "q") // Beenden bei "q"
     }
   }
 }

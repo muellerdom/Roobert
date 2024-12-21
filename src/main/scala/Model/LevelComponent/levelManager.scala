@@ -1,4 +1,4 @@
-package Model
+package Model.LevelComponent
 
 import Util.Observable
 

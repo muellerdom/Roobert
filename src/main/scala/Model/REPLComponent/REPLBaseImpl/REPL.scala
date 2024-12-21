@@ -1,14 +1,14 @@
-package Model
+package Model.REPLComponent.REPLBaseImpl
 
-import Controller.Controller
+import Controller.Component.ControllerBaseImpl.Controller
+import Model.REPLComponent.REPLInterface
 import Util.Observable
-import ammonite.repl.Repl
 
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.IMain
 import scala.tools.nsc.interpreter.shell.ReplReporterImpl
 
-object REPL extends Observable {
+object REPL extends Observable with REPLInterface {
 
   private val settings = new Settings
   settings.usejavacp.value = true // Set the class path settings.classpath.append("target/scala-2.13/classes")
@@ -18,14 +18,22 @@ object REPL extends Observable {
   private val repl = new IMain(settings, reporter)
 
 
+
   def replBind(controller: Controller) : Unit = {
     reporter.totalSilence = true //nur während Controller eingebunden wird.
     // Binde den Controller in den REPL-Kontext
-    repl.bind("controller", "Controller.Controller", controller)
+    repl.bind("controller", "Controller.Component.ControllerBaseImpl.Controller", controller)
+    //repl.bind("spieler", "Model.SpielerComponent.Spieler")
+
+    //notifyObservers()
     reporter.totalSilence = false
-    repl.interpret("""def moveForward() = controller.movePlayer("forward")""")
-    repl.interpret("""def turnRight() = controller.movePlayer("right")""")
-    repl.interpret("""def turnLeft() = controller.movePlayer("left")""")
+//    repl.interpret("""def moveForward() = controller.setCommand("forward")""")
+//    repl.interpret("""def turnRight() = controller.setCommand("right")""")
+//    repl.interpret("""def turnLeft() = controller.setCommand("left")""")
+    repl.interpret("""def moveForward() = Model.SpielerComponent.Spieler.move("forward")""")
+    repl.interpret("""def turnRight() = Model.SpielerComponent.Spieler.move("right")""")
+    repl.interpret("""def turnLeft() = Model.SpielerComponent.Spieler.move("left")""")
+
   }
 
   def Interpret(code: String): Unit = {

@@ -1,6 +1,7 @@
 package View
 
-import Controller.{Controller, SpielStatus}
+import Controller.Component.ControllerBaseImpl.Controller
+import Model.SpielerComponent.PlayerBaseImpl.Spieler.notifyObservers
 import Util.Observer
 
 class TUI(controller: Controller) extends Observer {
@@ -46,6 +47,7 @@ class TUI(controller: Controller) extends Observer {
           println(errorMessage)
       }
     }
+
   }
 
   private def displayGrid(): Unit = {
@@ -55,7 +57,7 @@ class TUI(controller: Controller) extends Observer {
         println("+" + ("---+" * level.width))
         for (y <- level.height - 1 to 0 by -1) {
           for (x <- 0 until level.width) {
-            val symbol = controller.getGrid(x, y)
+            val symbol = controller.getSpielfeld.getSpielfeld(x)(y)
             print(s"| $symbol ")
           }
           println("|")
@@ -87,11 +89,10 @@ class TUI(controller: Controller) extends Observer {
         case "compile" =>
           // Führe den gesammelten Codeblock aus
           val code = codeBlock.toString()
-          controller.repl(code) // Grid wird durch update() nachgeführt
+          controller.setCommand(code) // Grid wird durch update() nachgeführt
           codeBlock.clear()
 
           if (controller.isLevelComplete) {
-            controller.spielStatus = SpielStatus.GameEndStage
             println("Herzlichen Glückwunsch! Robert ist angekommen!")
             start() // Zurück zur Levelauswahl
           }
@@ -106,7 +107,8 @@ class TUI(controller: Controller) extends Observer {
   }
 
   override def update(): Unit = {
-    println("Aktualisierung vom Controller erhalten.")
+    //println("Aktualisierung vom Controller erhalten.")
     displayGrid() // Grid automatisch aktualisieren, wenn der Controller dies veranlasst
+
   }
 }

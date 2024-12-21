@@ -1,3 +1,5 @@
+package Model.LevelComponent
+
 //package GalgenmaennchenLevel1
 //
 //import Util.Observable
