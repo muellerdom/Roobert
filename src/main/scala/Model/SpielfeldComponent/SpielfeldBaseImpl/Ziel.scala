@@ -1,6 +1,6 @@
 package Model.SpielfeldComponent.SpielfeldBaseImpl
 
-import Model.SpielerComponent.PlayerBaseImpl.Spieler
+import Model.PlayerComponent.PlayerBaseImpl.Player
 import Model.SpielfeldComponent.{Coordinate, KomponentenInterface}
 
 
@@ -12,7 +12,7 @@ class Ziel(val position: Coordinate) extends KomponentenInterface {
   override def isBlocking: Boolean = false
 
   override def interactWithPlayer(): Unit = {
-    if (Spieler.getPosition == position) {
+    if (Player.getPosition == position) {
       println("Herzlichen Glückwunsch! Du hast das Ziel erreicht!")
     }
   }

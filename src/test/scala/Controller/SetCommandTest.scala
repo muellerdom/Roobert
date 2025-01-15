@@ -2,7 +2,7 @@ package Controller
 
 import Controller.Component.ControllerBaseImpl.SetCommand
 import Model.LevelComponent.Coordinate
-import Model.SpielerComponent.PlayerBaseImpl.Spieler
+import Model.PlayerComponent.PlayerBaseImpl.Spieler
 import Model.SpielfeldComponent.SpielfeldBaseImpl.Spielfeld
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers

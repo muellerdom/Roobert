@@ -2,7 +2,7 @@ package Controller
 
 import Controller.Component.ControllerInterface
 import Model.LevelComponent.{Goal, Jerm, LevelConfig, Objects, Obstacle}
-import Model.SpielerComponent.PlayerBaseImpl.Spieler
+import Model.PlayerComponent.PlayerBaseImpl.Spieler
 import Model.SpielfeldComponent.{Coordinate, SpielfeldInterface}
 import Util.{Observer, UndoManager}
 import org.scalamock.scalatest.MockFactory

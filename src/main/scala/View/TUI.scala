@@ -1,7 +1,6 @@
 package View
 
 import Controller.Component.ControllerBaseImpl.Controller
-import Model.SpielerComponent.PlayerBaseImpl.Spieler.notifyObservers
 import Util.Observer
 
 class TUI(controller: Controller) extends Observer {

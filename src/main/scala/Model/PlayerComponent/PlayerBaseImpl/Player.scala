@@ -1,4 +1,4 @@
-package Model.SpielerComponent.PlayerBaseImpl
+package Model.PlayerComponent.PlayerBaseImpl
 
 import Model.LevelComponent.levelManager
 import Model.SpielfeldComponent.SpielfeldBaseImpl.{Jerm, Spielfeld}
@@ -13,7 +13,7 @@ import Util.Observable
 
 
 
-object Spieler extends Observable {
+object Player extends Observable {
 
   // Enum für Richtungen
   sealed trait Direction

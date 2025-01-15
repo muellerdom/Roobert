@@ -1,7 +1,7 @@
 package Model.SpielfeldComponent.SpielfeldMockImpl
 
 import Model.LevelComponent.levelManager.getCurrentLevel
-import Model.SpielerComponent.PlayerBaseImpl.Spieler
+import Model.PlayerComponent.PlayerBaseImpl.Player
 import Model.SpielfeldComponent.{Coordinate, KomponentenInterface, SpielfeldInterface}
 import Util.Observable
 
@@ -28,7 +28,7 @@ class MockSpielfeld extends Observable with SpielfeldInterface {
     val grid = Array.fill(getCurrentLevel.get.width, getCurrentLevel.get.height)(' ')
     components.foreach(c => grid(c.getPosition.x)(c.getPosition.y) = c.Symbol)
 
-    Spieler.position.foreach(pos => grid(pos.x)(pos.y) = Spieler.Symbol)
+    Player.position.foreach(pos => grid(pos.x)(pos.y) = Player.Symbol)
     grid.clone()
   }
 

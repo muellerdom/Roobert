@@ -1,0 +1,70 @@
+{
+  "level": "level nummer",
+  "description": "Überschrift - z.B. Robert lernt Variablen kennen",
+  "instruction": [
+    {
+      "_comment": "Als List könnte man Anweisungen in mehrer ABschnitte unterteilen"
+    },
+    {
+      "description": "Lernen wir Variablen kennen",
+      "code": "var x = 5"
+    },
+    "Weitere Anweisungen",
+    "...",
+    {
+      "_comment": "Nicht jeder Anweisungsteil hat code, aber wenn man diesen identifiziert, könnte man ihn später im besseren Layout darstellen"
+    }
+  ],
+  "logic" : "grid",
+  "_comment": "Nicht jedes SPiel hat ein Grid, (es könnte auch hangman etc. sein)",
+  "grid": {
+    "width": 5,
+    "height": 5
+  },
+  "player": {
+    "coordinates": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "goal": {
+    "coordinates": {
+      "x": 4,
+      "y": 4
+    }
+  },
+  "objects": {
+    "obstacles": [
+      {
+        "type": "stein",
+        "coordinates": {
+          "x": 2,
+          "y": 3
+        }
+      },
+      {
+        "type": "holz",
+        "coordinates": {
+          "x": 2,
+          "y": 2
+        }
+      },
+      {
+        "type": "wasser",
+        "coordinates": {
+          "x": 3,
+          "y": 3
+        }
+      },
+      {"_comment" :  "Weitere Hindernisse eventuell in späteren Levels"}
+    ],
+    "jerm": [
+      {
+        "coordinates": {
+          "x": 4,
+          "y": 3
+        }
+      }
+    ]
+  }
+},

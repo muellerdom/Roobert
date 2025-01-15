@@ -4,7 +4,7 @@ package Controller.Component.ControllerBaseImpl
 import Controller.Component.ControllerInterface
 import Model.LevelComponent.{LevelConfig, levelManager}
 import Model.REPLComponent.REPLBaseImpl.REPL
-import Model.SpielerComponent.PlayerBaseImpl.Spieler
+import Model.PlayerComponent.PlayerBaseImpl.Player
 import Model.SpielfeldComponent.SpielfeldBaseImpl.Spielfeld
 import Model.SpielfeldComponent.{Coordinate, SpielfeldInterface}
 import Util.{Observable, UndoManager}
@@ -18,7 +18,7 @@ class Controller extends Observable with ControllerInterface{
   def startLevel(levelName: String): Either[String, LevelConfig] = {
     levelManager.ladeLevel(levelName) match {
       case Right(level) =>
-        Spieler.initialize()
+        Player.initialize()
         notifyObservers()
         Right(level)
       case Left(error) => Left(error)
@@ -47,9 +47,9 @@ class Controller extends Observable with ControllerInterface{
 
   def isLevelComplete: Boolean = {
     val currentLevel = levelManager.getCurrentLevel.get
-    println(Spieler.inventory.size)
-    Spieler.inventory.size == currentLevel.objects.jerm.size &&
-      Spieler.position.get.isEqualTo(Coordinate(currentLevel.goal.x, currentLevel.goal.y))
+    println(Player.inventory.size)
+    Player.inventory.size == currentLevel.objects.jerm.size &&
+      Player.position.get.isEqualTo(Coordinate(currentLevel.goal.x, currentLevel.goal.y))
   }
 
   def getSpielfeld: SpielfeldInterface = Spielfeld
