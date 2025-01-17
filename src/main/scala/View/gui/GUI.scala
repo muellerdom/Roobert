@@ -1,39 +1,34 @@
+// GUI.scala
 package View.gui
 
 import Controller.Component.ControllerBaseImpl.Controller
 import Util.Observer
+import com.google.inject.Inject
 import scalafx.application.{JFXApp3, Platform}
 import scalafx.scene.Scene
 import scalafx.scene.layout.Pane
 
-object GUI extends JFXApp3 with Observer {
+class GUI @Inject() (controller: Controller) extends JFXApp3 with Observer {
 
-  private var controller: Option[Controller] = None
+  controller.addObserver(this)
 
-  // Setzt den Controller und registriert sich als Observer
-  def setController(controller: Controller): Unit = {
-    this.controller = Some(controller)
-    controller.addObserver(this)
-  }
-
-  // Initialisierung und Start der GUI
   override def start(): Unit = {
     stage = new JFXApp3.PrimaryStage {
       title = "Hilf Roobert"
       scene = new Scene(400, 300) {
-        root = new Pane() // Initial leerer Inhalt
+        root = new Pane {
+          style = "-fx-background-color: #2B2B2B;" // Liver Dogs
+        }
       }
     }
 
     stage.show()
 
-    // Nach der Initialisierung des GUI-Threads Controller benachrichtigen
     Platform.runLater(() => {
-      controller.foreach(_.notifyObservers())
+      controller.notifyObservers()
     })
   }
 
-  // View-Wechsel-Funktion: Tausche den root-Knoten der Scene aus
   private def setView(newRoot: Pane): Unit = {
     if (stage == null) {
       println("WARNUNG: Stage ist noch nicht initialisiert.")
@@ -42,20 +37,19 @@ object GUI extends JFXApp3 with Observer {
     Platform.runLater(() => {
       stage.scene = new Scene(800, 600) {
         root = newRoot
+        newRoot.setStyle("-fx-background-color: #2B2B2B;") // Liver Dogs
       }
     })
   }
 
-  // Wechsel zur Level-Auswahl-Ansicht
-  def switchToLevelView(controller: Controller): Unit = {
+  def switchToLevelView(): Unit = {
     println("Wechsle zur LevelView.")
-    setView(new LevelView(controller))
+    setView(new LevelView(controller, this))
   }
 
-  // Wechsel zur Spiel-Ansicht
-  def switchToGameView(controller: Controller): Unit = {
+  def switchToGameView(): Unit = {
     println("Wechsle zur GameView.")
-    setView(new GameView(controller))
+    setView(new GameView(controller, this))
   }
 
   override def update(): Unit = {
@@ -64,17 +58,10 @@ object GUI extends JFXApp3 with Observer {
       return
     }
 
-    controller.foreach { ctrl =>
-      if (stage == null) {
-        println("WARNUNG: Stage ist noch nicht bereit für Updates.")
-        return
-      }
-
-      if (ctrl.getLevelConfig.isDefined) {
-        switchToGameView(ctrl)
-      } else {
-        switchToLevelView(ctrl)
-      }
+    if (controller.getLevelConfig.isDefined) {
+      switchToGameView()
+    } else {
+      switchToLevelView()
     }
   }
 }

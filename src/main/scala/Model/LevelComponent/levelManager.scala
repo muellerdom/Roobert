@@ -7,7 +7,7 @@ import Util.Observable
  * somit wird das auch vom Controller entkoppelt
  */
 
-object levelManager extends Observable {
+object levelManager extends Observable with LevelManagerTrait {
 
   // intern für den Schutz der Levels zuständig
   private val levelLoader = loadLeveFromJSON
@@ -29,4 +29,6 @@ object levelManager extends Observable {
 
   def getCurrentLevel: Option[LevelConfig] = currentLevel
 
-}
+  override def loadLevel(levelName: String): Either[String, LevelConfig] = {
+    ladeLevel(levelName)
+  }}

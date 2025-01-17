@@ -2,8 +2,9 @@ package View
 
 import Controller.Component.ControllerBaseImpl.Controller
 import Util.Observer
+import com.google.inject.Inject
 
-class TUI(controller: Controller) extends Observer {
+class TUI @Inject() (controller: Controller) extends Observer {
 
   controller.addObserver(this) // TUI als Observer registrieren
 

@@ -1,22 +1,18 @@
+// Controller.scala
 package Controller.Component.ControllerBaseImpl
 
-
 import Controller.Component.ControllerInterface
-import Model.LevelComponent.{LevelConfig, levelManager}
-import Model.REPLComponent.REPLBaseImpl.REPL
+import Model.LevelComponent.{LevelConfig, LevelManagerTrait}
 import Model.PlayerComponent.PlayerBaseImpl.Player
 import Model.SpielfeldComponent.SpielfeldBaseImpl.Spielfeld
 import Model.SpielfeldComponent.{Coordinate, SpielfeldInterface}
 import Util.{Observable, UndoManager}
+import com.google.inject.Inject
 
-
-class Controller extends Observable with ControllerInterface{
-
-  REPL.replBind(this)
-
+class Controller @Inject() (levelManager: LevelManagerTrait) extends Observable with ControllerInterface {
 
   def startLevel(levelName: String): Either[String, LevelConfig] = {
-    levelManager.ladeLevel(levelName) match {
+    levelManager.loadLevel(levelName) match {
       case Right(level) =>
         Player.initialize()
         notifyObservers()
@@ -47,7 +43,6 @@ class Controller extends Observable with ControllerInterface{
 
   def isLevelComplete: Boolean = {
     val currentLevel = levelManager.getCurrentLevel.get
-    println(Player.inventory.size)
     Player.inventory.size == currentLevel.objects.jerm.size &&
       Player.position.get.isEqualTo(Coordinate(currentLevel.goal.x, currentLevel.goal.y))
   }

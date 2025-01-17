@@ -1,43 +1,50 @@
+// Main.scala
+import com.google.inject.Guice
 import Controller.Component.ControllerBaseImpl.Controller
 import View.TUI
-import View.gui.GUI
+import View.gui.{GUI, GameView}
+import javafx.application.Platform
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.io.StdIn.readLine
 
 object Main {
-  val controller = new Controller()
-  val tui = new TUI(controller)
-  GUI.setController(controller)
-
   def main(args: Array[String]): Unit = {
-    // GUI im Hauptthread starten
-    Future {
-      GUI.main(args)
-    }
+    Platform.startup(() => {
+      val injector = Guice.createInjector(new GameModule()) // Create injector
+      val controller = injector.getInstance(classOf[Controller])
+      val gui = injector.getInstance(classOf[GUI])
+      val gameView = injector.getInstance(classOf[GameView])
+      controller.addObserver(gameView)
 
-    // TUI in einem separaten Thread ausführen
-    Future {
-      startTUI(args)
-    }
+      // Start GUI in the main thread
+      Future {
+        gui.main(args)
+      }
 
-    // Initiale Observer-Benachrichtigung
-    controller.notifyObservers()
+      // Run TUI in a separate thread
+      Future {
+        startTUI(args, controller)
+      }
+
+      // Initial observer notification
+      controller.notifyObservers()
+    })
   }
 
-  /** Startet die TUI und verarbeitet Eingaben */
-  private def startTUI(args: Array[String]): Unit = {
-    tui.start() // TUI initialisieren
+  private def startTUI(args: Array[String], controller: Controller): Unit = {
+    val tui = new TUI(controller)
+    tui.start() // Initialize TUI
 
     if (args.nonEmpty) {
-      tui.processInputLine(args(0)) // Argumente direkt verarbeiten
+      tui.processInputLine(args(0)) // Process arguments directly
     } else {
       var input: String = ""
       do {
         input = readLine()
         tui.processInputLine(input)
-      } while (input != "q") // Beenden bei "q"
+      } while (input != "q") // Exit on "q"
     }
   }
 }

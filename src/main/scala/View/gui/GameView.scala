@@ -2,43 +2,54 @@
 package View.gui
 
 import Controller.Component.ControllerBaseImpl.Controller
-import Model.LevelComponent.LevelConfig
 import Util.Observer
+import com.google.inject.Inject
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.control.{Button, Label, TextArea}
 import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout.{BorderPane, GridPane, HBox, VBox}
 import scalafx.scene.text.Font
 
-class GameView(controller: Controller) extends BorderPane with Observer {
-
+class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane with Observer {
   private val gridPane = new GridPane {
     hgap = 5
     vgap = 5
     padding = Insets(10)
-    style = "-fx-background-color: #e0f7fa; -fx-border-color: #00796b; -fx-border-width: 2px;"
+    style = "-fx-background-color: #2B2B2B; -fx-border-color: #6897BB; -fx-border-width: 2px; -fx-background-radius: 10px; -fx-border-radius: 10px;" // Rounded corners
   }
   refreshGrid()
+
+  private val instructions = new Label("Anweisungen: Schreiben Sie Ihren Code im Editor und klicken Sie auf 'Meinen Code ausführen', um das Spiel zu aktualisieren.") {
+    style = "-fx-font-size: 14px; -fx-text-fill: #2B2B2B; -fx-background-radius: 10px;" // Rounded corners
+    wrapText = true
+    maxWidth = 300
+  }
 
   private val codeEditor = new VBox {
     spacing = 10
     padding = Insets(10)
     alignment = Pos.TopCenter
-    style = "-fx-background-color: #444243;"
+    style = "-fx-background-color: #A9B7C6; -fx-background-radius: 10px;" // Rounded corners
 
     val textarea = new TextArea {
       prefWidth = 300
       prefHeight = 300
       promptText = "Schreibe deinen Code hier..."
+      style = "-fx-control-inner-background: #2B2B2B; -fx-text-fill: #F5F5F5; -fx-background-radius: 10px;" // Rounded corners
     }
 
     children = Seq(
+      instructions,
       new Label("Code Editor") {
-        style = "-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #d84315;"
+        style = "-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #0077CC;" // Primary color: Blue
       },
       textarea,
       new Button("Meinen Code ausführen") {
-        onAction = _ => controller.setCommand(textarea.getText)
+        onAction = _ => {
+          controller.setCommand(textarea.getText)
+          refreshGrid() // Ensure the grid is refreshed after executing the code
+        }
+        style = "-fx-background-color: #6897BB; -fx-text-fill: #2B2B2B; -fx-background-radius: 10px;" // Rounded corners
       }
     )
   }
@@ -47,12 +58,13 @@ class GameView(controller: Controller) extends BorderPane with Observer {
     spacing = 10
     padding = Insets(10)
     alignment = Pos.Center
+    style = "-fx-background-color: #6897BB; -fx-background-radius: 10px;" // Rounded corners
     children = Seq(
       new Label("Spielansicht") {
-        style = "-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #004d40;"
+        style = "-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2B2B2B;" // Neutral color: Light Gray
       },
       new Label(s"Aktuelles Level: ${controller.getLevelConfig.getOrElse("Unbekannt")}") {
-        style = "-fx-font-size: 14px;"
+        style = "-fx-font-size: 14px; -fx-text-fill: #2B2B2B;" // Neutral color: Light Gray
       }
     )
   }
@@ -61,10 +73,11 @@ class GameView(controller: Controller) extends BorderPane with Observer {
     spacing = 20
     padding = Insets(10)
     alignment = Pos.Center
+    style = "-fx-background-color: #6897BB; -fx-background-radius: 10px;" // Rounded corners
     children = Seq(
       new Button("Zurück zur Level-Auswahl") {
-        onAction = _ => GUI.switchToLevelView(controller)
-        style = "-fx-background-color: #00796b; -fx-text-fill: white; -fx-font-weight: bold;"
+        onAction = _ => gui.switchToLevelView()
+        style = "-fx-background-color: #2B2B2B; -fx-text-fill: #6897BB; -fx-font-weight: bold; -fx-background-radius: 10px;" // Rounded corners
       }
     )
   }
@@ -73,6 +86,7 @@ class GameView(controller: Controller) extends BorderPane with Observer {
   center = gridPane
   right = codeEditor
   bottom = bottomBar
+  padding = Insets(20) // Add padding around the edges
 
   private def refreshGrid(): Unit = {
     controller.getLevelConfig.foreach { level =>
@@ -97,6 +111,7 @@ class GameView(controller: Controller) extends BorderPane with Observer {
           }
           prefWidth = 50
           prefHeight = 50
+          style = "-fx-background-radius: 10px;" // Rounded corners
         }
 
         GridPane.setConstraints(cell, x, level.height - y - 1)
