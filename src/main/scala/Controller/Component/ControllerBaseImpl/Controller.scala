@@ -1,4 +1,3 @@
-// Controller.scala
 package Controller.Component.ControllerBaseImpl
 
 import Controller.Component.ControllerInterface
@@ -10,6 +9,10 @@ import Util.{Observable, UndoManager}
 import com.google.inject.Inject
 
 class Controller @Inject() (levelManager: LevelManagerTrait) extends Observable with ControllerInterface {
+
+  private val undoManager = new UndoManager
+  private var invalidMove = false
+  private var jermCollected = false
 
   def startLevel(levelName: String): Either[String, LevelConfig] = {
     levelManager.loadLevel(levelName) match {
@@ -23,11 +26,37 @@ class Controller @Inject() (levelManager: LevelManagerTrait) extends Observable 
 
   def getAvailableLevels: List[String] = levelManager.getAvailableLevels
 
-  private val undoManager = new UndoManager
-
   def setCommand(action: String): Unit = {
     val command = new SetCommand(action, this)
     undoManager.doStep(command)
+    notifyObservers()
+  }
+
+  def moveUp(): Unit = {
+    Player.moveUp()
+    checkInvalidMove()
+    checkJermCollected()
+    notifyObservers()
+  }
+
+  def moveDown(): Unit = {
+    Player.moveDown()
+    checkInvalidMove()
+    checkJermCollected()
+    notifyObservers()
+  }
+
+  def moveLeft(): Unit = {
+    Player.moveLeft()
+    checkInvalidMove()
+    checkJermCollected()
+    notifyObservers()
+  }
+
+  def moveRight(): Unit = {
+    Player.moveRight()
+    checkInvalidMove()
+    checkJermCollected()
     notifyObservers()
   }
 
@@ -50,4 +79,15 @@ class Controller @Inject() (levelManager: LevelManagerTrait) extends Observable 
   def getSpielfeld: SpielfeldInterface = Spielfeld
 
   def getLevelConfig: Option[LevelConfig] = levelManager.getCurrentLevel
+
+  def isInvalidMove: Boolean = invalidMove
+  def isJermCollected: Boolean = jermCollected
+
+  private def checkInvalidMove(): Unit = {
+    invalidMove = !Player.isValidMove(Player.getPosition)
+  }
+
+  private def checkJermCollected(): Unit = {
+    jermCollected = Player.inventory.size > 0
+  }
 }

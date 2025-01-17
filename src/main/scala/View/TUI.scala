@@ -6,20 +6,20 @@ import com.google.inject.Inject
 
 class TUI @Inject() (controller: Controller) extends Observer {
 
-  controller.addObserver(this) // TUI als Observer registrieren
+  controller.addObserver(this) // Register TUI as an observer
 
   def start(): Unit = {
     val availableLevels = controller.getAvailableLevels
 
-    println("Hilf Roobert!")
+    println("Help Robert!")
     if (availableLevels.nonEmpty) {
-      println("Verfügbare Levels:")
+      println("Available levels:")
       availableLevels.foreach(level => println(s"- $level"))
 
-      println("Bitte gib ein Level an, mit dem du starten möchtest:")
+      println("Please enter a level to start:")
       waitForLevelInput()
     } else {
-      println("Keine verfügbaren Levels gefunden. Bitte überprüfe die Leveldatei.")
+      println("No available levels found. Please check the level file.")
     }
   }
 
@@ -28,7 +28,7 @@ class TUI @Inject() (controller: Controller) extends Observer {
 
     var levelName = ""
     do {
-      println("Bitte wähle ein Level oder 'q' zum Beenden:")
+      println("Please choose a level or 'q' to quit:")
       levelName = scanner.nextLine().trim
       processInputLine(levelName)
     } while (levelName != "q")
@@ -36,24 +36,23 @@ class TUI @Inject() (controller: Controller) extends Observer {
 
   def processInputLine(input: String): Unit = {
     if (input == "q") {
-      println("Beende die Anwendung...")
+      println("Exiting the application...")
     } else {
       controller.startLevel(input) match {
         case Right(foundLevel) =>
-          println(s"Starte Level ${foundLevel.level}: ${foundLevel.description}")
-          // Keine direkte Grid-Anzeige mehr hier!
+          println(s"Starting level ${foundLevel.level}: ${foundLevel.description}")
+          displayGrid()
           waitForPlayerActions()
         case Left(errorMessage) =>
           println(errorMessage)
       }
     }
-
   }
 
   private def displayGrid(): Unit = {
     controller.getLevelConfig match {
       case Some(level) =>
-        println("Spielfeld:")
+        println("Game board:")
         println("+" + ("---+" * level.width))
         for (y <- level.height - 1 to 0 by -1) {
           for (x <- 0 until level.width) {
@@ -64,51 +63,65 @@ class TUI @Inject() (controller: Controller) extends Observer {
           println("+" + ("---+" * level.width))
         }
       case None =>
-        println("Kein aktuelles Level geladen.")
+        println("No current level loaded.")
     }
   }
 
   def waitForPlayerActions(): Unit = {
     val scanner = new java.util.Scanner(System.in)
     var action = ""
-    val codeBlock = new StringBuilder
 
     do {
+      println("Enter a command (q to quit, z to undo, y to redo, compile to execute commands):")
+      println("Available commands: moveUp(), moveDown(), moveLeft(), moveRight()")
       action = scanner.nextLine().trim
 
       action.toLowerCase match {
         case "q" =>
-          println("Spiel beendet.")
+          println("Game ended.")
 
         case "z" =>
-          controller.undo() // Observer ruft automatisch displayGrid() auf
+          controller.undo()
 
         case "y" =>
-          controller.redo() // Observer ruft automatisch displayGrid() auf
+          controller.redo()
 
         case "compile" =>
-          // Führe den gesammelten Codeblock aus
-          val code = codeBlock.toString()
-          controller.setCommand(code) // Grid wird durch update() nachgeführt
-          codeBlock.clear()
+          controller.setCommand(action)
 
           if (controller.isLevelComplete) {
-            println("Herzlichen Glückwunsch! Robert ist angekommen!")
-            start() // Zurück zur Levelauswahl
+            println("Congratulations! Robert has arrived!")
+            start()
           }
 
+        case "moveup()" =>
+          controller.moveUp()
+
+        case "movedown()" =>
+          controller.moveDown()
+
+        case "moveleft()" =>
+          controller.moveLeft()
+
+        case "moveright()" =>
+          controller.moveRight()
+
         case _ =>
-          codeBlock.append(action).append("\n")
+          println(s"Unknown command: $action")
       }
 
     } while (action.toLowerCase != "q")
 
-    println("Spiel beendet.")
+    println("Game ended.")
   }
 
   override def update(): Unit = {
-    //println("Aktualisierung vom Controller erhalten.")
-    displayGrid() // Grid automatisch aktualisieren, wenn der Controller dies veranlasst
-
+    displayGrid()
+    if (controller.isInvalidMove) {
+      println("Invalid move! You cannot move over an obstacle.")
+    }
+    if (controller.isJermCollected) {
+      println("hurrah hurrah")
+    }
   }
 }
