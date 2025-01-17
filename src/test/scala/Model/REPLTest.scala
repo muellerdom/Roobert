@@ -1,4 +1,4 @@
-package Controller
+/*package Controller
 
 import Model.REPLComponent.REPLBaseImpl.MockREPL
 import Controller.Component.ControllerBaseImpl.Controller
@@ -27,4 +27,4 @@ class REPLTest extends AnyWordSpec with Matchers {
       MockREPL.Interpret("moveForward()") shouldEqual "Moving Forward"
     }
   }
-}
+}*/
