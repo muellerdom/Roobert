@@ -1,0 +1,223 @@
+package View
+
+import Controller.Controller
+import Util.Observer
+import scalafx.application.{JFXApp3, Platform}
+import scalafx.geometry.{Insets, Pos}
+import scalafx.scene.Scene
+import scalafx.scene.control.{Button, Label, TextField, Alert}
+import scalafx.scene.control.Alert.AlertType
+import scalafx.scene.layout.{GridPane, HBox, VBox}
+import scalafx.scene.paint.Color
+
+object GUI extends JFXApp3 with Observer {
+
+  private var controller: Option[Controller] = None
+  private var levelNameInput: Option[TextField] = None
+  private var gridPane: Option[GridPane] = None
+  private var gameStatusLabel: Option[Label] = None
+
+  def setController(ctrl: Controller): Unit = {
+    controller = Some(ctrl)
+    ctrl.addObserver(this)
+  }
+
+  override def update(): Unit = {
+    updateGridDisplay()
+    updateGameStatus()
+  }
+
+  private def updateGridDisplay(): Unit = {
+    Platform.runLater {
+      gridPane.foreach { pane =>
+        pane.children.clear()
+
+        controller.flatMap(_.getLevelConfig).foreach { level =>
+          for (y <- (level.height - 1) to 0 by -1) {
+            for (x <- 0 until level.width) {
+              val symbol = controller.map(_.getGrid(x, y)).getOrElse(' ')
+
+              val cell = new Label(s"$symbol") {
+                style = symbol match {
+                  case 'R' => "-fx-border-color: black; -fx-background-color: yellow; -fx-alignment: center;"
+                  case 'X' => "-fx-border-color: black; -fx-background-color: red; -fx-alignment: center;"
+                  case 'J' => "-fx-border-color: black; -fx-background-color: green; -fx-alignment: center;"
+                  case 'G' => "-fx-border-color: black; -fx-background-color: blue; -fx-alignment: center;"
+                  case _ => "-fx-border-color: black; -fx-alignment: center;"
+                }
+                prefWidth = 40
+                prefHeight = 40
+                alignment = Pos.Center
+              }
+
+              GridPane.setConstraints(cell, x, level.height - 1 - y)
+              pane.children.add(cell)
+            }
+          }
+        }
+
+        pane.requestLayout()
+      }
+    }
+  }
+
+  private def updateGameStatus(): Unit = {
+    gameStatusLabel.foreach { label =>
+      controller.foreach { ctrl =>
+        label.text = if (ctrl.isLevelComplete) "Herzlichen Glückwunsch! Robert ist angekommen!" else "Spiel läuft..."
+      }
+    }
+  }
+
+  private def showErrorAlert(message: String): Unit = {
+    new Alert(AlertType.Error) {
+      title = "Fehler"
+      headerText = "Fehler beim Laden des Levels"
+      contentText = message
+    }.showAndWait()
+  }
+
+  override def start(): Unit = {
+    stage = new JFXApp3.PrimaryStage {
+      title = "Hilf Robert"
+      scene = new Scene {
+        root = new HBox {
+          spacing = 10
+          padding = Insets(10)
+          alignment = Pos.Center
+
+          children = Seq(
+            new VBox {
+              spacing = 10
+              padding = Insets(10)
+              style = "-fx-background-color: lightblue;"
+              alignment = Pos.Center
+              hgrow = scalafx.scene.layout.Priority.Always
+              vgrow = scalafx.scene.layout.Priority.Always
+              gridPane = Some(new GridPane {
+                alignment = Pos.Center
+                hgap = 5
+                vgap = 5
+              })
+              children.add(gridPane.get)
+              VBox.setVgrow(gridPane.get, scalafx.scene.layout.Priority.Always)
+
+              val levelWidth = 10
+              val levelHeight = 10
+              val gameBoard = Array.fill(levelWidth, levelHeight)(' ')
+
+              for (y <- (levelHeight - 1) to 0 by -1) {
+                for (x <- 0 until levelWidth) {
+                  val symbol = gameBoard(x)(y)
+
+                  val cell = new Label(s"$symbol") {
+                    style = "-fx-border-color: black; -fx-padding: 10px; -fx-alignment: center;"
+                    prefWidth = 40
+                    prefHeight = 40
+                    alignment = Pos.Center
+                  }
+
+                  GridPane.setConstraints(cell, x, levelHeight - 1 - y)
+                  gridPane.get.children.add(cell)
+                }
+              }
+            },
+
+            new VBox {
+              spacing = 10
+              padding = Insets(10)
+              style = "-fx-background-color: lightgray;"
+              alignment = Pos.Center
+              hgrow = scalafx.scene.layout.Priority.Always
+              vgrow = scalafx.scene.layout.Priority.Always
+
+              val levelNameField = new TextField {
+                promptText = "Gib ein Level ein"
+              }
+              levelNameInput = Some(levelNameField)
+
+              val actionInputField = new TextField {
+                promptText = "Gib eine Aktion ein (z.B. 'move up')"
+              }
+
+              val availableMethodsLabel = new Label {
+                text = "Verfügbare Methoden:\n- move up\n- move down\n- move left\n- move right"
+                style = "-fx-font-size: 12pt; -fx-alignment: center;"
+              }
+
+              val levelButtons = Seq("Level1" -> 1, "Level2" -> 2, "Level3" -> 3).map { case (level, number) =>
+                new Button(level) {
+                  onAction = _ => levelNameField.text = number.toString
+                }
+              }
+
+              children = Seq(
+                new Label("Steuerung:") {
+                  alignment = Pos.Center
+                },
+                new HBox {
+                  spacing = 5
+                  alignment = Pos.Center
+                  children = levelButtons
+                },
+                levelNameField,
+                new Button("Level starten") {
+                  onAction = _ => levelNameInput.foreach { input =>
+                    val levelName = input.text()
+                    controller.foreach { ctrl =>
+                      ctrl.startLevel(levelName) match {
+                        case Right(_) =>
+                          updateGridDisplay()
+                        case Left(errorMessage) =>
+                          showErrorAlert(errorMessage)
+                      }
+                    }
+                  }
+                },
+                availableMethodsLabel,
+                actionInputField,
+                new Button("Aktion ausführen") {
+                  onAction = _ => {
+                    val action = actionInputField.text()
+                    controller.foreach(_.movePlayer(action))
+                    updateGridDisplay()
+                  }
+                },
+                new Button("Undo") {
+                  onAction = _ => {
+                    controller.foreach(_.undo())
+                    updateGridDisplay()
+                  }
+                },
+                new Button("Redo") {
+                  onAction = _ => {
+                    controller.foreach(_.redo())
+                    updateGridDisplay()
+                  }
+                },
+                new Label("Spielstatus:") {
+                  alignment = Pos.Center
+                },
+                {
+                  val statusLabel = new Label {
+                    text = "Spiel läuft..."
+                    alignment = Pos.Center
+                  }
+                  gameStatusLabel = Some(statusLabel)
+                  statusLabel
+                }
+              )
+            }
+          )
+        }
+      }
+    }
+
+    controller.foreach { ctrl =>
+      ctrl.getLevelConfig.foreach { level =>
+        ctrl.initializeSpielfeld(level)
+        updateGridDisplay()
+      }
+    }
+  }
+}
