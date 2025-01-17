@@ -115,6 +115,33 @@ class TUI @Inject() (controller: Controller) extends Observer {
     println("Game ended.")
   }
 
+  private def promptNextAction(): Unit = {
+    val scanner = new java.util.Scanner(System.in)
+    var action = ""
+
+    do {
+      println("Glückwunsch, lass uns nun zum nächsten Level gehen.")
+      println("Enter 'n' for next level or 'r' to repeat the current level:")
+      action = scanner.nextLine().trim
+
+      action.toLowerCase match {
+        case "n" =>
+          controller.nextLevel()
+          displayGrid()
+          waitForPlayerActions()
+
+        case "r" =>
+          controller.restartLevel()
+          displayGrid()
+          waitForPlayerActions()
+
+        case _ =>
+          println(s"Unknown command: $action")
+      }
+
+    } while (action.toLowerCase != "n" && action.toLowerCase != "r")
+  }
+
   override def update(): Unit = {
     displayGrid()
     if (controller.isInvalidMove) {
@@ -122,6 +149,7 @@ class TUI @Inject() (controller: Controller) extends Observer {
     }
     if (controller.isJermCollected) {
       println("hurrah hurrah")
+      promptNextAction()
     }
   }
 }
