@@ -35,10 +35,6 @@ object Player extends Observable {
     position.getOrElse(throw new IllegalStateException("Spieler ist nicht initialisiert!"))
   }
 
-  def setPosition(newPosition: Coordinate): Unit = {
-    position = Some(newPosition)
-  }
-
   def moveUp(): Unit = {
     move("up")
   }

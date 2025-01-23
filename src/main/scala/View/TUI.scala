@@ -1,3 +1,4 @@
+// TUI.scala
 package View
 
 import Controller.Component.ControllerBaseImpl.Controller
@@ -115,41 +116,15 @@ class TUI @Inject() (controller: Controller) extends Observer {
     println("Game ended.")
   }
 
-  private def promptNextAction(): Unit = {
-    val scanner = new java.util.Scanner(System.in)
-    var action = ""
-
-    do {
-      println("Glückwunsch, lass uns nun zum nächsten Level gehen.")
-      println("Enter 'n' for next level or 'r' to repeat the current level:")
-      action = scanner.nextLine().trim
-
-      action.toLowerCase match {
-        case "n" =>
-          controller.nextLevel()
-          displayGrid()
-          waitForPlayerActions()
-
-        case "r" =>
-          controller.restartLevel()
-          displayGrid()
-          waitForPlayerActions()
-
-        case _ =>
-          println(s"Unknown command: $action")
-      }
-
-    } while (action.toLowerCase != "n" && action.toLowerCase != "r")
-  }
-
   override def update(): Unit = {
+
+    println("Update called")
     displayGrid()
     if (controller.isInvalidMove) {
       println("Invalid move! You cannot move over an obstacle.")
     }
     if (controller.isJermCollected) {
       println("hurrah hurrah")
-      promptNextAction()
     }
   }
 }

@@ -1,3 +1,4 @@
+// Controller.scala
 package Controller.Component.ControllerBaseImpl
 
 import Controller.Component.ControllerInterface
@@ -7,38 +8,22 @@ import Model.SpielfeldComponent.SpielfeldBaseImpl.Spielfeld
 import Model.SpielfeldComponent.{Coordinate, SpielfeldInterface}
 import Util.{Observable, UndoManager}
 import com.google.inject.Inject
-import scala.util.Random
 
 class Controller @Inject() (levelManager: LevelManagerTrait) extends Observable with ControllerInterface {
 
   private val undoManager = new UndoManager
   private var invalidMove = false
   private var jermCollected = false
-  private var currentLevelName: String = ""
+  private var currentLevel: Option[String] = None
 
   def startLevel(levelName: String): Either[String, LevelConfig] = {
-    currentLevelName = levelName
     levelManager.loadLevel(levelName) match {
       case Right(level) =>
         Player.initialize()
+        currentLevel = Some(levelName)
         notifyObservers()
         Right(level)
       case Left(error) => Left(error)
-    }
-  }
-
-  def restartLevel(): Unit = {
-    randomizeLevel()
-    startLevel(currentLevelName)
-  }
-
-  def nextLevel(): Unit = {
-    val availableLevels = getAvailableLevels
-    val currentIndex = availableLevels.indexOf(currentLevelName)
-    if (currentIndex >= 0 && currentIndex < availableLevels.size - 1) {
-      startLevel(availableLevels(currentIndex + 1))
-    } else {
-      println("No more levels available.")
     }
   }
 
@@ -48,6 +33,10 @@ class Controller @Inject() (levelManager: LevelManagerTrait) extends Observable 
     val command = new SetCommand(action, this)
     undoManager.doStep(command)
     notifyObservers()
+  }
+
+  def setLevel(level: String): Unit = {
+    startLevel(level)
   }
 
   def moveUp(): Unit = {
@@ -78,6 +67,14 @@ class Controller @Inject() (levelManager: LevelManagerTrait) extends Observable 
     notifyObservers()
   }
 
+  private var levelConfig: Option[LevelConfig] = None
+
+  def setLevelConfig(level: LevelConfig): Unit = {
+    levelConfig = Some(level)
+    notifyObservers() // Notify observers when the level is changed
+  }
+
+
   def undo(): Unit = {
     undoManager.undoStep
     notifyObservers()
@@ -105,32 +102,8 @@ class Controller @Inject() (levelManager: LevelManagerTrait) extends Observable 
     invalidMove = !Player.isValidMove(Player.getPosition)
   }
 
+
   private def checkJermCollected(): Unit = {
     jermCollected = Player.inventory.size > 0
-  }
-
-  private def randomizeLevel(): Unit = {
-    val currentLevel = levelManager.getCurrentLevel.get
-    val width = currentLevel.width
-    val height = currentLevel.height
-
-    // Randomize player position
-    val playerX = Random.nextInt(width)
-    val playerY = Random.nextInt(height)
-    Player.setPosition(Coordinate(playerX, playerY))
-
-    // Randomize obstacles
-    currentLevel.objects.obstacles.foreach { obstacle =>
-      val obstacleX = Random.nextInt(width)
-      val obstacleY = Random.nextInt(height)
-      obstacle.setPosition(Coordinate(obstacleX, obstacleY))
-    }
-
-    // Randomize Jerm positions
-    currentLevel.objects.jerm.foreach { jerm =>
-      val jermX = Random.nextInt(width)
-      val jermY = Random.nextInt(height)
-      jerm.setPosition(Coordinate(jermX, jermY))
-    }
   }
 }

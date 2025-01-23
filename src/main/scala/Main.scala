@@ -16,7 +16,11 @@ object Main {
       val controller = injector.getInstance(classOf[Controller])
       val gui = injector.getInstance(classOf[GUI])
       val gameView = injector.getInstance(classOf[GameView])
+      val tui = new TUI(controller)
+
       controller.addObserver(gameView)
+      controller.addObserver(tui)
+      controller.addObserver(gui) // Ensure GUI is added as an observer
 
       // Start GUI in the main thread
       Future {
@@ -25,7 +29,7 @@ object Main {
 
       // Run TUI in a separate thread
       Future {
-        startTUI(args, controller)
+        startTUI(args, tui)
       }
 
       // Initial observer notification
@@ -33,8 +37,7 @@ object Main {
     })
   }
 
-  private def startTUI(args: Array[String], controller: Controller): Unit = {
-    val tui = new TUI(controller)
+  private def startTUI(args: Array[String], tui: TUI): Unit = {
     tui.start() // Initialize TUI
 
     if (args.nonEmpty) {
