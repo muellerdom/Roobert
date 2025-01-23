@@ -30,9 +30,13 @@ class Controller @Inject() (levelManager: LevelManagerTrait) extends Observable 
   def getAvailableLevels: List[String] = levelManager.getAvailableLevels
 
   def setCommand(action: String): Unit = {
-    val command = new SetCommand(action, this)
-    undoManager.doStep(command)
-    notifyObservers()
+    action.toLowerCase match {
+      case "moveup()" => moveUp()
+      case "movedown()" => moveDown()
+      case "moveleft()" => moveLeft()
+      case "moveright()" => moveRight()
+      case _ => println(s"Unknown command: $action")
+    }
   }
 
   def setLevel(level: String): Unit = {
@@ -74,7 +78,6 @@ class Controller @Inject() (levelManager: LevelManagerTrait) extends Observable 
     notifyObservers() // Notify observers when the level is changed
   }
 
-
   def undo(): Unit = {
     undoManager.undoStep
     notifyObservers()
@@ -101,7 +104,6 @@ class Controller @Inject() (levelManager: LevelManagerTrait) extends Observable 
   private def checkInvalidMove(): Unit = {
     invalidMove = !Player.isValidMove(Player.getPosition)
   }
-
 
   private def checkJermCollected(): Unit = {
     jermCollected = Player.inventory.size > 0

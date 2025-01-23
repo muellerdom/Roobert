@@ -4,6 +4,7 @@ package View.gui
 import Controller.Component.ControllerBaseImpl.Controller
 import Util.Observer
 import com.google.inject.Inject
+import scalafx.application.Platform
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.control.{Button, Label, TextArea}
 import scalafx.scene.layout.{BorderPane, GridPane, HBox, VBox}
@@ -46,7 +47,7 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
       new Button("Meinen Code ausführen") {
         onAction = _ => {
           controller.setCommand(textarea.getText)
-          refreshGrid()
+          controller.notifyObservers() // Notify all observers after executing the command
         }
         style = "-fx-background-color: #6897BB; -fx-text-fill: #2B2B2B; -fx-background-radius: 10px;"
       }
@@ -121,6 +122,10 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
   }
 
   override def update(): Unit = {
+    if (!Platform.isFxApplicationThread) {
+      Platform.runLater(() => update())
+      return
+    }
     refreshGrid()
   }
 }

@@ -1,16 +1,12 @@
 package Util
 
-import scala.collection.mutable.Stack
+import scala.collection.mutable
 
-trait Command {
-  def doStep(): Unit
-  def undoStep(): Unit
-  def redoStep(): Unit
-}
+
 
 class UndoManager {
-  private val undoStack = new Stack[Command]()
-  private val redoStack = new Stack[Command]()
+  private val undoStack = new mutable.Stack[Command]()
+  private val redoStack = new mutable.Stack[Command]()
 
   def doStep(command: Command): Unit = {
     command.doStep()
@@ -34,6 +30,6 @@ class UndoManager {
     }
   }
 
-  def getUndoStack: Stack[Command] = undoStack
-  def getRedoStack: Stack[Command] = redoStack
+  def getUndoStack: mutable.Stack[Command] = undoStack
+  def getRedoStack: mutable.Stack[Command] = redoStack
 }

@@ -7,70 +7,103 @@ import com.google.inject.Inject
 import scalafx.application.{JFXApp3, Platform}
 import scalafx.scene.Scene
 import scalafx.scene.layout.Pane
+import scalafx.scene.control.Label
+import scalafx.scene.paint.Color
+import scalafx.geometry.Pos
+import scalafx.scene.layout.GridPane
 
-// Die GUI-Klasse erweitert JFXApp3 und implementiert das Observer-Interface
 class GUI @Inject() (controller: Controller) extends JFXApp3 with Observer {
 
-  // Registriert die GUI als Observer des Controllers
   controller.addObserver(this)
 
-  // Die start-Methode initialisiert das Hauptfenster der Anwendung
+  private val gridPane = new GridPane {
+    hgap = 5
+    vgap = 5
+  }
+
   override def start(): Unit = {
     stage = new JFXApp3.PrimaryStage {
-      title = "Hilf Roobert" // Setzt den Titel des Fensters
-      scene = new Scene(400, 300) { // Erstellt eine neue Szene mit den angegebenen Abmessungen
-        root = new Pane { // Setzt das Root-Pane der Szene
-          style = "-fx-background-color: #2B2B2B;" // Setzt die Hintergrundfarbe des Panes
+      title = "Help Robert"
+      scene = new Scene(400, 300) {
+        root = new Pane {
+          style = "-fx-background-color: #2B2B2B;"
         }
       }
     }
 
-    stage.show() // Zeigt die Bühne an
+    stage.show()
 
-    // Benachrichtigt die Observer, um den Anfangszustand zu aktualisieren
     Platform.runLater(() => {
       controller.notifyObservers()
     })
   }
 
-  // Methode zum Setzen einer neuen Ansicht in der Bühne
   private def setView(newRoot: Pane): Unit = {
-    if (stage == null) { // Überprüft, ob die Bühne initialisiert ist
-      println("WARNUNG: Stage ist noch nicht initialisiert.") // Gibt eine Warnung aus, falls nicht
+    if (stage == null) {
+      println("WARNING: Stage is not initialized yet.")
       return
     }
-    // Aktualisiert die Szene mit dem neuen Root-Pane
     Platform.runLater(() => {
-      stage.scene = new Scene(800, 600) { // Erstellt eine neue Szene mit den angegebenen Abmessungen
-        root = newRoot // Setzt das neue Root-Pane
-        newRoot.setStyle("-fx-background-color: #2B2B2B;") // Setzt die Hintergrundfarbe des neuen Root-Panes
+      stage.scene = new Scene(800, 600) {
+        root = newRoot
+        newRoot.setStyle("-fx-background-color: #2B2B2B;")
       }
     })
   }
 
-  // Methode zum Wechseln zur Level-Ansicht
   def switchToLevelView(): Unit = {
-     setView(new LevelView(controller, this)) // Setzt die Ansicht auf LevelView
+    setView(new LevelView(controller, this))
   }
 
-  // Methode zum Wechseln zur Spiel-Ansicht
   def switchToGameView(): Unit = {
-
-    setView(new GameView(controller, this)) // Setzt die Ansicht auf GameView
+    setView(new GameView(controller, this))
   }
 
-  // Die update-Methode wird aufgerufen, wenn der Controller seine Observer benachrichtigt
+  private def refreshGrid(): Unit = {
+    controller.getLevelConfig.foreach { level =>
+      gridPane.children.clear()
+
+      for (y <- 0 until level.height; x <- 0 until level.width) {
+        val text = controller.getSpielfeld.getAnPos(x, y) match {
+          case 'R' => "R"
+          case 'G' => "G"
+          case 'J' => "J"
+          case 'X' => "X"
+          case _ => " "
+        }
+
+        val cell = new Label()
+        cell.text = text
+        cell.prefWidth = 50
+        cell.prefHeight = 50
+        cell.style = text match {
+          case "R" => "-fx-background-color: #FF6F61; -fx-border-color: #6897BB; -fx-border-width: 1px;"
+          case "G" => "-fx-background-color: #BBD968; -fx-border-color: #6897BB; -fx-border-width: 1px;"
+          case "J" => "-fx-background-color: #D968A6; -fx-border-color: #6897BB; -fx-border-width: 1px;"
+          case "X" => "-fx-background-color: #F2E394; -fx-border-color: #6897BB; -fx-border-width: 1px;"
+          case _ => "-fx-background-color: #FFFFFF; -fx-border-color: #6897BB; -fx-border-width: 1px;"
+        }
+        cell.alignment = Pos.Center
+        cell.textFill = Color.web("#2B2B2B")
+
+        GridPane.setConstraints(cell, x, level.height - y - 1)
+        gridPane.children.add(cell)
+      }
+    }
+  }
+
   override def update(): Unit = {
-    if (!Platform.isFxApplicationThread) { // Überprüft, ob der aktuelle Thread der JavaFX Application Thread ist
-      Platform.runLater(() => update()) // Führt die update-Methode im JavaFX Application Thread aus
+    if (!Platform.isFxApplicationThread) {
+      Platform.runLater(() => update())
       return
     }
 
-    // Wechselt zur entsprechenden Ansicht basierend auf dem Zustand des Controllers
     if (controller.getLevelConfig.isDefined) {
-      switchToGameView() // Wechselt zur Spiel-Ansicht, wenn ein Level geladen ist
+      switchToGameView()
     } else {
-      switchToLevelView() // Wechselt zur Level-Ansicht, wenn kein Level geladen ist
+      switchToLevelView()
     }
+
+    refreshGrid()
   }
 }

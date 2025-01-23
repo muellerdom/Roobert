@@ -50,6 +50,7 @@ class TUI @Inject() (controller: Controller) extends Observer {
     }
   }
 
+
   private def displayGrid(): Unit = {
     controller.getLevelConfig match {
       case Some(level) =>
@@ -111,13 +112,14 @@ class TUI @Inject() (controller: Controller) extends Observer {
           println(s"Unknown command: $action")
       }
 
+      controller.notifyObservers() // Notify observers after processing input
+
     } while (action.toLowerCase != "q")
 
     println("Game ended.")
   }
 
   override def update(): Unit = {
-
     println("Update called")
     displayGrid()
     if (controller.isInvalidMove) {

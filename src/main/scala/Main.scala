@@ -18,6 +18,7 @@ object Main {
       val gameView = injector.getInstance(classOf[GameView])
       val tui = new TUI(controller)
 
+
       controller.addObserver(gameView)
       controller.addObserver(tui)
       controller.addObserver(gui) // Ensure GUI is added as an observer
