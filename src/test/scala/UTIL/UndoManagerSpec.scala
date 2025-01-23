@@ -12,7 +12,7 @@ class UndoManagerSpec extends AnyFlatSpec with Matchers {
 
     undoManager.doStep(command)
     command.executed should be(true)
-    undoManager.undoStack should contain(command)
+    undoManager.getUndoStack should contain(command)
   }
 
   it should "undo a command and add to redoStack" in {
@@ -20,9 +20,9 @@ class UndoManagerSpec extends AnyFlatSpec with Matchers {
     val command = new TestCommand
 
     undoManager.doStep(command)
-    undoManager.undoStep
+    undoManager.undoStep()
     command.executed should be(false)
-    undoManager.redoStack should contain(command)
+    undoManager.getRedoStack should contain(command)
   }
 
   it should "redo a command and add back to undoStack" in {
@@ -30,10 +30,10 @@ class UndoManagerSpec extends AnyFlatSpec with Matchers {
     val command = new TestCommand
 
     undoManager.doStep(command)
-    undoManager.undoStep
-    undoManager.redoStep
+    undoManager.undoStep()
+    undoManager.redoStep()
     command.executed should be(true)
-    undoManager.undoStack should contain(command)
+    undoManager.getUndoStack should contain(command)
   }
 
   class TestCommand extends Command {

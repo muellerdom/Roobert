@@ -4,6 +4,7 @@ import Model.SpielfeldComponent.KomponentenInterface
 import org.scalamock.clazz.MockImpl.mock
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 
 class InventorySpec extends AnyFlatSpec with Matchers with MockitoSugar {
 

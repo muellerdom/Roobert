@@ -40,7 +40,9 @@ lazy val root = (project in file("."))
       ,
       "org.mockito" %% "mockito-scala" % "1.16.42" % Test
       ,
-      "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % Test
+      "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % Test,
+       "org.powermock" % "powermock-module-junit4" % "2.0.9",
+         "org.powermock" % "powermock-api-mockito2" % "2.0.9"
       )
 
     }

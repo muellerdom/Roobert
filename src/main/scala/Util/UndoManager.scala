@@ -1,32 +1,39 @@
 package Util
 
+import scala.collection.mutable.Stack
+
+trait Command {
+  def doStep(): Unit
+  def undoStep(): Unit
+  def redoStep(): Unit
+}
+
 class UndoManager {
-  private var undoStack: List[Command] = Nil
-  private var redoStack: List[Command] = Nil
+  private val undoStack = new Stack[Command]()
+  private val redoStack = new Stack[Command]()
 
   def doStep(command: Command): Unit = {
-    undoStack = command :: undoStack
-    redoStack = Nil // Redo-Stack löschen, weil neuer Zustand erzeugt wurde
     command.doStep()
+    undoStack.push(command)
+    redoStack.clear()
   }
 
-  def undoStep: Unit = {
-    undoStack match {
-      case Nil => println("Keine Schritte zum Rückgängigmachen!")
-      case head :: tail =>
-        head.undoStep()
-        undoStack = tail
-        redoStack = head :: redoStack
+  def undoStep(): Unit = {
+    if (undoStack.nonEmpty) {
+      val command = undoStack.pop()
+      command.undoStep()
+      redoStack.push(command)
     }
   }
 
-  def redoStep: Unit = {
-    redoStack match {
-      case Nil => println("Keine Schritte zum Wiederherstellen!")
-      case head :: tail =>
-        head.redoStep()
-        redoStack = tail
-        undoStack = head :: undoStack
+  def redoStep(): Unit = {
+    if (redoStack.nonEmpty) {
+      val command = redoStack.pop()
+      command.redoStep()
+      undoStack.push(command)
     }
   }
+
+  def getUndoStack: Stack[Command] = undoStack
+  def getRedoStack: Stack[Command] = redoStack
 }

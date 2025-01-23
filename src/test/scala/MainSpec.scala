@@ -7,6 +7,7 @@ import org.scalatest.matchers.should.Matchers
 import org.mockito.Mockito._
 import org.scalatestplus.mockito.MockitoSugar
 import javafx.application.Platform
+import org.powermock.api.mockito.PowerMockito.whenNew
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
