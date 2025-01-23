@@ -1,6 +1,6 @@
 package Controller.Component.ControllerMockImpl
 
-import Model.LevelComponent.LevelConfig
+import Model.LevelComponent.{LevelConfig, Objects, Goal}
 import Model.SpielfeldComponent.{Coordinate, SpielfeldInterface}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

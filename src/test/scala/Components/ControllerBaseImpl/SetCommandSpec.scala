@@ -1,17 +1,14 @@
 package Controller.Component.ControllerBaseImpl
 
-import Model.LevelComponent.LevelManagerTrait
 import Model.PlayerComponent.PlayerBaseImpl.Player
-import Model.SpielfeldComponent.{Coordinate, SpielfeldInterface}
 import Model.SpielfeldComponent.SpielfeldBaseImpl.Spielfeld
-import org.scalamock.clazz.MockImpl.mock
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class SetCommandSpec extends AnyFlatSpec with Matchers {
 
   "SetCommand" should "execute a command" in {
-    val controller = new Controller(mock[LevelManagerTrait])
+    val controller = new Controller(null)
     val command = new SetCommand("move", controller)
 
     command.doStep()
@@ -20,7 +17,7 @@ class SetCommandSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "undo a command" in {
-    val controller = new Controller(mock[LevelManagerTrait])
+    val controller = new Controller(null)
     val command = new SetCommand("move", controller)
 
     command.doStep()
@@ -30,7 +27,7 @@ class SetCommandSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "redo a command" in {
-    val controller = new Controller(mock[LevelManagerTrait])
+    val controller = new Controller(null)
     val command = new SetCommand("move", controller)
 
     command.doStep()

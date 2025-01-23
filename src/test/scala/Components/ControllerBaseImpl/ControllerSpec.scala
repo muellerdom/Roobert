@@ -116,4 +116,72 @@ class ControllerSpec extends AnyFlatSpec with Matchers with MockitoSugar {
 
     config shouldBe Some(levelConfig)
   }
-}*/
+}*/package Controller.Component.ControllerBaseImpl
+
+import Model.LevelComponent.{LevelConfig, LevelManagerTrait}
+import Model.SpielfeldComponent.{Coordinate, SpielfeldInterface}
+import org.scalamock.scalatest.MockFactory
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+
+class ControllerSpec extends AnyFlatSpec with Matchers with MockFactory {
+
+  "Controller" should "start a level successfully" in {
+    val levelManager = mock[LevelManagerTrait]
+    val controller = new Controller(levelManager)
+    val levelConfig = LevelConfig("Level1", "Test Level", "Test Level", 10, 10, Coordinate(0, 0), null, null)
+
+    (levelManager.loadLevel _).expects("Level1").returning(Right(levelConfig))
+
+    controller.startLevel("Level1") shouldBe Right(levelConfig)
+  }
+
+  it should "return an error when starting a non-existent level" in {
+    val levelManager = mock[LevelManagerTrait]
+    val controller = new Controller(levelManager)
+
+    (levelManager.loadLevel _).expects("NonExistentLevel").returning(Left("Level nicht gefunden."))
+
+    controller.startLevel("NonExistentLevel") shouldBe Left("Level nicht gefunden.")
+  }
+
+  it should "return available levels" in {
+    val levelManager = mock[LevelManagerTrait]
+    val controller = new Controller(levelManager)
+    val levels = List("Level1", "Level2", "Level3")
+
+    (levelManager.getAvailableLevels _).expects().returning(levels)
+
+    controller.getAvailableLevels shouldBe levels
+  }
+
+  it should "execute a command" in {
+    val levelManager = mock[LevelManagerTrait]
+    val controller = new Controller(levelManager)
+
+    controller.setCommand("move")
+
+    // Add assertions to verify the command execution
+  }
+
+  it should "undo a command" in {
+    val levelManager = mock[LevelManagerTrait]
+    val controller = new Controller(levelManager)
+
+    controller.setCommand("move")
+    controller.undo()
+
+    // Add assertions to verify the command undo
+  }
+
+  it should "redo a command" in {
+    val levelManager = mock[LevelManagerTrait]
+    val controller = new Controller(levelManager)
+
+    controller.setCommand("move")
+    controller.undo()
+    controller.redo()
+
+    // Add assertions to verify the command redo
+  }
+}
