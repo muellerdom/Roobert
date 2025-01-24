@@ -65,6 +65,7 @@ class LevelView @Inject() (controller: Controller, gui: GUI) extends VBox with O
               case Right(_) =>
                 gui.switchToGameView()
                 controller.notifyObservers() // Notify observers to update TUI
+              update()
               case Left(error) => println(error)
             }
           }
@@ -74,6 +75,8 @@ class LevelView @Inject() (controller: Controller, gui: GUI) extends VBox with O
   }
 
   override def update(): Unit = {
+    println("Update called from LEVEL")
+
     refreshLevels()
   }
 }

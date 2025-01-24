@@ -18,7 +18,9 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
     padding = Insets(10)
     style = "-fx-background-color: #2B2B2B; -fx-border-color: #6897BB; -fx-border-width: 2px;"
   }
-  //refreshGrid()
+  update()
+
+  //controller.notifyObservers()
 
   private val instructions = new Label("Anweisungen: Schreiben Sie Ihren Code im Editor und klicken Sie auf 'Meinen Code ausführen', um das Spiel zu aktualisieren.") {
     style = "-fx-font-size: 14px; -fx-text-fill: #2B2B2B;"
@@ -47,8 +49,9 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
       textarea,
       new Button("Meinen Code ausführen") {
         onAction = _ => {
-          controller.setCommand(textarea.getText)
-          controller.notifyObservers() // Notify all observers after executing the command
+          controller.interpret(textarea.getText)
+          //controller.notifyObservers() // Notify all observers after executing the command
+        //update()
         }
         style = "-fx-background-color: #6897BB; -fx-text-fill: #2B2B2B;"
       }
@@ -129,6 +132,12 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
       Platform.runLater(() => update())
       return
     }
-    refreshGrid()
+    // Nur aktualisieren, wenn ein gültiges Level geladen wurde
+    println("Update called from GAMEUI")
+
+    if (controller.getLevelConfig.isDefined) refreshGrid()
+    else println("No level to refresh")
+
+    controller.notifyObservers()
   }
 }

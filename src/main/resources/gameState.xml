@@ -1,0 +1,76 @@
+<levels>
+    <level>
+        <id>1</id>
+        <title>Methoden in Scala</title>
+        <instructions>
+            <instruction>Robert braucht Hilfe. Hilf ihm mit moveForward(), turnLeft(), turnRight() zum Ziel zu kommen.</instruction>
+            <instruction>Viel Erfolg!</instruction>
+        </instructions>
+        <logic>
+            <type>grid</type>
+            <gridSize>
+                <width>4</width>
+                <height>4</height>
+            </gridSize>
+            <entities>
+                <entity>
+                    <type>player</type>
+                    <position>
+                        <x>2</x>
+                        <y>0</y>
+                    </position>
+                </entity>
+                <entity>
+                    <type>goal</type>
+                    <position>
+                        <x>2</x>
+                        <y>3</y>
+                    </position>
+                </entity>
+                <entity>
+                    <type>obstacle</type>
+                    <subtype>stein</subtype>
+                    <position>
+                        <x>1</x>
+                        <y>2</y>
+                    </position>
+                </entity>
+                <entity>
+                    <type>obstacle</type>
+                    <subtype>wasser</subtype>
+                    <position>
+                        <x>3</x>
+                        <y>3</y>
+                    </position>
+                </entity>
+                <entity>
+                    <type>obstacle</type>
+                    <subtype>gras</subtype>
+                    <position>
+                        <x>0</x>
+                        <y>0</y>
+                    </position>
+                </entity>
+                <entity>
+                    <type>jerm</type>
+                    <position>
+                        <x>2</x>
+                        <y>2</y>
+                    </position>
+                </entity>
+            </entities>
+        </logic>
+    </level>
+    <level>
+        <id>2</id>
+        <title>Variablen oder so</title>
+        <instructions>
+            <instruction>Versuche das Wort herauszufinden. Du kannst die Buchstaben erraten.</instruction>
+        </instructions>
+        <logic>
+            <type>hangman</type>
+            <word>scala</word>
+            <entities/>
+        </logic>
+    </level>
+</levels>

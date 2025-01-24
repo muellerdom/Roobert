@@ -18,11 +18,6 @@ class GUI @Inject() (controller: Controller) extends JFXApp3 with Observer {
 
   controller.addObserver(this)
 
-  private val gridPane = new GridPane {
-    hgap = 5
-    vgap = 5
-  }
-
   override def start(): Unit = {
     stage = new JFXApp3.PrimaryStage {
       title = "Help Robert"

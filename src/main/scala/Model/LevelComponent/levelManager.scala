@@ -25,6 +25,6 @@ object levelManager extends Observable with LevelManagerTrait {
 
   def getAvailableLevels: List[Int] = levels.map(_.id)
 
-  def getCurrentLevel: Option[LevelConfig] = currentLevel
+  override def getCurrentLevel: Option[LevelConfig] = currentLevel
 
 }

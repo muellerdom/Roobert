@@ -1,92 +1,108 @@
 package Model.PlayerComponent.PlayerBaseImpl
 
-import Model.LevelComponent.{LevelConfig, LevelManagerTrait, Obstacle, LevelObjects}
-import Model.SpielfeldComponent.{Coordinate, KomponentenInterface}
-import Model.SpielfeldComponent.SpielfeldBaseImpl.{Jerm, Spielfeld}
-import Util.Observer
-import org.scalatest.flatspec.AnyFlatSpec
+import Model.GridComponent.Coordinate
 import org.scalatest.matchers.should.Matchers
-import org.scalatestplus.mockito.MockitoSugar
-import org.mockito.Mockito._
+import org.scalatest.wordspec.AnyWordSpec
 
-class PlayerSpec extends AnyFlatSpec with Matchers with MockitoSugar {
+class PlayerSpec extends AnyWordSpec with Matchers {
 
-  "Player" should "initialize correctly" in {
-    val levelManager = mock[LevelManagerTrait]
-    when(levelManager.getCurrentLevel).thenReturn(Some(LevelConfig("Level1", "", "", 10, 10, Coordinate(0, 0), null, null)))
-    Player.initialize()
-    Player.getPosition shouldBe Coordinate(0, 0)
-    Player.direction shouldBe Player.Oben
+  "A Player" should {
+
+    "move forward correctly based on direction" in {
+      // Test cases for each possible direction
+      val playerUp = Player(Coordinate(0, 0), Up)
+      val playerRight = Player(Coordinate(0, 0), Right)
+      val playerDown = Player(Coordinate(0, 0), Down)
+      val playerLeft = Player(Coordinate(0, 0), Left)
+
+      playerUp.move("forward").position should be(Coordinate(0, 1))
+      playerRight.move("forward").position should be(Coordinate(1, 0))
+      playerDown.move("forward").position should be(Coordinate(0, -1))
+      playerLeft.move("forward").position should be(Coordinate(-1, 0))
+    }
+
+    "turn to the right correctly" in {
+      // Changing direction clockwise
+      val playerUp = Player(Coordinate(0, 0), Up)
+      playerUp.move("right").direction should be(Right)
+
+      val playerRight = Player(Coordinate(0, 0), Right)
+      playerRight.move("right").direction should be(Down)
+
+      val playerDown = Player(Coordinate(0, 0), Down)
+      playerDown.move("right").direction should be(Left)
+
+      val playerLeft = Player(Coordinate(0, 0), Left)
+      playerLeft.move("right").direction should be(Up)
+    }
+
+    "turn to the left correctly" in {
+      // Changing direction counterclockwise
+      val playerUp = Player(Coordinate(0, 0), Up)
+      playerUp.move("left").direction should be(Left)
+
+      val playerLeft = Player(Coordinate(0, 0), Left)
+      playerLeft.move("left").direction should be(Down)
+
+      val playerDown = Player(Coordinate(0, 0), Down)
+      playerDown.move("left").direction should be(Right)
+
+      val playerRight = Player(Coordinate(0, 0), Right)
+      playerRight.move("left").direction should be(Up)
+    }
+
+    "ignore invalid actions" in {
+      val player = Player(Coordinate(0, 0), Up)
+
+      val result = player.move("invalidAction")
+      result.position should be(Coordinate(0, 0))
+      result.direction should be(Up)
+    }
   }
 
-  it should "move forward correctly" in {
-    val levelManager = mock[LevelManagerTrait]
-    when(levelManager.getCurrentLevel).thenReturn(Some(LevelConfig("Level1", "", "", 10, 10, Coordinate(0, 0), null, null)))
-    Player.initialize()
-    Player.moveUp()
-    Player.getPosition shouldBe Coordinate(0, 1)
+  "A Player's Inventory" should {
+
+    "store items and retrieve their count" in {
+      val inventory = Inventory()
+
+      val updatedInventory = inventory.addItem(Coordinate(1, 1))
+      updatedInventory.items should contain(Coordinate(1, 1))
+      updatedInventory.size should be(1)
+
+      // Add another item
+      val furtherUpdatedInventory = updatedInventory.addItem(Coordinate(2, 2))
+      furtherUpdatedInventory.items should contain allOf (Coordinate(1, 1), Coordinate(2, 2))
+      furtherUpdatedInventory.size should be(2)
+    }
+
+    "not allow duplicate items" in {
+      val inventory = Inventory(Set(Coordinate(1, 1)))
+
+      val updatedInventory = inventory.addItem(Coordinate(1, 1))
+      updatedInventory.items.size should be(1) // Item should not be duplicated
+    }
   }
 
-  it should "turn right correctly" in {
-    Player.initialize()
-    Player.moveRight()
-    Player.direction shouldBe Player.Rechts
-  }
+  "A Player as a GridSegment" should {
 
-  it should "turn left correctly" in {
-    Player.initialize()
-    Player.moveLeft()
-    Player.direction shouldBe Player.Links
-  }
+    "return the correct position and symbol" in {
+      val player = Player(Coordinate(0, 0), Up)
 
-  it should "turn down correctly" in {
-    Player.initialize()
-    Player.moveDown()
-    Player.direction shouldBe Player.Unten
-  }
+      player.getPosition should be(Coordinate(0, 0))
+      player.Symbol should be('R')
+    }
 
-  it should "collect a Jerm" in {
-    val jerm = mock[Jerm]
-    when(jerm.getPosition).thenReturn(Coordinate(1, 1))
-    Spielfeld.components = List(jerm)
-    Player.initialize()
-    Player.moveUp()
-    Player.moveRight()
-    Player.einsammeln(Coordinate(1, 1))
-    Player.inventory.containsItem(jerm) shouldBe true
-  }
+    "return non-blocking by default" in {
+      val player = Player(Coordinate(0, 0), Up)
 
-  it should "not move out of bounds" in {
-    val levelManager = mock[LevelManagerTrait]
-    when(levelManager.getCurrentLevel).thenReturn(Some(LevelConfig("Level1", "", "", 1, 1, Coordinate(0, 0), null, null)))
-    Player.initialize()
-    Player.moveUp()
-    Player.getPosition shouldBe Coordinate(0, 0)
-  }
+      player.isBlocking should be(false)
+    }
 
-  /*it should "not move into an obstacle" in {
-    val levelManager = mock[LevelManagerTrait]
-    when(levelManager.getCurrentLevel).thenReturn(Some(LevelConfig("Level1", "", "", 10, 10, Coordinate(0, 0), null, LevelObjects(List(Obstacle(Coordinate(0, 1)))))))
-    Player.initialize()
-    Player.moveUp()
-    Player.getPosition shouldBe Coordinate(0, 0)
-  }*/
+    "return the correct segment type" in {
+      val player = Player(Coordinate(0, 0), Up)
 
-  it should "notify observers on valid move" in {
-    val observer = mock[Observer]
-    Player.addObserver(observer)
-    Player.initialize()
-    Player.moveUp()
-    verify(observer, times(1)).update()
-  }
-
-  it should "notify observers on invalid move" in {
-    val observer = mock[Observer]
-    Player.addObserver(observer)
-    val levelManager = mock[LevelManagerTrait]
-    when(levelManager.getCurrentLevel).thenReturn(Some(LevelConfig("Level1", "", "", 1, 1, Coordinate(0, 0), null, null)))
-    Player.initialize()
-    Player.moveUp()
-    verify(observer, times(1)).update()
+      player.segmentType should be("player")
+      player.subType should be(None)
+    }
   }
 }

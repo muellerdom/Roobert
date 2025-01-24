@@ -43,7 +43,7 @@ class TUI @Inject() (controller: Controller) extends Observer {
       controller.startLevel(input.toInt) match {
         case Right(foundLevel) =>
           println(s"Starting level ${foundLevel.id}: ${foundLevel.instructions}")
-          displayGrid()
+          controller.notifyObservers()
           waitForPlayerActions()
         case Left(errorMessage) =>
           println(errorMessage)
@@ -95,36 +95,19 @@ class TUI @Inject() (controller: Controller) extends Observer {
         case "compile" =>
 
           val code = codeBlock.toString()
-          //controller.setCommand(code) // Grid wird durch update() nachgeführt
           controller.interpret(code) // Grid wird durch update() nachgeführt
           codeBlock.clear()
 
-          //controller.setCommand(action)
+          controller.notifyObservers() // Notify observers after processing input
 
-          //if (controller.isLevelComplete) {
-          //  println("Congratulations! Robert has arrived!")
-          //  start()
-          //}
-
-//        case "moveup()" =>
-//          controller.moveUp()
-//
-//        case "movedown()" =>
-//          controller.moveDown()
-//
-//        case "moveleft()" =>
-//          controller.moveLeft()
-//
-//        case "moveright()" =>
-//          controller.moveRight()
 
         case _ =>
           codeBlock.append(action).append("\n")
 
+          //controller.notifyObserversGUIOnly() // Synchronisiere NUR die GUI
+
           //println(s"Unknown command: $action")
       }
-
-      //controller.notifyObservers() // Notify observers after processing input
 
     } while (action.toLowerCase != "q")
 
@@ -132,13 +115,10 @@ class TUI @Inject() (controller: Controller) extends Observer {
   }
 
   override def update(): Unit = {
-    println("Update called")
-    displayGrid()
-//    if (controller.isInvalidMove) {
-//      println("Invalid move! You cannot move over an obstacle.")
-//    }
-//    if (controller.isJermCollected) {
-//      println("hurrah hurrah")
-//    }
+    if (controller.getLevelConfig.isDefined) { // Aktualisiere nur, wenn ein Level geladen ist
+      //controller.notifyObservers()
+      println("Update called from TUI")
+      displayGrid()
+    }
   }
 }

@@ -3,7 +3,6 @@ resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repos
 
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "2.2.2")
 addSbtPlugin("org.scoverage" % "sbt-coveralls" % "1.3.1")
-
-//addSbtPlugin("com.lihaoyi" % "sbt-ammonite" % "2.5.0")
-
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "2.3.0")
+addSbtPlugin("com.github.sbt" % "sbt-jacoco" % "3.5.0")
 

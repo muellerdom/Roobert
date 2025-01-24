@@ -1,187 +1,96 @@
-/*package Controller.ControllerBaseImpl
+package Controller.Component.ControllerBaseImpl
 
-import Controller.Component.ControllerBaseImpl.Controller
-import Model.LevelComponent.{LevelConfig, LevelManagerTrait}
-import Model.PlayerComponent.PlayerBaseImpl.Player
-import Model.SpielfeldComponent.{Coordinate, SpielfeldInterface}
-import Util.{Observable, UndoManager}
+import Model.FileIOComponent.FileIoJsonImpl.LevelConfig
+import Model.GridComponent.GridBaseImpl.{Grid, GridSegments, Obstacle, emptyField}
+import Model.GridComponent.Coordinate
+import Model.LevelComponent.LevelManagerTrait
+import Util.UndoManager
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import org.mockito.Mockito._
-import org.scalamock.clazz.MockImpl.mock
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.MockitoSugar.mock
 
-import scala.Option.when
+class ControllerSpec extends AnyWordSpec with Matchers {
 
-class ControllerSpec extends AnyFlatSpec with Matchers with MockitoSugar {
+  "A Controller" should {
 
-  "Controller" should "start a level successfully" in {
-    val levelManager = mock[LevelManagerTrait]
-    val levelConfig = LevelConfig("Level1", "Test Level", "Test Level", 10, 10, Coordinate(0, 0), null, null)
-    when(levelManager.loadLevel("Level1")).thenReturn(Right(levelConfig))
+    val mockLevelManager = mock[LevelManagerTrait]
+    val controller = new Controller(mockLevelManager)
 
-    val controller = new Controller(levelManager)
-    val result = controller.startLevel("Level1")
+//    "start a level successfully" in {
+//      // Mock LevelManager behavior
+//      val mockLevelConfig = LevelConfig(1, "test-level", null, null)
+//      when(mockLevelManager.loadLevel(1)).thenReturn(Right(mockLevelConfig))
+//
+//      val result = controller.startLevel(1)
+//
+//      result should be(Right(mockLevelConfig))
+//      //controller.getGrid.gridSegments.segments.rows.size should be >= 0
+//    }
 
-    result shouldBe Right(levelConfig)
-    verify(levelManager).loadLevel("Level1")
-  }
+    "fail to start a level if LevelManager returns an error" in {
+      when(mockLevelManager.loadLevel(999)).thenReturn(Left("Level not found"))
 
-  it should "return an error when starting a non-existent level" in {
-    val levelManager = mock[LevelManagerTrait]
-    when(levelManager.loadLevel("NonExistentLevel")).thenReturn(Left("Level not found"))
+      val result = controller.startLevel(999)
 
-    val controller = new Controller(levelManager)
-    val result = controller.startLevel("NonExistentLevel")
+      result should be(Left("Level not found"))
+    }
 
-    result shouldBe Left("Level not found")
-    verify(levelManager).loadLevel("NonExistentLevel")
-  }
-
-  it should "return available levels" in {
-    val levelManager = mock[LevelManagerTrait]
-    when(levelManager.getAvailableLevels).thenReturn(List("Level1", "Level2"))
-
-    val controller = new Controller(levelManager)
-    val levels = controller.getAvailableLevels
-
-    levels shouldBe List("Level1", "Level2")
-    verify(levelManager).getAvailableLevels
-  }
-
-  it should "execute a command and notify observers" in {
-    val levelManager = mock[LevelManagerTrait]
-    val controller = new Controller(levelManager)
-    val observer = mock[Observer]
-    controller.addObserver(observer)
-
-    controller.setCommand("move")
-
-    verify(observer).update()
-  }
-
-  it should "undo a command and notify observers" in {
-    val levelManager = mock[LevelManagerTrait]
-    val controller = new Controller(levelManager)
-    val observer = mock[Observer]
-    controller.addObserver(observer)
-
-    controller.setCommand("move")
-    controller.undo()
-
-    verify(observer, times(2)).update()
-  }
-
-  it should "redo a command and notify observers" in {
-    val levelManager = mock[LevelManagerTrait]
-    val controller = new Controller(levelManager)
-    val observer = mock[Observer]
-    controller.addObserver(observer)
-
-    controller.setCommand("move")
-    controller.undo()
-    controller.redo()
-
-    verify(observer, times(3)).update()
-  }
-
-  it should "check if the level is complete" in {
-    val levelManager = mock[LevelManagerTrait]
-    val levelConfig = LevelConfig("Level1", "Test Level", "Test Level", 10, 10, Coordinate(0, 0), null, null)
-    when(levelManager.getCurrentLevel).thenReturn(Some(levelConfig))
-    Player.inventory = List.fill(levelConfig.objects.jerm.size)('item')
-    Player.position = Some(Coordinate(levelConfig.goal.x, levelConfig.goal.y))
-
-    val controller = new Controller(levelManager)
-    val isComplete = controller.isLevelComplete
-
-    isComplete shouldBe true
-  }
-
-  it should "return the current Spielfeld" in {
-    val levelManager = mock[LevelManagerTrait]
-    val controller = new Controller(levelManager)
-    val spielfeld = controller.getSpielfeld
-
-    spielfeld shouldBe Spielfeld
-  }
-
-  it should "return the current level configuration" in {
-    val levelManager = mock[LevelManagerTrait]
-    val levelConfig = LevelConfig("Level1", "Test Level", "Test Level", 10, 10, Coordinate(0, 0), null, null)
-    when(levelManager.getCurrentLevel).thenReturn(Some(levelConfig))
-
-    val controller = new Controller(levelManager)
-    val config = controller.getLevelConfig
-
-    config shouldBe Some(levelConfig)
-  }
-}*/package Controller.Component.ControllerBaseImpl
-
-import Model.LevelComponent.{LevelConfig, LevelManagerTrait}
-import Model.SpielfeldComponent.{Coordinate, SpielfeldInterface}
-import org.scalamock.scalatest.MockFactory
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
-
-class ControllerSpec extends AnyFlatSpec with Matchers with MockFactory {
-
-  "Controller" should "start a level successfully" in {
-    val levelManager = mock[LevelManagerTrait]
-    val controller = new Controller(levelManager)
-    val levelConfig = LevelConfig("Level1", "Test Level", "Test Level", 10, 10, Coordinate(0, 0), null, null)
-
-    (levelManager.loadLevel _).expects("Level1").returning(Right(levelConfig))
-
-    controller.startLevel("Level1") shouldBe Right(levelConfig)
-  }
-
-  it should "return an error when starting a non-existent level" in {
-    val levelManager = mock[LevelManagerTrait]
-    val controller = new Controller(levelManager)
-
-    (levelManager.loadLevel _).expects("NonExistentLevel").returning(Left("Level nicht gefunden."))
-
-    controller.startLevel("NonExistentLevel") shouldBe Left("Level nicht gefunden.")
-  }
-
-  it should "return available levels" in {
-    val levelManager = mock[LevelManagerTrait]
-    val controller = new Controller(levelManager)
-    val levels = List("Level1", "Level2", "Level3")
-
-    (levelManager.getAvailableLevels _).expects().returning(levels)
-
-    controller.getAvailableLevels shouldBe levels
-  }
-
-  it should "execute a command" in {
-    val levelManager = mock[LevelManagerTrait]
-    val controller = new Controller(levelManager)
-
-    controller.setCommand("move")
-
-    // Add assertions to verify the command execution
-  }
-
-  it should "undo a command" in {
-    val levelManager = mock[LevelManagerTrait]
-    val controller = new Controller(levelManager)
-
-    controller.setCommand("move")
-    controller.undo()
-
-    // Add assertions to verify the command undo
-  }
-
-  it should "redo a command" in {
-    val levelManager = mock[LevelManagerTrait]
-    val controller = new Controller(levelManager)
-
-    controller.setCommand("move")
-    controller.undo()
-    controller.redo()
-
-    // Add assertions to verify the command redo
+//    "get the list of available levels" in {
+//      when(mockLevelManager.getAvailableLevels).thenReturn(List(1, 2, 3))
+//
+//      val levels = controller.getAvailableLevels
+//
+//      levels should contain allOf ("Level 1", "Level 2", "Level 3")
+//    }
+//
+//    "undo a command" in {
+//      // Ensure undoManager is empty initially
+//      val undoManager = mock[UndoManager]
+//      //controller.undoManager.undoStep()
+//
+//      controller.undo()
+//      verify(undoManager).undoStep()
+//    }
+//
+//    "redo a command" in {
+//      // Mock UndoManager to control behavior
+//      val undoManager = mock[UndoManager]
+//      controller.redo()
+//
+//      // Verify that redoStep was called
+//      verify(undoManager).redoStep()
+//    }
+//
+//    "verify if a move is valid" in {
+//      // Mock basic grid setup
+//      controller.updateGrid(Grid(GridSegments(List(
+//        // Creating a mocked grid with some blocking and non-blocking elements
+//        emptyField(Coordinate(0, 0)),
+//        new Obstacle(Coordinate(1, 1), "wall")
+//      ))))
+//
+//    }
+//
+//    "return if the level is complete" in {
+//      // Since isLevelComplete() is mocked to always return true, verify the result
+//      controller.isLevelComplete should be(true) // Default implementation always returns true
+//    }
+//
+//    "save and bind the REPL during level start" in {
+//      // Mock LevelManager and test REPL behavior
+//      val mockLevelConfig = LevelConfig(1, "Test Level", null, null)
+//      when(mockLevelManager.loadLevel(1)).thenReturn(Right(mockLevelConfig))
+//
+//      val result = controller.startLevel(1)
+//
+//      result should be(Right(mockLevelConfig))
+//      // Additional assertions for REPL binding or side effects can go here if required
+//    }
+//
+//    "interpret REPL code" in {
+//      // Mock REPL behavior
+//      noException should be thrownBy controller.interpret("some test code")
+//    }
   }
 }

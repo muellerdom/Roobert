@@ -14,21 +14,21 @@ import Util.Observable
 
 case class Grid(gridSegments: GridSegments) extends GridInterface {
 
-  def displayGrid(): Unit = {
-    val level = getCurrentLevel.get.logic
-
-    println("Spielfeld:")
-    println("+" + ("---+" * level.gridSize.get.width))
-    for (y <- level.gridSize.get.height - 1 to 0 by -1) {
-      for (x <- 0 until level.gridSize.get.width) {
-        val symbol = gridSegments.findByPosition(Coordinate(x, y)).get.Symbol
-        print(s"| $symbol ")
-      }
-      println("|")
-      println("+" + ("---+" * level.gridSize.get.width))
-
-    }
-  }
+//  def displayGrid(): Unit = {
+//    val level = getCurrentLevel.get.logic
+//
+//    println("Spielfeld:")
+//    println("+" + ("---+" * level.gridSize.get.width))
+//    for (y <- level.gridSize.get.height - 1 to 0 by -1) {
+//      for (x <- 0 until level.gridSize.get.width) {
+//        val symbol = gridSegments.findByPosition(Coordinate(x, y)).get.Symbol
+//        print(s"| $symbol ")
+//      }
+//      println("|")
+//      println("+" + ("---+" * level.gridSize.get.width))
+//
+//    }
+//  }
 
 
   /**
@@ -43,15 +43,30 @@ case class Grid(gridSegments: GridSegments) extends GridInterface {
     currentPlayerOpt.map { player =>
       // Spieler bewegen
       val updatedPlayer = player.move(direction)
-
-      // Prüfen, ob die neue Position gültig ist
       val targetPos = updatedPlayer.position
-      val currentSegments = gridSegments.segments
-      if (currentSegments.exists(_.getPosition == targetPos)) {
-        val updatedSegments = gridSegments.update(player, updatedPlayer)
-        new Grid(updatedSegments)
-      } else {
-        throw new IllegalArgumentException(s"Ungültige Bewegung auf $targetPos!")
+
+      gridSegments.segments.find(_.getPosition == targetPos) match {
+        case Some(segment) if segment.isBlocking =>
+          println(s"Bewegung blockiert: Hindernis bei $targetPos!")
+          this
+
+        case Some(_: Jerm) =>
+          val updatedInventory = player.inventory.addItem(targetPos)
+          val playerWithJerm = updatedPlayer.copy(inventory = updatedInventory)
+          println(s"Jerm bei $targetPos eingesammelt!")
+          val updatedSegments = gridSegments
+            .update(player, playerWithJerm)
+          Grid(updatedSegments)
+
+        case Some(segment: Goal) =>
+          val updatedSegments = gridSegments.update(player, updatedPlayer)
+          Grid(updatedSegments)
+          println("Herzlichen Glückwunsch! Du hast das Ziel erreicht!")
+          this // Oder optional: Spielzustand beenden/ändern
+
+        case _ =>
+          val updatedSegments = gridSegments.update(player, updatedPlayer)
+          Grid(updatedSegments)
       }
     }.getOrElse(throw new NoSuchElementException("Kein Spieler im Grid gefunden!"))
   }
