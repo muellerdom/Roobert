@@ -61,7 +61,7 @@ class LevelView @Inject() (controller: Controller, gui: GUI) extends VBox with O
           prefWidth = 150
           prefHeight = 50
           onAction = _ => {
-            controller.startLevel(levelName) match {
+            controller.startLevel(levelName.toInt) match {
               case Right(_) =>
                 gui.switchToGameView()
                 controller.notifyObservers() // Notify observers to update TUI

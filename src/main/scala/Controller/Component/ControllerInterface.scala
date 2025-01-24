@@ -1,12 +1,12 @@
 package Controller.Component
 
-import Model.LevelComponent.LevelConfig
-import Model.SpielfeldComponent.{Coordinate, SpielfeldInterface}
+import Model.FileIOComponent.FileIoJsonImpl.LevelConfig
+import Model.GridComponent.{Coordinate, GridInterface}
 
 trait ControllerInterface {
 
   // Startet ein Level anhand seines Namens
-  def startLevel(levelName: String): Either[String, LevelConfig]
+  def startLevel(levelName: Int): Either[String, LevelConfig]
 
   // Gibt eine Liste aller verfügbaren Level zurück
   def getAvailableLevels: List[String]
@@ -24,7 +24,7 @@ trait ControllerInterface {
   def isLevelComplete: Boolean
 
   // Gibt das aktuelle Spielfeld zurück
-  def getSpielfeld: SpielfeldInterface
+  def getGrid: GridInterface
 
   // Gibt die Konfiguration des aktuellen Levels zurück
   def getLevelConfig: Option[LevelConfig]

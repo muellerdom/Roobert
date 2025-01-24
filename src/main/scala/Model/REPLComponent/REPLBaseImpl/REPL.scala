@@ -27,12 +27,12 @@ object REPL extends Observable with REPLInterface {
 
     //notifyObservers()
     reporter.totalSilence = false
-//    repl.interpret("""def moveForward() = controller.setCommand("forward")""")
-//    repl.interpret("""def turnRight() = controller.setCommand("right")""")
-//    repl.interpret("""def turnLeft() = controller.setCommand("left")""")
-    repl.interpret("""def moveForward() = Model.SpielerComponent.Spieler.move("forward")""")
-    repl.interpret("""def turnRight() = Model.SpielerComponent.Spieler.move("right")""")
-    repl.interpret("""def turnLeft() = Model.SpielerComponent.Spieler.move("left")""")
+    repl.interpret("""def moveForward() = controller.setCommand("forward")""")
+    repl.interpret("""def turnRight() = controller.setCommand("right")""")
+    repl.interpret("""def turnLeft() = controller.setCommand("left")""")
+//    repl.interpret("""def moveForward() = Model.SpielerComponent.Spieler.move("forward")""")
+//    repl.interpret("""def turnRight() = Model.SpielerComponent.Spieler.move("right")""")
+//    repl.interpret("""def turnLeft() = Model.SpielerComponent.Spieler.move("left")""")
 
   }
 

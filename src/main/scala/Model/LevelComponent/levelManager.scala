@@ -1,34 +1,30 @@
 package Model.LevelComponent
 
+import Model.FileIOComponent.FileIoJsonImpl.{FileIO, LevelConfig}
+import Model.GridComponent.Coordinate
 import Util.Observable
 
-/**
- * zum Managen der Level u.a. auch das aktuelle Level
- * somit wird das auch vom Controller entkoppelt
- */
 
 object levelManager extends Observable with LevelManagerTrait {
 
   // intern für den Schutz der Levels zuständig
-  private val levelLoader = loadLeveFromJSON
+  private val levelLoader = new FileIO("src/main/resources/levels.json")
   private val levels: List[LevelConfig] = levelLoader.getLevels.map(_.levels).getOrElse(List())
   private var currentLevel: Option[LevelConfig] = None
 
   // Nur für den Controller direkt nutzbar; nicht öffentlich machen
-  def ladeLevel(levelName: String): Either[String, LevelConfig] = {
-    levels.find(_.level == levelName) match {
+  def loadLevel(levelId: Int): Either[String, LevelConfig] = {
+    levels.find(_.id == levelId) match {
       case Some(level) =>
         currentLevel = Some(level)
         //notifyObservers()
         Right(level)
-      case None => Left(s"Level '$levelName' nicht gefunden.")
+      case None => Left(s"Level mit ID '$levelId' nicht gefunden.")
     }
   }
 
-  def getAvailableLevels: List[String] = levels.map(_.level)
+  def getAvailableLevels: List[Int] = levels.map(_.id)
 
   def getCurrentLevel: Option[LevelConfig] = currentLevel
 
-  override def loadLevel(levelName: String): Either[String, LevelConfig] = {
-    ladeLevel(levelName)
-  }}
+}

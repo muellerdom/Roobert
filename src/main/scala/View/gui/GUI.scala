@@ -11,6 +11,8 @@ import scalafx.scene.control.Label
 import scalafx.scene.paint.Color
 import scalafx.geometry.Pos
 import scalafx.scene.layout.GridPane
+import Model.GridComponent.Coordinate
+
 
 class GUI @Inject() (controller: Controller) extends JFXApp3 with Observer {
 
@@ -59,12 +61,12 @@ class GUI @Inject() (controller: Controller) extends JFXApp3 with Observer {
     setView(new GameView(controller, this))
   }
 
-  private def refreshGrid(): Unit = {
+ /* private def refreshGrid(): Unit = {
     controller.getLevelConfig.foreach { level =>
       gridPane.children.clear()
 
-      for (y <- 0 until level.height; x <- 0 until level.width) {
-        val text = controller.getSpielfeld.getAnPos(x, y) match {
+      for (y <- 0 until level.logic.gridSize.get.height; x <- 0 until level.logic.gridSize.get.width) {
+        val text = controller.getGrid.gridSegments.findByPosition(Coordinate(x, y)).get.Symbol match {
           case 'R' => "R"
           case 'G' => "G"
           case 'J' => "J"
@@ -86,12 +88,12 @@ class GUI @Inject() (controller: Controller) extends JFXApp3 with Observer {
         cell.alignment = Pos.Center
         cell.textFill = Color.web("#2B2B2B")
 
-        GridPane.setConstraints(cell, x, level.height - y - 1)
+        GridPane.setConstraints(cell, x, level.logic.gridSize.get.height - y - 1)
         gridPane.children.add(cell)
       }
     }
   }
-
+*/
   override def update(): Unit = {
     if (!Platform.isFxApplicationThread) {
       Platform.runLater(() => update())
@@ -104,6 +106,6 @@ class GUI @Inject() (controller: Controller) extends JFXApp3 with Observer {
       switchToLevelView()
     }
 
-    refreshGrid()
+    //refreshGrid()
   }
 }

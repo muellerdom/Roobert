@@ -1,4 +1,4 @@
-package Model.SpielfeldComponent.SpielfeldMockImpl
+/*package Model.SpielfeldComponent.SpielfeldMockImpl
 
 import Model.LevelComponent.levelManager.getCurrentLevel
 import Model.PlayerComponent.PlayerBaseImpl.Player
@@ -38,4 +38,4 @@ class MockSpielfeld extends Observable with SpielfeldInterface {
     spielerPosition = Some(pos)
     notifyObservers()
   }
-}
+}*/

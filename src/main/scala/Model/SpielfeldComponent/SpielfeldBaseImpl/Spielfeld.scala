@@ -1,4 +1,4 @@
-package Model.SpielfeldComponent.SpielfeldBaseImpl
+/*package Model.SpielfeldComponent.SpielfeldBaseImpl
 
 import Model.LevelComponent.levelManager.getCurrentLevel
 import Model.PlayerComponent.PlayerBaseImpl.Player
@@ -58,4 +58,4 @@ object Spielfeld extends Observable with SpielfeldInterface {
     spielerPosition = Some(pos)
     notifyObservers()
   }
-}
+}*/

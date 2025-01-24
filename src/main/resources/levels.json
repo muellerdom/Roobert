@@ -1,179 +1,59 @@
 {
   "levels": [
     {
-      "level": "1",
-      "description": "Methoden in Scala",
-      "instruction": "RoberOKay des isz hier.",
-      "width": 4,
-      "height": 4,
-      "start": {
-        "x": 2,
-        "y": 0
-      },
-      "goal": {
-        "x": 2,
-        "y": 3
-      },
-      "objects": {
-        "obstacles": [
+      "id": 1,
+      "title": "Methoden in Scala",
+      "instructions": [
+        "Robert braucht Hilfe. Hilf ihm mit moveForward(), turnLeft(), turnRight() zum Ziel zu kommen.",
+        "Viel Erfolg!"
+      ],
+      "logic": {
+        "type": "grid",
+        "gridSize": {
+          "width": 4,
+          "height": 4
+        },
+        "entities": [
           {
-            "type": "stein",
-            "coordinates": {
-              "x": 1,
-              "y": 2
-            }
+            "type": "player",
+            "position": { "x": 2, "y": 0 }
           },
           {
-            "type": "wasser",
-            "coordinates": {
-              "x": 3,
-              "y": 3
-            }
+            "type": "goal",
+            "position": { "x": 2, "y": 3 }
           },
           {
-            "type": "gras",
-            "coordinates": {
-              "x": 0,
-              "y": 0
-            }
-          }
-        ],
-        "jerm": [
+            "type": "obstacle",
+            "subtype": "stein",
+            "position": { "x": 1, "y": 2 }
+          },
           {
-            "coordinates": {
-              "x": 2,
-              "y": 2
-            }
+            "type": "obstacle",
+            "subtype": "wasser",
+            "position": { "x": 3, "y": 3 }
+          },
+          {
+            "type": "obstacle",
+            "subtype": "gras",
+            "position": { "x": 0, "y": 0 }
+          },
+          {
+            "type": "jerm",
+            "position": { "x": 2, "y": 2 }
           }
         ]
       }
     },
     {
-      "level": "2",
-      "description": "Labyrinth mit Hindernissen",
-      "instruction": "Finde den Weg durch das Labyrinth und sammle alle Jerms.",
-      "width": 7,
-      "height": 7,
-      "start": {
-        "x": 0,
-        "y": 6
-      },
-      "goal": {
-        "x": 6,
-        "y": 0
-      },
-      "objects": {
-        "obstacles": [
-          {
-            "type": "gras",
-            "coordinates": {
-              "x": 1,
-              "y": 5
-            }
-          },
-          {
-            "type": "stein",
-            "coordinates": {
-              "x": 2,
-              "y": 3
-            }
-          },
-          {
-            "type": "wasser",
-            "coordinates": {
-              "x": 4,
-              "y": 2
-            }
-          },
-          {
-            "type": "baum",
-            "coordinates": {
-              "x": 5,
-              "y": 4
-            }
-          }
-        ],
-        "jerm": [
-          {
-            "coordinates": {
-              "x": 3,
-              "y": 3
-            }
-          },
-          {
-            "coordinates": {
-              "x": 6,
-              "y": 2
-            }
-          }
-        ]
-      }
-    },
-    {
-      "level": "3",
-      "description": "Das große Finale",
-      "instruction": "Nutze alle Fähigkeiten, um das Ziel zu erreichen und alle Jerms zu sammeln!",
-      "width": 8,
-      "height": 8,
-      "start": {
-        "x": 0,
-        "y": 0
-      },
-      "goal": {
-        "x": 7,
-        "y": 7
-      },
-      "objects": {
-        "obstacles": [
-          {
-            "type": "wasser",
-            "coordinates": {
-              "x": 1,
-              "y": 1
-            }
-          },
-          {
-            "type": "gras",
-            "coordinates": {
-              "x": 3,
-              "y": 3
-            }
-          },
-          {
-            "type": "stein",
-            "coordinates": {
-              "x": 5,
-              "y": 5
-            }
-          },
-          {
-            "type": "baum",
-            "coordinates": {
-              "x": 6,
-              "y": 6
-            }
-          }
-        ],
-        "jerm": [
-          {
-            "coordinates": {
-              "x": 2,
-              "y": 2
-            }
-          },
-          {
-            "coordinates": {
-              "x": 4,
-              "y": 4
-            }
-          },
-          {
-            "coordinates": {
-              "x": 7,
-              "y": 6
-            }
-          }
-        ]
+      "id": 2,
+      "title": "Variablen oder so",
+      "instructions": [
+        "Versuche das Wort herauszufinden. Du kannst die Buchstaben erraten."
+      ],
+      "logic": {
+        "type": "hangman",
+        "word": "scala",
+        "entities": []
       }
     }
   ]

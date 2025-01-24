@@ -2,6 +2,7 @@
 package View.gui
 
 import Controller.Component.ControllerBaseImpl.Controller
+import Model.GridComponent.Coordinate
 import Util.Observer
 import com.google.inject.Inject
 import scalafx.application.Platform
@@ -15,12 +16,12 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
     hgap = 5
     vgap = 5
     padding = Insets(10)
-    style = "-fx-background-color: #2B2B2B; -fx-border-color: #6897BB; -fx-border-width: 2px; -fx-background-radius: 10px; -fx-border-radius: 10px;"
+    style = "-fx-background-color: #2B2B2B; -fx-border-color: #6897BB; -fx-border-width: 2px;"
   }
-  refreshGrid()
+  //refreshGrid()
 
   private val instructions = new Label("Anweisungen: Schreiben Sie Ihren Code im Editor und klicken Sie auf 'Meinen Code ausführen', um das Spiel zu aktualisieren.") {
-    style = "-fx-font-size: 14px; -fx-text-fill: #2B2B2B; -fx-background-radius: 10px;"
+    style = "-fx-font-size: 14px; -fx-text-fill: #2B2B2B;"
     wrapText = true
     maxWidth = 300
   }
@@ -29,13 +30,13 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
     spacing = 10
     padding = Insets(10)
     alignment = Pos.TopCenter
-    style = "-fx-background-color: #A9B7C6; -fx-background-radius: 10px;"
+    style = "-fx-background-color: #A9B7C6;"
 
     val textarea = new TextArea {
       prefWidth = 300
       prefHeight = 300
       promptText = "Schreibe deinen Code hier..."
-      style = "-fx-control-inner-background: #2B2B2B; -fx-text-fill: #F5F5F5; -fx-background-radius: 10px;"
+      style = "-fx-control-inner-background: #2B2B2B; -fx-text-fill: #F5F5F5;"
     }
 
     children = Seq(
@@ -49,7 +50,7 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
           controller.setCommand(textarea.getText)
           controller.notifyObservers() // Notify all observers after executing the command
         }
-        style = "-fx-background-color: #6897BB; -fx-text-fill: #2B2B2B; -fx-background-radius: 10px;"
+        style = "-fx-background-color: #6897BB; -fx-text-fill: #2B2B2B;"
       }
     )
   }
@@ -58,12 +59,12 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
     spacing = 10
     padding = Insets(10)
     alignment = Pos.Center
-    style = "-fx-background-color: #6897BB; -fx-background-radius: 10px;"
+    style = "-fx-background-color: #6897BB;"
     children = Seq(
       new Label("Spielansicht") {
         style = "-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2B2B2B;"
       },
-      new Label(s"Aktuelles Level: ${controller.getLevelConfig.getOrElse("Unbekannt")}") {
+      new Label(s"Methoden um den Spieler zu bewegen: moveForward(), turnRight(), turnLeft()") {
         style = "-fx-font-size: 14px; -fx-text-fill: #2B2B2B;"
       }
     )
@@ -73,11 +74,11 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
     spacing = 20
     padding = Insets(10)
     alignment = Pos.Center
-    style = "-fx-background-color: #6897BB; -fx-background-radius: 10px;"
+    style = "-fx-background-color: #6897BB;"
     children = Seq(
       new Button("Zurück zur Level-Auswahl") {
         onAction = _ => gui.switchToLevelView()
-        style = "-fx-background-color: #2B2B2B; -fx-text-fill: #6897BB; -fx-font-weight: bold; -fx-background-radius: 10px;"
+        style = "-fx-background-color: #2B2B2B; -fx-text-fill: #6897BB; -fx-font-weight: bold;"
       }
     )
   }
@@ -88,17 +89,19 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
   bottom = bottomBar
   padding = Insets(20)
 
+
   private def refreshGrid(): Unit = {
     controller.getLevelConfig.foreach { level =>
       gridPane.children.clear()
 
-      for (y <- 0 until level.height; x <- 0 until level.width) {
-        val text = controller.getSpielfeld.getAnPos(x, y) match {
+      for (y <- 0 until level.logic.gridSize.get.height; x <- 0 until level.logic.gridSize.get.width) {
+        //controller.getGrid.gridSegments.findByPosition(Coordinate(x, y)).get.Symbol
+        val text = controller.getGrid.gridSegments.findByPosition(Coordinate(x, y)).map(_.Symbol).getOrElse(' ') match {
           case 'R' => "R"
           case 'G' => "G"
           case 'J' => "J"
           case 'X' => "X"
-          case _ => " "
+          case ' ' => " "
         }
 
         val cell = new Label()
@@ -115,7 +118,7 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
         cell.alignment = Pos.Center
         cell.textFill = Color.web("#2B2B2B")
 
-        GridPane.setConstraints(cell, x, level.height - y - 1)
+        GridPane.setConstraints(cell, x, level.logic.gridSize.get.height - y - 1)
         gridPane.children.add(cell)
       }
     }

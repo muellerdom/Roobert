@@ -1,4 +1,4 @@
-package Model.SpielfeldComponent.SpielfeldBaseImpl
+/*package Model.SpielfeldComponent.SpielfeldBaseImpl
 
 import Model.PlayerComponent.PlayerBaseImpl.Player
 import Model.SpielfeldComponent.{Coordinate, KomponentenInterface}
@@ -18,3 +18,4 @@ class Ziel(val position: Coordinate) extends KomponentenInterface {
   }
 }
 
+*/

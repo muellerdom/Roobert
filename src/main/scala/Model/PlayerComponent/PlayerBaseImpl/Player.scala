@@ -1,145 +1,101 @@
-// Player.scala
 package Model.PlayerComponent.PlayerBaseImpl
 
-import Model.LevelComponent.levelManager
-import Model.SpielfeldComponent.SpielfeldBaseImpl.{Jerm, Spielfeld}
-import Model.SpielfeldComponent.{Coordinate, KomponentenInterface}
-import Util.Observable
+import Model.GridComponent.{Coordinate, GridSegmentsInterface}
+import Model.PlayerComponent.PlayerInterface
 
-object Player extends Observable {
+// Enum for the direction the player is facing
+sealed trait Direction
+case object Up extends Direction
+case object Right extends Direction
+case object Down extends Direction
+case object Left extends Direction
 
-  sealed trait Direction
-  case object Oben extends Direction
-  case object Rechts extends Direction
-  case object Unten extends Direction
-  case object Links extends Direction
+case class Player(
+                   position: Coordinate,
+                   direction: Direction = Up,
+                   inventory: Inventory = Inventory()
+                 ) extends GridSegmentsInterface with PlayerInterface {
 
-  private val startPosX = levelManager.getCurrentLevel.get.start.x
-  private val startPosY = levelManager.getCurrentLevel.get.start.y
+  // Symbol representing the player on the grid
+  val symbol: Char = 'R'
 
-  val inventory = new Inventory()
-
-  var position: Option[Coordinate] = None
-  var direction: Direction = Oben
-
-  private val maxX: Int = levelManager.getCurrentLevel.get.width
-  private val maxY: Int = levelManager.getCurrentLevel.get.height
-
-  def Symbol: Char = 'R'
-
-  def initialize(): Unit = {
-    direction = Oben
-    position = Some(Coordinate(startPosX, startPosY))
+  /**
+   * Performs a movement based on the given action string.
+   * Supported actions: "forward", "right", "left".
+   * Returns a new Player instance with the updated state.
+   */
+  override def move(action: String): Player = action match {
+    case "forward" => moveForward()
+    case "right"   => turnRight()
+    case "left"    => turnLeft()
+    case _         => this
   }
 
-  def getPosition: Coordinate = {
-    position.getOrElse(throw new IllegalStateException("Spieler ist nicht initialisiert!"))
-  }
-
-  def moveUp(): Unit = {
-    move("up")
-  }
-
-  def moveDown(): Unit = {
-    move("down")
-  }
-
-  def moveLeft(): Unit = {
-    move("left")
-  }
-
-  def moveRight(): Unit = {
-    move("right")
-  }
-
-  private def move(action: String): Unit = {
-    action match {
-      case "up" => moveForward()
-      case "right" => turnRight()
-      case "left" => turnLeft()
-      case "down" => turnDown()
-      case _ => println("Unbekannte Aktion!")
+  /**
+   * Moves the player forward based on their current direction.
+   * Returns a new Player instance with the updated position.
+   */
+  private def moveForward(): Player = {
+    val newPosition = direction match {
+      case Up    => position.copy(y = position.y + 1)
+      case Down  => position.copy(y = position.y - 1)
+      case Left  => position.copy(x = position.x - 1)
+      case Right => position.copy(x = position.x + 1)
     }
+    copy(position = newPosition)
   }
 
-  private def turnRight(): Unit = {
-    direction = direction match {
-      case Oben => Rechts
-      case Rechts => Unten
-      case Unten => Links
-      case Links => Oben
+  /**
+   * Turns the player to the right.
+   * Updates the player's direction clockwise (e.g., Up -> Right).
+   */
+  private def turnRight(): Player = {
+    val newDirection = direction match {
+      case Up    => Right
+      case Right => Down
+      case Down  => Left
+      case Left  => Up
     }
+    copy(direction = newDirection)
   }
 
-  private def turnLeft(): Unit = {
-    direction = direction match {
-      case Oben => Links
-      case Links => Unten
-      case Unten => Rechts
-      case Rechts => Oben
+  /**
+   * Turns the player to the left.
+   * Updates the player's direction counterclockwise (e.g., Up -> Left).
+   */
+  private def turnLeft(): Player = {
+    val newDirection = direction match {
+      case Up    => Left
+      case Left  => Down
+      case Down  => Right
+      case Right => Up
     }
+    copy(direction = newDirection)
   }
 
-  private def turnDown(): Unit = {
-    direction = direction match {
-      case Oben => Unten
-      case Unten => Oben
-      case Links => Rechts
-      case Rechts => Links
-    }
-  }
+  // Implements required methods from interfaces
+  override def getPosition: Coordinate = position
+  override def Symbol: Char = symbol
+  override def segmentType: String = "player"
+  override def subType: Option[String] = None
 
-  private def moveForward(): Unit = {
-    println(s"Aktuelle Position: ${getPosition}, Richtung: $direction")
+  override def isBlocking: Boolean = false
 
-    val currentPosition = getPosition
-    val newPos = direction match {
-      case Oben => Coordinate(currentPosition.x, currentPosition.y + 1)
-      case Rechts => Coordinate(currentPosition.x + 1, currentPosition.y)
-      case Unten => Coordinate(currentPosition.x, currentPosition.y - 1)
-      case Links => Coordinate(currentPosition.x - 1, currentPosition.y)
-    }
-
-    if (isValidMove(newPos)) {
-      position = Some(newPos)
-      println(s"Spieler bewegt zu $newPos in Richtung $direction")
-      einsammeln(newPos)
-      notifyObservers()
-    } else {
-      println("Ungültige Bewegung blockiert!")
-      notifyObservers() // Notify observers when an invalid move is attempted
-    }
-  }
-
-  def isValidMove(pos: Coordinate): Boolean = {
-    val withinBounds = pos.x >= 0 && pos.x < maxX && pos.y >= 0 && pos.y < maxY
-    val isObstacle = levelManager.getCurrentLevel.get.objects.obstacles.exists(_.coordinates == pos)
-    withinBounds && !isObstacle
-  }
-
-  def einsammeln(pos: Coordinate): Unit = {
-    Spielfeld.components.find(_.getPosition == pos) match {
-      case Some(jerm: Jerm) =>
-        inventory.addItem(jerm)
-        Spielfeld.entfernen(pos.x, pos.y)
-        println(s"Jerm an Position $pos eingesammelt.")
-        notifyObservers() // Notify observers when a Jerm is collected
-      case _ =>
-    }
-  }
+  override def interactWithPlayer(): Unit = ???
 }
 
-class Inventory {
-  private var items: Set[KomponentenInterface] = Set()
+/**
+ * Inventory for managing collected entities/items.
+ */
+case class Inventory(items: Set[Coordinate] = Set()) {
 
-  def addItem(item: KomponentenInterface): Unit = {
-    items += item
-  }
+  /**
+   * Adds a new item to the inventory and returns a new updated Inventory.
+   */
+  def addItem(position: Coordinate): Inventory = copy(items = items + position)
 
-  def containsItem(name: KomponentenInterface): Boolean =
-    items.contains(name)
-
-  def getItems: Set[KomponentenInterface] = items
-
+  /**
+   * Gets the total number of collected items.
+   */
   def size: Int = items.size
 }

@@ -1,4 +1,4 @@
-package Controller.Component.ControllerMockImpl
+/*package Controller.Component.ControllerMockImpl
 
 import Controller.Component.ControllerInterface
 import Model.LevelComponent.{Goal, LevelConfig, Objects}
@@ -55,3 +55,4 @@ class MockController extends ControllerInterface {
 
   override def getLevelConfig: Option[LevelConfig] = currentLevel
 }
+*/
