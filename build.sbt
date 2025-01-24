@@ -32,9 +32,21 @@ lazy val root = (project in file("."))
         "org.scala-lang" % "scala-compiler" % "2.13.15",
         "com.lihaoyi" %% "ammonite" % "3.0.0" cross CrossVersion.full, //Eventuell bessere Version von REPL
         "org.scalamock" %% "scalamock" % "6.0.0" % Test,
-        "org.scalafx" %% "scalafx" % "23.0.1-R34"
+        "org.scalafx" %% "scalafx" % "23.0.1-R34",
+        "com.google.inject" % "guice" % "5.0.1",
+        "net.codingwell" %% "scala-guice" % "5.0.0",
+
+      "org.scalatest" %% "scalatest" % "3.2.10" % Test
+      ,
+      "org.mockito" %% "mockito-scala" % "1.16.42" % Test
+      ,
+      "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % Test,
+       "org.powermock" % "powermock-module-junit4" % "2.0.9",
+         "org.powermock" % "powermock-api-mockito2" % "2.0.9"
       )
+
     }
+
   )
 
 

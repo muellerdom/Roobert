@@ -1,40 +1,54 @@
-import Controller.Controller
-import Model.REPL
-import View.{GUI, TUI}
+// Main.scala
+import com.google.inject.Guice
+import Controller.Component.ControllerBaseImpl.Controller
+import View.TUI
+import View.gui.{GUI, GameView}
+import javafx.application.Platform
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.io.StdIn.readLine
 
 object Main {
-  val controller = new Controller()
-  REPL.replBind(controller)
-  val tui = new TUI(controller)
-  GUI.setController(controller)
-  //GUI.start()
-  controller.notifyObservers()
-
-
-
   def main(args: Array[String]): Unit = {
+    Platform.startup(() => {
+      val injector = Guice.createInjector(new GameModule()) // Create injector
+      val controller = injector.getInstance(classOf[Controller])
+      val gui = injector.getInstance(classOf[GUI])
+      val gameView = injector.getInstance(classOf[GameView])
+      val tui = new TUI(controller)
 
-    // TUI im Hauptthread
-    Future {
-      GUI.main(args)
-    }(scala.concurrent.ExecutionContext.global)
 
-    // GUI im separaten Thread starten (Dadurch wird sichergestellt,dass
-    // TUI-Ereignisse weiterhin verarbeitet werden können)
-    new Thread(() =>       tui.start())
+      controller.addObserver(gameView)
+      controller.addObserver(tui)
+      controller.addObserver(gui) // Ensure GUI is added as an observer
 
+      // Start GUI in the main thread
+      Future {
+        gui.main(args)
+      }
+
+      // Run TUI in a separate thread
+      Future {
+        startTUI(args, tui)
+      }
+
+      // Initial observer notification
+      controller.notifyObservers()
+    })
+  }
+
+  private def startTUI(args: Array[String], tui: TUI): Unit = {
+    tui.start() // Initialize TUI
 
     if (args.nonEmpty) {
-      tui.processInputLine(args(0))
+      tui.processInputLine(args(0)) // Process arguments directly
     } else {
       var input: String = ""
       do {
-        input = readLine().toString
+        input = readLine()
         tui.processInputLine(input)
-      } while (input != "q")
+      } while (input != "q") // Exit on "q"
     }
   }
 }

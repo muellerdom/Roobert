@@ -1,0 +1,7 @@
+organization=muellerdom
+projectKey=muellerdom_Rooobert
+serverUrl=https://sonarcloud.io
+serverVersion=8.0.0.58720
+dashboardUrl=https://sonarcloud.io/dashboard?id=muellerdom_Rooobert
+ceTaskId=AZPewClXM-rPTa9cfkaV
+ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AZPewClXM-rPTa9cfkaV
