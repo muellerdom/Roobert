@@ -1,84 +1,51 @@
-
-name: Scala CI
+name: Tests
 
 on:
   push:
-    branches: [ main, developing ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-
-      - name: Cache Ivy2
-        uses: actions/cache@v3
-        with:
-          path: ~/.ivy2/cache
-          key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}
-          restore-keys: ${{ runner.os }}-sbt
-
-      - name: Cache SBT
-        uses: actions/cache@v3
-        with:
-          path: ~/.sbt
-          key: ${{ runner.os }}-sbt-cache-${{ hashFiles('**/build.sbt') }}
-          restore-keys: ${{ runner.os }}-sbt-cache
-
-      - name: Cache Coursier
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/coursier
-          key: ${{ runner.os }}-coursier-${{ hashFiles('**/build.sbt') }}
-          restore-keys: ${{ runner.os }}-coursier
-
-      - name: Compile
-        run: sbt compile
-
+      - uses: actions/checkout@v2
+      - name: Java setup
+        uses: coursier/setup-action@v1.3.8
+        with: 
+          jvm: corretto:17
+          apps: sbt sbtn
+      - name: Run tests
+        run: sbt -v -java-home $JAVA_HOME test
+        
   run_tests:
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - uses: actions/checkout@v3
-
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
+      - name: Java setup
+        uses: coursier/setup-action@v1.3.8
+        with: 
+          jvm: corretto:17
+          apps: sbt sbtn
+      - name: Git checkout (merge)
+        uses: actions/checkout@v3
+        if: github.event_name != 'pull_request'
         with:
-          java-version: '11'
-          distribution: 'temurin'
-
-      - name: Cache Ivy2
-        uses: actions/cache@v3
+          fetch-depth: 0
+      - name: Git checkout (PR)
+        uses: actions/checkout@v3
+        if: github.event_name == 'pull_request'
         with:
-          path: ~/.ivy2/cache
-          key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}
-          restore-keys: ${{ runner.os }}-sbt
-
-      - name: Cache SBT
-        uses: actions/cache@v3
-        with:
-          path: ~/.sbt
-          key: ${{ runner.os }}-sbt-cache-${{ hashFiles('**/build.sbt') }}
-          restore-keys: ${{ runner.os }}-sbt-cache
-
-      - name: Cache Coursier
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/coursier
-          key: ${{ runner.os }}-coursier-${{ hashFiles('**/build.sbt') }}
-          restore-keys: ${{ runner.os }}-coursier
-
-      - name: Build Project and Export Coverage
-        env:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Record coverage
+        run: sbt clean coverage test
+      - name: Upload coverage
+        run: sbt coverageAggregate coveralls
+        env: 
+          COVERALLS_FLAG_NAME: Scala ${{ matrix.scala }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        run: |
-          export CI_BRANCH="${GITHUB_REF#refs/heads/}"
-          sbt clean coverage test coverageReport coverals
