@@ -23,17 +23,11 @@ object REPL extends Observable with REPLInterface {
     reporter.totalSilence = true //nur während Controller eingebunden wird.
     // Binde den Controller in den REPL-Kontext
     repl.bind("controller", "Controller.Component.ControllerBaseImpl.Controller", controller)
-    //repl.bind("spieler", "Model.SpielerComponent.Spieler")
 
-    //notifyObservers()
     reporter.totalSilence = false
     repl.interpret("""def moveForward() = controller.setCommand("forward")""")
     repl.interpret("""def turnRight() = controller.setCommand("right")""")
     repl.interpret("""def turnLeft() = controller.setCommand("left")""")
-//    repl.interpret("""def moveForward() = Model.SpielerComponent.Spieler.move("forward")""")
-//    repl.interpret("""def turnRight() = Model.SpielerComponent.Spieler.move("right")""")
-//    repl.interpret("""def turnLeft() = Model.SpielerComponent.Spieler.move("left")""")
-
   }
 
   def Interpret(code: String): Unit = {

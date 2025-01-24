@@ -22,23 +22,36 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
 
   //controller.notifyObservers()
 
-  private val instructions = new Label("Anweisungen: Schreiben Sie Ihren Code im Editor und klicken Sie auf 'Meinen Code ausführen', um das Spiel zu aktualisieren.") {
-    style = "-fx-font-size: 14px; -fx-text-fill: #2B2B2B;"
+  private val instructions = new Label() {
+    val stringBuilder = new StringBuilder()
+
+    // Sicher auf das LevelConfig zugreifen
+    controller.getLevelConfig match {
+      case Some(config) =>
+        config.instructions.foreach { e =>
+          stringBuilder.append(e).append("\n")
+        }
+      case None =>
+        stringBuilder.append("Keine Anweisungen verfügbar.") // Fallback-Text, falls kein Level geladen ist
+    }
+
+    text = stringBuilder.toString()
+    style = "-fx-control-inner-background: #6897BB; -fx-text-fill: #2B2B2B; -fx-font-family: 'monospace'; -fx-font-size: 16px;"
     wrapText = true
-    maxWidth = 300
+    maxWidth = 500
   }
 
   private val codeEditor = new VBox {
-    spacing = 10
+    //spacing = 0
     padding = Insets(10)
-    alignment = Pos.TopCenter
+    alignment = Pos.Center
     style = "-fx-background-color: #A9B7C6;"
 
     val textarea = new TextArea {
-      prefWidth = 300
-      prefHeight = 300
+      prefWidth = 500
+      prefHeight = 400
       promptText = "Schreibe deinen Code hier..."
-      style = "-fx-control-inner-background: #2B2B2B; -fx-text-fill: #F5F5F5;"
+      style = "-fx-control-inner-background: #2B2B2B; -fx-text-fill: #F5F5F5; -fx-font-family: 'monospace'; -fx-font-size: 20px; -fx-font-weight: bold;"
     }
 
     children = Seq(
@@ -50,7 +63,7 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
       new Button("Meinen Code ausführen") {
         onAction = _ => {
           controller.interpret(textarea.getText)
-          //controller.notifyObservers() // Notify all observers after executing the command
+          controller.notifyObservers() // Notify all observers after executing the command
         //update()
         }
         style = "-fx-background-color: #6897BB; -fx-text-fill: #2B2B2B;"
@@ -92,11 +105,9 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
   bottom = bottomBar
   padding = Insets(20)
 
-
   private def refreshGrid(): Unit = {
     controller.getLevelConfig.foreach { level =>
       gridPane.children.clear()
-
       for (y <- 0 until level.logic.gridSize.get.height; x <- 0 until level.logic.gridSize.get.width) {
         //controller.getGrid.gridSegments.findByPosition(Coordinate(x, y)).get.Symbol
         val text = controller.getGrid.gridSegments.findByPosition(Coordinate(x, y)).map(_.Symbol).getOrElse(' ') match {
@@ -109,8 +120,8 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
 
         val cell = new Label()
         cell.text = text
-        cell.prefWidth = 50
-        cell.prefHeight = 50
+        cell.prefWidth = 80
+        cell.prefHeight = 80
         cell.style = text match {
           case "R" => "-fx-background-color: #FF6F61; -fx-border-color: #6897BB; -fx-border-width: 1px;"
           case "G" => "-fx-background-color: #BBD968; -fx-border-color: #6897BB; -fx-border-width: 1px;"
@@ -128,14 +139,23 @@ class GameView @Inject() (controller: Controller, gui: GUI) extends BorderPane w
   }
 
   override def update(): Unit = {
-    if (!Platform.isFxApplicationThread) {
-      Platform.runLater(() => update())
-      return
-    }
+//    if (!Platform.isFxApplicationThread) {
+//      Platform.runLater(() => update())
+//      return
+//    }
     // Nur aktualisieren, wenn ein gültiges Level geladen wurde
     println("Update called from GAMEUI")
 
-    if (controller.getLevelConfig.isDefined) refreshGrid()
+    if (controller.getLevelConfig.isDefined) {
+
+      if (controller.isLevelComplete) {
+        println("Level abgeschlossen & zum nächsten Level wechseln.")
+        controller.nextLevel() // Starte das nächste Level
+        refreshGrid()
+      } else {
+        refreshGrid() // Aktualisiere das aktuelle Grid
+      }
+    }
     else println("No level to refresh")
 
     controller.notifyObservers()

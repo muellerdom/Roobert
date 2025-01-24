@@ -11,8 +11,8 @@ class LevelManagerSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "return an error when loading a non-existent level" in {
-    val result = levelManager.loadLevel(3)
-    result shouldBe Left("Level mit ID '3' nicht gefunden.")
+    val result = levelManager.loadLevel(7)
+    result shouldBe Left("Level mit ID '7' nicht gefunden.")
   }
 
   it should "return available levels" in {

@@ -58,12 +58,13 @@ case class Grid(gridSegments: GridSegments) extends GridInterface {
             .update(player, playerWithJerm)
           Grid(updatedSegments)
 
-        case Some(segment: Goal) =>
+        case Some(goal: Goal) if player.position == goal.position =>
           val updatedSegments = gridSegments.update(player, updatedPlayer)
-          Grid(updatedSegments)
           println("Herzlichen Glückwunsch! Du hast das Ziel erreicht!")
-          this // Oder optional: Spielzustand beenden/ändern
+          Grid(updatedSegments)
 
+          // Zum nächsten Level wechseln
+          this // Optional: Spielzustand
         case _ =>
           val updatedSegments = gridSegments.update(player, updatedPlayer)
           Grid(updatedSegments)

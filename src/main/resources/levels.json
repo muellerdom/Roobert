@@ -16,44 +16,224 @@
         "entities": [
           {
             "type": "player",
-            "position": { "x": 2, "y": 0 }
+            "position": {
+              "x": 2,
+              "y": 0
+            }
           },
           {
             "type": "goal",
-            "position": { "x": 2, "y": 3 }
+            "position": {
+              "x": 2,
+              "y": 3
+            }
           },
           {
             "type": "obstacle",
             "subtype": "stein",
-            "position": { "x": 1, "y": 2 }
+            "position": {
+              "x": 1,
+              "y": 2
+            }
           },
           {
             "type": "obstacle",
             "subtype": "wasser",
-            "position": { "x": 3, "y": 3 }
+            "position": {
+              "x": 3,
+              "y": 3
+            }
           },
           {
             "type": "obstacle",
             "subtype": "gras",
-            "position": { "x": 0, "y": 0 }
+            "position": {
+              "x": 0,
+              "y": 0
+            }
           },
           {
             "type": "jerm",
-            "position": { "x": 2, "y": 2 }
+            "position": {
+              "x": 2,
+              "y": 2
+            }
           }
         ]
       }
     },
     {
       "id": 2,
-      "title": "Variablen oder so",
+      "title": "Kombinieren von Befehlen",
       "instructions": [
-        "Versuche das Wort herauszufinden. Du kannst die Buchstaben erraten."
+        "Hilf Robert mit der Kombination mittels Methoden ans Ziel zu kommen",
+        "Im ersten Level hast du gelernt eine Methode aufzurufen!",
+        "Nutze nun eine Aneinanderreihung von Befehlen z.B. code: moveForward() \n turnRight() \n moveForward()"
       ],
       "logic": {
-        "type": "hangman",
-        "word": "scala",
-        "entities": []
+        "type": "grid",
+        "gridSize": {
+          "width": 5,
+          "height": 5
+        },
+        "entities": [
+          {
+            "type": "player",
+            "position": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "type": "goal",
+            "position": {
+              "x": 4,
+              "y": 4
+            }
+          },
+          {
+            "type": "obstacle",
+            "subtype": "lava",
+            "position": {
+              "x": 2,
+              "y": 2
+            }
+          },
+          {
+            "type": "obstacle",
+            "subtype": "wasser",
+            "position": {
+              "x": 3,
+              "y": 1
+            }
+          },
+          {
+            "type": "obstacle",
+            "subtype": "stein",
+            "position": {
+              "x": 1,
+              "y": 3
+            }
+          },
+          {
+            "type": "jerm",
+            "position": {
+              "x": 4,
+              "y": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "title": "Eigene Methoden",
+      "instructions": [
+        "Finde den Weg durch das Labyrinth. Denk strategisch!",
+        "In diesem Level lernst du eigene Methoden zu schreiben.",
+        "In Scala wird eine Methode wie folgt geschrieben: code: def forwardRight() : Unit = { \n moveForward() \n turnRight() \n }"
+      ],
+      "logic": {
+        "type": "grid",
+        "gridSize": {
+          "width": 6,
+          "height": 6
+        },
+        "entities": [
+          {
+            "type": "player",
+            "position": {
+              "x": 0,
+              "y": 5
+            }
+          },
+          {
+            "type": "goal",
+            "position": {
+              "x": 5,
+              "y": 0
+            }
+          },
+          {
+            "type": "obstacle",
+            "subtype": "mauer",
+            "position": {
+              "x": 2,
+              "y": 5
+            }
+          },
+          {
+            "type": "obstacle",
+            "subtype": "mauer",
+            "position": {
+              "x": 2,
+              "y": 4
+            }
+          },
+          {
+            "type": "obstacle",
+            "subtype": "mauer",
+            "position": {
+              "x": 4,
+              "y": 3
+            }
+          },
+          {
+            "type": "obstacle",
+            "subtype": "stein",
+            "position": {
+              "x": 3,
+              "y": 1
+            }
+          },
+          {
+            "type": "jerm",
+            "position": {
+              "x": 1,
+              "y": 4
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "title": "For Schleife",
+      "instructions": [
+        "Nutze eine for-Schleife, um schnell ans Ziel zu kommen!",
+        "Eine For Schleife kann einen Befehl mehrmals ausführen, dabei ist diese wie folgt aufgebaut",
+        "code: for for( w <- 0 to 4)\n        {\n            moveForward()\n        }"
+      ],
+      "logic": {
+        "type": "grid",
+        "gridSize": {
+          "width": 3,
+          "height": 3
+        },
+        "entities": [
+          {
+            "type": "player",
+            "position": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "type": "goal",
+            "position": {
+              "x": 2,
+              "y": 2
+            }
+          },
+          {
+            "type": "obstacle",
+            "subtype": "gras",
+            "position": {
+              "x": 1,
+              "y": 1
+            }
+          }
+        ]
       }
     }
   ]

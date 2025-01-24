@@ -89,7 +89,7 @@ class GridSpec extends AnyWordSpec with Matchers {
 
       val updatedGrid = grid.movePlayer("forward") // Assuming "right" maps to (2, 1)
 
-      updatedGrid.getPlayerPosition should be(Some(Coordinate(1, 1)))
+      updatedGrid.getPlayerPosition should be(Some(Coordinate(1, 2)))
       println("Herzlichen Glückwunsch! Du hast das Ziel erreicht!")
       // Additional logic would go here to verify game completion behavior
     }

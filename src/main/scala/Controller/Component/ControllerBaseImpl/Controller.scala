@@ -38,6 +38,7 @@ class Controller @Inject()(levelManager: LevelManagerTrait) extends ControllerIn
           }).toList
         )
 
+
         grid = Grid(gridSegments)
 
         new FileIO("src/main/resources/gameState.json").save(grid)
@@ -85,12 +86,26 @@ class Controller @Inject()(levelManager: LevelManagerTrait) extends ControllerIn
 
 
   def isLevelComplete: Boolean = {
-    //    levelManager.getCurrentLevel.exists { level =>
-    //      val goal = level.logic.entities.find(_.type == "goal").map(_.position)
-    //      val collectedAllJerms = Player.collectedEntityCount == level.logic.entities.count(_.type == "jerm")
-    //      collectedAllJerms && goal.exists(Player.hasReachedGoal)
-    //    }
-    true
+    val playerPosition = grid.getPlayerPosition // Hole die Position des Spielers
+    val goalPosition = getLevelConfig.get.logic.entities
+      .find(entity => entity.`type` == "goal")
+      .map(_.position)
+    println("player gfoal", playerPosition + " " + goalPosition)
+    playerPosition.isDefined && goalPosition.contains(playerPosition.get) // Vergleiche Positionen
+  }
+
+  def nextLevel(): Unit = {
+    val currentLevelId = levelManager.getCurrentLevel.map(_.id).getOrElse(0) // Hole das aktuelle Level
+    val nextLevelId = currentLevelId + 1 // Nächstes Level berechnen
+
+    levelManager.loadLevel(nextLevelId) match {
+      case Right(newLevel) =>
+        startLevel(nextLevelId) // Starte das nächste Level
+        println(s"Level $nextLevelId gestartet!")
+        notifyObservers() // Aktualisierung für die GUI
+      case Left(error) =>
+        println("Kein weiteres Level verfügbar! Sie haben das Spiel abgeschlossen!")
+    }
   }
 
   def getGrid: GridInterface = grid // Zugriff auf den aktuellen Grid-Zustand

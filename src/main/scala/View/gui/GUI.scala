@@ -21,7 +21,7 @@ class GUI @Inject() (controller: Controller) extends JFXApp3 with Observer {
   override def start(): Unit = {
     stage = new JFXApp3.PrimaryStage {
       title = "Help Robert"
-      scene = new Scene(400, 300) {
+      scene = new Scene(600, 500) {
         root = new Pane {
           style = "-fx-background-color: #2B2B2B;"
         }
@@ -41,7 +41,7 @@ class GUI @Inject() (controller: Controller) extends JFXApp3 with Observer {
       return
     }
     Platform.runLater(() => {
-      stage.scene = new Scene(800, 600) {
+      stage.scene = new Scene(1000, 800) {
         root = newRoot
         newRoot.setStyle("-fx-background-color: #2B2B2B;")
       }
